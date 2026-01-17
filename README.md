@@ -24,6 +24,7 @@ The system follows a modern 3-tier architecture:
 ## 3 Functional Requirements
 
 3.1 Financial Management(The Ledger):  
+
     - 3.1.1 Account Management:  
         - The system shall allow users to create manual accounts categorized by type: Bank, Cash, Holdings (Stocks/Mutual Funds), Crypto, Other.  
         - The system shall maintain a current balance for each account.  
@@ -36,6 +37,7 @@ The system follows a modern 3-tier architecture:
             - Total Net Worth card.  
             - Monthly Spending vs income chart.  
             - Assest distribution pie chart (eg./ 40% Bank, 60% Holdings).  
+            
 3.2 User Profile & Goals:  
     - 3.2.1 Goal Definition:  
         - Users shall define financial goals with parameters: Goal Name, Target Amount, Target Date, Priority (High/Med/Low).  
