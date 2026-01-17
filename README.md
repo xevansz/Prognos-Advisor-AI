@@ -39,12 +39,15 @@ The system follows a modern 3-tier architecture:
             - Assest distribution pie chart (eg./ 40% Bank, 60% Holdings).  
             
 3.2 User Profile & Goals:  
+
     - 3.2.1 Goal Definition:  
         - Users shall define financial goals with parameters: Goal Name, Target Amount, Target Date, Priority (High/Med/Low).  
     - 3.2.2 Profile Settings:   
         - Users shall input demographic data (Age, Gender) and subjective Risk Appetite (Conservative, Moderate, Aggressive) to calibrate the AI agents.  
+        
 3.3 The Progonosis Engine (AI Core):  
 The "Prognosis Report" page is the central feature. It is on-demand, triggered only when the user clicks the "Refresh Prognosis" button.  
+
     - 3.3.1 The Risk Agent (Logic-Based):  
         - Input: Last 30-60 days of transaction history + Total Liquid Assets.  
         - Function: Calculates "Burn Rate" (Avg. Monthly Spend) and "Runway" (Months until insolvency).  
@@ -65,12 +68,17 @@ The "Prognosis Report" page is the central feature. It is on-demand, triggered o
 ## 4 Non-Functional Requirements
 
 4.1 Performance:  
+
     - On-Demand Processing: The Prognosis Report generation shall not exceed 10 seconds.  
     - Caching: The system shall store the last generated report in the database to allow instant page loads on subsequent visits until a "Refresh" is triggered.  
+    
 4.2 Security:  
+
     - Authentication: Access shall be secured via JWT (JSON Web Tokens), Supabase in future (Maybe).  
     - Data Isolation: All database queries must be scoped to the authenticated user_id to prevent data leakage between users.  
+    
 4.3 Scalability:   
+
     - The database schema shall be designed with proper indexing on transaction_date and user_id to handle 10,000+ transaction rows per user without latency.  
     
 ## 5 Technology Stack
