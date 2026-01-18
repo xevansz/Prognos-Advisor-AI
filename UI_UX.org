@@ -1,4 +1,33 @@
 #+TITLE: UI/UX
 #+DESCRIPTION: Some Suggestions and advice for UI/UX
 
-*
+* Website
+
+** Disclaimer page
++ Show disclaimer when onboarding/sign up. and maybe during login too. just 2 lines.
+
+** Charts
++ User should be able to download charts as jpgs/pdfs.
++ should be able to visualize graphs in bar/pie chart.
+
+** Transaction
++ There should be built-in categories - such as "Food", "Sports & Fitness", "Gas & Petrol", "Electricity", "Clothing", "Furniture", "Electronics", etc. that the user can immediately select and enter the corresponding expense.
++ Same built-in categories for goal names
+
+*** OPTIONAL
++ User should be able to upload documents and should be able to extract data via *OCR*.
+
+** Spending Analysis
++ Should estimate and display avg. monthly spending and avg. daily spending
+
+* LLM
+*** OPTIONAL
++ The advice given by the LLM, as well as the state of the ledger should be saved as a (compressed) snapshot (as JSON). This allows for better auditing and history analysis. May or maynot be exposed to the user, but linked to his account.
+
+
+
+* Security
+
+
+* Legal
++ Use of gemini flash should be mentioned.
