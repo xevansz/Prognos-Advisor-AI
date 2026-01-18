@@ -11,7 +11,7 @@ The core objective is to demonstrate:
 
 * Intelligent system design
 * digests user financial data
-* uses agents to understand users risks, goals and investment profiles
+* uses agents to understand user's risks, goals and investment profiles
 * optimize and advice suitable strategies using reinforcement learning
 * generate explanations using llm 
 * dynamic updating
@@ -19,5 +19,5 @@ The core objective is to demonstrate:
 * requirements: login/signup, user data page
 
 * advice: market data is simulated or live.
-* financial advice is stritcly educational suggestions, not an advice. Our system will not tell users to manage anything. Everything is at users discretion.
+* financial advice is stritcly educational suggestions, not an imperative advice. Our system will not tell users to manage anything. Everything is at users discretion.
 
