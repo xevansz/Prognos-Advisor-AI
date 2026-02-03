@@ -1,0 +1,15 @@
+[project]
+name = "Prognosis-AI"
+version = "0.1.0"
+description = "what should desc be?"
+authors = [
+    {name = "xevansz", email = "minithbmatthew@gmail.com"},
+]
+dependencies = ["fastapi[standard]>=0.128.0"]
+requires-python = "==3.12.*"
+readme = "README.md"
+license = {text = "Apache License"}
+
+
+[tool.pdm]
+distribution = false
