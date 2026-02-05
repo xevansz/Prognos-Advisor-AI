@@ -3,7 +3,7 @@
 ### 1. Overview
 
 - **Framework**: FastAPI (Python 3.11+).
-- **DB layer**: PostgreSQL (via SQLAlchemy or equivalent ORM + async driver).
+- **DB layer**: Supabase Cloud + SQLAlchemy when needed.
 - **Auth**: Supabase Auth – backend trusts Supabase JWTs and uses `user_id` claim for scoping.
 - **Architecture**: layered into `api` (routers), `services` (business logic), `models/schemas` (ORM + Pydantic), `integrations` (FX, market, LLM), and `core` (config, security, logging).
 
