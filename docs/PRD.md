@@ -25,7 +25,7 @@ The system follows a modern 3-tier architecture with additional external service
 
 1. **Presentation Layer:** Svelte frontend with interactive dashboards.
 2. **Application Layer:** FastAPI backend orchestrating the Multi-Agent logic and integrations.
-3. **Data Layer:** PostgreSQL database for ACID-compliant transaction management.
+3. **Data Layer:** Supabase for ACID-compliant transaction management.
 4. **External Services (Phase 1 and beyond):**
    - Supabase Auth (email/password auth + JWT).
    - FX rate API for currency conversion (cached for multiple days).
@@ -233,7 +233,7 @@ The engine consists of three primary agents and a Narrator (LLM).
 | :---               | :---                               | :---                                                       |
 | **Frontend**       | Svelte / SvelteKit + charting lib  | Lightweight, fast, good for interactive dashboards.        |
 | **Backend**        | Python (FastAPI)                   | High-performance async APIs and ML/AI integrations.        |
-| **Database**       | PostgreSQL                         | Relational integrity for financial ledgers.                |
+| **Database**       | Supabase                         | Relational integrity for financial ledgers.                |
 | **Auth**           | Supabase Auth + JWT                | Secure, managed auth integrated with Postgres.             |
 | **LLM**            | Google Gemini Flash / xAI model    | Cost-effective, large context window for history analysis. |
 | **RL (future)**    | Custom / Stable-Baselines3         | For asset allocation policy learning.                      |
@@ -277,7 +277,7 @@ The application serves as a non-custodial financial tracker and advisor. It allo
 The system follows a modern 3-tier architecture:
 1. **Presentation Layer:** Svelte frontend with interactive dashboards.
 2. **Application Layer:** FastAPI backend orchestrating the Multi-Agent Logic.
-3. **Data Layer:** PostgreSQL database for ACID-compliant transaction management.
+3. **Data Layer:** Supabase database for ACID-compliant transaction management.
 
 ## 3. Functional Requirements
 
