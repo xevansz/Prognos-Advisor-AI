@@ -2,68 +2,27 @@
 **A Multi-Agent System for Personalized Financial Planning & Robo-Advisory**
 
 ## Instructions to run
-### 1. set up environment
-* clone the repo:  
-```bash
-git clone https://github.com/xevansz/Prognos-Advisor-AI.git
-cd Prognos-Advisor-AI
-```
 
-* Iniate the python virtual env
-```bash
-# Use python3.12 
-cd backend
-python3 -m venv .venv
-source .venv/bin/activate
-# or use pdm (install python 3.12)
-cd backend
-pdm sync
-```
+#TODO
 
-* create .env file and set up vars
-```
-PROGNOSIS_DATABASE_URL=
-PROGNOSIS_LLM_PROVIDER=gemini
-PROGNOSIS_LLM_API_KEY= dfjaodsifjaidsfjiasdfjdisjf
-PROGNOSIS_LLM_MODEL=gemini-2.5-flash
-```
+**DISCLAIMER and LICENSE:** 
+* *Artificial Intelligence models can make mistakes.* 
 
-### 2. Run Database Migrations
-```bash
-# Create initial migration
-pdm run alembic revision --autogenerate -m "{number} migration"
+* Any financial suggestions or insights provided by the application or its AI advisors are purely informational and non-binding.
 
-# Apply migrations
-pdm run alembic upgrade head
-```
+* All decisions made based on such information are entirely at the user’s own discretion, and the advice provided cannot be relied upon as legal, financial, or professional counsel, nor can it be challenged in a court of law.
 
-### 3. Start the Server
-```bash
-pdm run python main.py
-```
+* The author(s) of the application make no representations, warranties, or guarantees of any kind, express or implied, including but not limited to warranties of accuracy, reliability, merchantability, or fitness for a particular purpose, and shall not be held liable for any loss, damage, or liability arising from the use of the application.
 
-The API will be available at:
-* **API**: http://localhost:8000
-* **Interactive Docs**: http://localhost:8000/api/docs
-* **Health Check**: http://localhost:8000/api/health
+>    7. Disclaimer of Warranty. Unless required by applicable law or
+      agreed to in writing, Licensor provides the Work (and each
+      Contributor provides its Contributions) on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+      implied, including, without limitation, any warranties or conditions
+      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+      PARTICULAR PURPOSE. You are solely responsible for determining the
+      appropriateness of using or redistributing the Work and assume any
+      risks associated with Your exercise of permissions under this License.
 
-## Project Structure Reference
-```
-backend/
-├── core/              # Configuration, security, logging
-├── models/            # Database models (10 files)
-├── schemas/           # Pydantic schemas (5 files)
-├── services/          # Business logic (5 files)
-├── agents/            # AI agents (3 files)
-├── integrations/      # External APIs (3 files)
-├── api/               # FastAPI routers (6 files)
-├── alembic/           # Database migrations
-├── main.py            # Application entry point
-├── db.py              # Database session management
-├── alembic.ini        # alembic file
-├── pdm.lock           # pdm
-└── pyproject.toml
-```
 
-## LICENCE
 * Please check the licensing information provided here: [LICENSE](./LICENSE)
