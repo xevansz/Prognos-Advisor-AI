@@ -1,41 +1,45 @@
 # Prognosis AI Backend
-
 FastAPI backend for Prognosis AI - A multi-agent financial planning and robo-advisory system.
 
 ## Architecture
-
 The backend follows a layered architecture:
 
 ```
 backend/
-├── core/           # Configuration, security, logging
-├── models/         # SQLAlchemy ORM models
-├── schemas/        # Pydantic schemas for API
-├── services/       # Business logic layer
-├── agents/         # AI agents (Risk, Goal, Investment)
-├── integrations/   # External API clients (FX, Market, LLM)
-├── api/            # FastAPI routers
-├── alembic/        # Database migrations
-├── db.py           # Database session management
-└── main.py         # Application entry point
+├── core/              # Configuration, security, logging
+├── models/            # Database models (10 files)
+├── schemas/           # Pydantic schemas (5 files)
+├── services/          # Business logic (5 files)
+├── agents/            # AI agents (3 files)
+├── integrations/      # External APIs (3 files)
+├── api/               # FastAPI routers (6 files)
+├── alembic/           # Database migrations
+├── main.py            # Application entry point
+├── db.py              # Database session management
+├── alembic.ini        # alembic file
+├── pdm.lock           # pdm
+└── pyproject.toml
 ```
 
 ## Setup
-
 ### Prerequisites
-
 - Python 3.12
 - PostgreSQL database (Supabase recommended)
 - PDM for dependency management
 
 ### Installation
-
 1. Install dependencies:
 ```bash
-pdm install
+# Use python3.12 
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+# or use pdm (install python 3.12)
+cd backend
+pdm sync
 ```
 
-2. Copy `.env.example` to `.env` and configure:
+2. Create `.env` file and configure:
 ```bash
 cp .env.example .env
 ```
@@ -59,7 +63,6 @@ The API will be available at `http://localhost:8000`
 API documentation at `http://localhost:8000/api/docs`
 
 ## Database Migrations
-
 Create a new migration:
 ```bash
 pdm run alembic revision --autogenerate -m "description"
@@ -76,7 +79,6 @@ pdm run alembic downgrade -1
 ```
 
 ## API Endpoints
-
 ### Health
 - `GET /api/health` - Health check
 
@@ -110,7 +112,6 @@ pdm run alembic downgrade -1
 - `GET /api/prognosis/current` - Get cached report
 
 ## Multi-Agent System
-
 ### Risk Agent
 Computes burn rate, runway, and risk capacity score based on recent transactions and liquid assets.
 
@@ -124,7 +125,6 @@ Recommends asset allocation (cash, debt, equity) based on risk capacity, appetit
 Synthesizes agent outputs into human-readable financial prognosis reports.
 
 ## Development
-
 ### Project Structure
 
 - **core/**: Application configuration, security (JWT), and logging
@@ -146,13 +146,7 @@ Synthesizes agent outputs into human-readable financial prognosis reports.
 - **Atomic Transactions**: Balance updates are atomic with transaction creation
 
 ## Testing
-
 **TODO: Add tests**
 
 ## literature survey
-
 current existing financial managers and how they are faring... how will your product compete and who will it compete with? dataset source, and llm model training method and its technology and science
-
-## License
-
-Apache License 2.0
