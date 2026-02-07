@@ -149,6 +149,10 @@ Synthesizes agent outputs into human-readable financial prognosis reports.
 
 **TODO: Add tests**
 
+## literature survey
+
+current existing financial managers and how they are faring... how will your product compete and who will it compete with? dataset source, and llm model training method and its technology and science
+
 ## License
 
 Apache License 2.0
