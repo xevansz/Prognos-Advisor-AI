@@ -12,8 +12,8 @@ Components:
 
 - Risk Agent (logic-based).
 - Goal Feasibility Agent (math-based).
-- Investment Agent (heuristic, RL-ready).
-- Macro State classifier (from public indicators).
+- Investment Agent (heuristic).
+- RL Strategy generator.
 - Narrator (LLM-based report generator).
 
 ---
@@ -50,20 +50,40 @@ The backend is responsible for **normalizing amounts to base currency** before p
 
 ---
 
+## pipeline:
+`Data -> Agents -> State Vector -> RL policy -> Strategy -> LLM explanation`
+
+### Methodologies
+tinygrad
+
+DQN (Deep Q Learning)
+`state -> dense -> relu -> dense -> Q-values`
+
+### Minimal RL model
+* Q(s,a) = expected long-term financial health
+
+**Training Loop**
+observe state
+choose action (epsilon-greedy)
+simulate next state
+compute reward
+update Q network
+
+
 ### 3. Risk Agent
 
 #### 3.1 Purpose
+Measures how fragile the user is financially
 
 Compute:
-
 - Burn Rate (average monthly spending).
 - Runway (months until liquid assets run out).
 - Risk Capacity Score (0–100).
 
 #### 3.2 Inputs
-
-- Recent transactions (last 30–60 days) in base currency.
+- Recent transactions (last 60 days) in base currency.
 - Liquid assets (sum of balances for `bank` and `cash` accounts; optionally some `holdings` if considered liquid).
+- monthly_income
 
 ```python
 def compute_risk_metrics(
@@ -92,20 +112,28 @@ Assumptions:
    - `liquid_assets = sum(account.balance for account in liquid_accounts)`.
    - If `burn_rate == 0`, set `runway_months = float('inf')`.
    - Else `runway_months = liquid_assets / burn_rate`.
-5. **Risk Capacity Score** (simple heuristic):
-   - Map runway to a 0–100 scale, e.g.:
-     - 0 months → score 0.
-     - 12+ months → score 100.
-     - Linear in between:
-       - `score = clamp( (runway_months / 12) * 100, 0, 100 )`.
+5. **Stability ratio**:
+   - Stability = income / expenses
 
 #### 3.4 Output
 
+```
+risk_score =
+  40 * normalize(runway)
++ 30 * normalize(stability)
++ 30 * savings_ratio
+```
+* normalize(x, min, max) = clamp((x - min)/(max - min), 0, 1)
+  * runway: 0 - 12 months
+  * stability: 0.5 - 2.0
+
 ```json
 {
-  "burn_rate": 45000.0,
-  "runway_months": 7.2,
-  "risk_capacity_score": 60
+  "burn_rate": 42000,
+  "runway_months": 5.2,
+  "stability_ratio": 1.1,
+  "risk_score": 63,
+  "risk_label": "Moderate"
 }
 ```
 
@@ -114,9 +142,9 @@ Assumptions:
 ### 4. Goal Feasibility Agent
 
 #### 4.1 Purpose
+Will the user actually reach their goals?
 
 Assess for each goal whether it is:
-
 - On Track.
 - At Risk.
 - Unrealistic.
@@ -124,55 +152,38 @@ Assess for each goal whether it is:
 Based on current savings vs what would be required to hit the target by the target date.
 
 #### 4.2 Inputs
-
-- Goals list.
-- Current **monthly savings** (scalar, base currency):
-  - Monthly savings = sum(credits) − sum(debits) over a recent month, ignoring investment returns.
-
-```python
-def evaluate_goals(
-    goals: list[GoalLike],
-    monthly_savings: float,
-    now: date
-) -> list[dict]:
-    ...
-```
+- goal_amount
+- goal_deadline
+- current_savings
+- monthly_contribution
+- expected_return
 
 #### 4.3 Calculations (MVP)
-
 For each goal:
 
-1. **Time remaining**:
-   - `months_remaining = max(1, months_between(now, goal.target_date))`.
-2. **Required monthly saving**:
-   - `required = goal.target_amount / months_remaining`.
-   - MVP: ignore interest/inflation; later we can incorporate TVM.
-3. **Feasibility status**:
-   - Define thresholds, e.g.:
-     - If `monthly_savings >= required * 0.9`:
-       - `status = "on_track"`.
-     - Else if `monthly_savings >= required * 0.5`:
-       - `status = "at_risk"`.
-     - Else:
-       - `status = "unrealistic"`.
-4. **Priority weighting** (for downstream use):
-   - Compute a weight:
-     - `high` → 1.0
-     - `medium` → 0.7
-     - `low` → 0.4
+1. Future Value:
+  FV = current_savings*(1+r)^t + contribution * ((1+r)^t - 1)/r
+
+2. compare:
+  gap = goal_amount - FV
+
+### Probability model (demo version)
+We simulate uncertainity
+
+Run monte carlo 500 times with random returns
+
+Counts: success_rate = succesful_runs / total_runs
 
 #### 4.4 Output
-
 Per goal:
 
 ```json
 {
-  "goal_id": "uuid",
-  "status": "on_track",
-  "required_monthly_savings": 20000.0,
-  "actual_monthly_savings": 21000.0,
-  "priority": "high",
-  "priority_weight": 1.0
+  "goal_name": "Retirement",
+  "projected_value": 1_200_000,
+  "success_probability": 0.72,
+  "status": "At Risk",
+  "goal_pressure": 1 - success_probability
 }
 ```
 
@@ -198,55 +209,34 @@ class MarketIndicators(TypedDict):
     inflation_rate: float
 ```
 
-#### 5.3 Classification (MVP Heuristic)
-
-Possible states:
-
-- `bull`
-- `bear`
-- `recession`
-- `sideways`
-
-Rules (example, to be refined):
-
-- If `index_level > 1.05 * index_200d_ma` and `inflation_rate` moderate → `bull`.
-- If `index_level < 0.95 * index_200d_ma` and `short_rate` high → `bear`.
-- If `index_level` depressed + `short_rate` high + `inflation_rate` high → `recession`.
-- Else → `sideways`.
-
-Implementation:
-
-```python
-def classify_macro_state(indicators: MarketIndicators) -> str:
-    ...
-```
-
 ---
 
-### 6. Investment Agent (Heuristic, RL-Ready)
+### 5. Investment Agent (Heuristic, RL-Ready)
 
-#### 6.1 Purpose
+#### 5.1 Purpose
+What allocation matches this user?
 
 Convert:
-
-- Risk capacity (0–100).
-- Stated risk appetite.
-- Goal statuses and priority.
-- Macro state.
+- Risk score (0–100).
+- age
+- goal_time_horizon
+- market_volatility (<- Macro State Classifier)
 
 Into a target **asset-class allocation**.
-
-#### 6.2 Asset Classes (MVP)
+#### 5.2 Asset Classes (MVP)
 
 - `cash`
 - `debt`
 - `equity`
-- `other` (e.g., gold, crypto).
+- `other` (e.g., gold, crypto). *Only show what you recommend in output*
+
+* Equity_ratio = 100 - age
+adjusted by risk_score
+adjusted by volatility
 
 Allocations sum to 1.0.
 
-#### 6.3 Inputs
-
+#### 5.3 Inputs
 ```python
 class GoalStatusLike(TypedDict):
     goal_id: str
@@ -254,81 +244,16 @@ class GoalStatusLike(TypedDict):
     priority_weight: float
 
 def recommend_allocation(
-    risk_capacity_score: int,             # 0–100
+    risk_score: int,             # 0–100
     risk_appetite: Literal['conservative', 'moderate', 'aggressive'],
+    goal_time_horizon: int,
     goals_summary: list[GoalStatusLike],
     macro_state: str                      # 'bull', 'bear', 'recession', 'sideways'
 ) -> dict:
     ...
 ```
 
-#### 6.4 Base Policy (Ignoring Macro & Goals)
-
-Define a **base allocation** per combination of risk appetite and capacity bucket.
-
-Example buckets:
-
-- Capacity low: 0–33.
-- Medium: 34–66.
-- High: 67–100.
-
-For each [capacity_bucket, appetite], define base percentages:
-
-- Conservative + low:
-  - `cash=0.30, debt=0.50, equity=0.15, other=0.05`
-- Conservative + high:
-  - `cash=0.20, debt=0.55, equity=0.20, other=0.05`
-- Moderate + medium:
-  - `cash=0.15, debt=0.35, equity=0.45, other=0.05`
-- Aggressive + high:
-  - `cash=0.05, debt=0.20, equity=0.70, other=0.05`
-
-Actual table to be implemented in code but documented as a set of presets.
-
-#### 6.5 Adjustments from Macro State
-
-Example adjustments:
-
-- If `macro_state == "bear"`:
-  - Reduce equity by 5–10 percentage points.
-  - Reallocate to debt/cash.
-- If `macro_state == "bull"`:
-  - Increase equity by 5–10 points, reduce cash.
-- If `macro_state == "recession"`:
-  - Favor higher-quality debt and cash; cap equity.
-
-MVP: simple additive adjustments with clamping to [0, 1] and renormalization.
-
-#### 6.6 Goal-Based Tilt
-
-Approximate:
-
-- If many high-priority goals are `at_risk` or `unrealistic`, and time horizons are short:
-  - Slightly tilt towards **more conservative** allocations (more cash/debt).
-- For long-horizon goals that are mostly `on_track`:
-  - Keep or modestly increase equity share depending on appetite/capacity.
-
-Implementation detail:
-
-- Compute a “goal stress score”:
-
-```python
-stress = sum(
-  weight_for_status(gs.status) * gs.priority_weight
-  for gs in goals_summary
-)
-```
-
-Where `weight_for_status` could be:
-
-- on_track → 0.0
-- at_risk → 0.5
-- unrealistic → 1.0
-
-Then use thresholds on `stress` to nudge allocations more conservative.
-
 #### 6.7 Two-Plan Output (Capacity vs Appetite)
-
 If risk appetite and capacity are in conflict (e.g., appetite = aggressive, capacity bucket = low):
 
 - Compute:
@@ -344,51 +269,92 @@ If they are aligned:
 ```json
 {
   "recommended": {
-    "cash": 0.15,
-    "debt": 0.35,
-    "equity": 0.45,
-    "other": 0.05
+  total = equity + bonds + cash
+  equity /= total
+  bonds /= total
+  cash /= total
   },
   "aggressive_alternative": {
-    "cash": 0.05,
-    "debt": 0.20,
-    "equity": 0.70,
-    "other": 0.05
+  # same as recommended
   }
 }
 ```
 
-#### 6.9 RL-Ready Architecture
+---
 
-To prepare for RL:
+## Strategy Agent (RL wrapper)
+what should next month
 
-- Define a **state vector** in a separate module:
+This agent consumes outputs from A/B/C
 
-```python
-def build_state_vector(
-    risk_capacity_score: int,
-    risk_appetite: str,
-    goals_summary: list[GoalStatusLike],
-    macro_state: str
-) -> np.ndarray:
-    ...
+### RL (signals and outputs):
+* savings rate adjustment
+* debt payoff priority
+* emergency reserve rule
+* rebalancing frequency
+
+### RL Environment:
+
+state = [
+  risk_score,
+  goal_feasibility_score,
+  current_equity_ratio,
+  monthly_savings_rate,
+  runway_months
+]
+
+### Actions:
+0 = keep strategy
+1 = increase savings by 5%
+2 = reduce savings by 5%
+3 = shift 10% to equity
+4 = shift 10% to bonds
+
+### Reward
+reward =
+    0.01 * net_worth_change
+  - 2 if runway < 3 else 0
+  + 5 if goal_on_track else -3
+
+Each episode: 5 - 10 simulated years
+Train episodes: 1000
+
+### Inputs:
+```
+risk_score
+goal_pressure
+allocation
+runway
+savings_rate
 ```
 
-- Define an **action vector** as `[cash, debt, equity, other]`.
-- The heuristic policy then becomes “the default implementation”; an RL policy can later implement:
-
-```python
-def rl_policy(state: np.ndarray) -> np.ndarray:
-    ...
+### Output
+```json
+{
+  "action": "increase_savings",
+  "delta": 5,
+  "allocation_shift": {
+      "equity": +5,
+      "cash": -5
+  }
+}
 ```
-
-Without changing how the rest of the system calls the Investment Agent.
+### Formalize
+```python
+env.step(action):
+    apply savings change
+    simulate returns
+    update balances
+    recompute agents
+    return new_state, reward
+```
 
 ---
 
-### 7. Narrator (LLM)
 
-#### 7.1 Purpose
+### 6. Narrator (LLM)
+
+#### 6.1 Purpose
 
 Take all structured outputs and turn them into a human-readable report, with:
 
@@ -397,7 +363,7 @@ Take all structured outputs and turn them into a human-readable report, with:
 - Short “what changed” paragraph.
 - Strong disclaimer.
 
-#### 7.2 Inputs
+#### 6.2 Inputs
 
 ```python
 class NarratorInput(TypedDict):
@@ -410,7 +376,7 @@ class NarratorInput(TypedDict):
 
 Backend builds this from DB models and agent outputs.
 
-#### 7.3 Output Schema
+#### 6.3 Output Schema
 
 ```python
 class NarratorOutput(TypedDict):
@@ -423,7 +389,7 @@ class NarratorOutput(TypedDict):
     markdown_body: Optional[str]
 ```
 
-#### 7.4 Prompt Design (High Level)
+#### 6.4 Prompt Design (High Level)
 
 System prompt (conceptual):
 
@@ -453,7 +419,26 @@ def generate_prognosis_report(input_data: NarratorInput) -> NarratorOutput:
 
 ---
 
-### 8. Testing and Validation
+## Pipeline execution flow
+```
+raw_user_data
+   ↓
+RiskAgent
+GoalAgent
+InvestmentAgent
+   ↓
+State Encoder
+   ↓
+StrategyAgent (RL)
+   ↓
+Narrator LLM
+   ↓
+Dashboard
+```
+
+---
+
+### 7. Testing and Validation
 
 - Unit tests for:
   - Risk Agent calculations (burn rate, runway, capacity score).
