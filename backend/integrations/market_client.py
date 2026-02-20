@@ -6,7 +6,7 @@ logger = get_logger(__name__)
 async def fetch_market_indicators() -> dict:
     """
     Fetch market indicators from external API.
-    
+
     For MVP, returns mock data. In production, integrate with:
     - Yahoo Finance API
     - Alpha Vantage
@@ -25,9 +25,9 @@ async def fetch_market_indicators() -> dict:
 async def get_macro_state() -> str:
     """
     Classify macro market state based on indicators.
-    
+
     Returns one of: 'bull', 'bear', 'recession', 'sideways'
-    
+
     Classification logic:
     - Bull: index > 200d MA, low volatility, positive momentum
     - Bear: index < 200d MA, high volatility, negative momentum
@@ -36,22 +36,24 @@ async def get_macro_state() -> str:
     """
     try:
         indicators = await fetch_market_indicators()
-        
+
         index_level = indicators.get("index_level", 0)
         index_200d_ma = indicators.get("index_200d_ma", 0)
         short_rate = indicators.get("short_rate", 0)
         inflation_rate = indicators.get("inflation_rate", 0)
         vix_level = indicators.get("vix_level", 20)
-        
+
         # Calculate key metrics
-        trend_strength = (index_level - index_200d_ma) / index_200d_ma if index_200d_ma > 0 else 0
+        trend_strength = (
+            (index_level - index_200d_ma) / index_200d_ma if index_200d_ma > 0 else 0
+        )
         is_above_ma = index_level > index_200d_ma
         high_volatility = vix_level > 25
-        
+
         # Recession signals
         high_rates = short_rate > 0.05
         high_inflation = inflation_rate > 0.04
-        
+
         # Classification logic
         if high_rates and high_inflation and not is_above_ma:
             return "recession"
@@ -61,7 +63,7 @@ async def get_macro_state() -> str:
             return "bear"
         else:
             return "sideways"
-            
+
     except Exception as e:
         logger.error(f"Failed to fetch market indicators: {e}")
         return "sideways"  # Safe default
