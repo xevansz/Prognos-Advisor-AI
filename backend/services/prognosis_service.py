@@ -150,12 +150,7 @@ async def generate_prognosis(db: AsyncSession, user_id: str) -> dict:
         for tx in transactions
     ]
     
-    risk_metrics = compute_risk_metrics(
-        transaction_dicts,
-        liquid_accounts,
-        profile.base_currency,
-    )
-    
+    # Calculate monthly income and savings first
     monthly_debits = Decimal("0")
     monthly_credits = Decimal("0")
     last_30_days = datetime.utcnow().date() - timedelta(days=30)
@@ -167,7 +162,16 @@ async def generate_prognosis(db: AsyncSession, user_id: str) -> dict:
             elif tx.type == TransactionType.CREDIT:
                 monthly_credits += tx.amount
     
+    monthly_income = float(monthly_credits)
     monthly_savings = float(monthly_credits - monthly_debits)
+    
+    # Compute risk metrics with monthly income
+    risk_metrics = compute_risk_metrics(
+        transaction_dicts,
+        liquid_accounts,
+        profile.base_currency,
+        monthly_income=monthly_income,
+    )
     
     goal_dicts = [
         {
@@ -180,19 +184,36 @@ async def generate_prognosis(db: AsyncSession, user_id: str) -> dict:
         for g in goals
     ]
     
+    # Calculate total current savings (sum of liquid accounts)
+    total_current_savings = sum(acc.get("balance", 0) for acc in liquid_accounts)
+    
     goal_evaluations = evaluate_goals(
         goal_dicts,
         monthly_savings,
         profile.base_currency,
+        current_savings=total_current_savings,
+        expected_return=0.07,  # 7% default annual return
     )
     
     macro_state = await get_macro_state()
     
+    # Calculate goal time horizon (years to nearest goal)
+    goal_time_horizon = 10  # Default
+    if goals:
+        nearest_goal_months = min(
+            max(1, (g.target_date.year - datetime.utcnow().year) * 12 + 
+                (g.target_date.month - datetime.utcnow().month))
+            for g in goals
+        )
+        goal_time_horizon = max(1, nearest_goal_months // 12)
+    
     allocation = recommend_allocation(
-        risk_metrics["risk_capacity_score"],
+        risk_metrics["risk_score"],
         profile.risk_appetite.value,
         goal_evaluations,
         macro_state,
+        age=profile.age,
+        goal_time_horizon=goal_time_horizon,
     )
     
     stmt = select(PrognosisReport).where(PrognosisReport.user_id == user_id)
