@@ -65,6 +65,10 @@ interface AppContextType {
   updateSettings: (settings: Partial<AppSettings>) => void;
   prognosisReport: string | null;
   generatePrognosis: () => void;
+  isAuthenticated: boolean;
+  login: (email: string, password: string) => void;
+  signup: (name: string, email: string, password: string) => void;
+  logout: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -157,6 +161,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const [prognosisReport, setPrognosisReport] = useState<string | null>(null);
 
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
   useEffect(() => {
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
@@ -247,6 +253,21 @@ Review and adjust your Down Payment goal timeline or increase monthly contributi
     setPrognosisReport(report);
   };
 
+  const login = (email: string, password: string) => {
+    // Mock login logic
+    setIsAuthenticated(true);
+  };
+
+  const signup = (name: string, email: string, password: string) => {
+    // Mock signup logic
+    setIsAuthenticated(true);
+  };
+
+  const logout = () => {
+    // Mock logout logic
+    setIsAuthenticated(false);
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -270,6 +291,10 @@ Review and adjust your Down Payment goal timeline or increase monthly contributi
         updateSettings,
         prognosisReport,
         generatePrognosis,
+        isAuthenticated,
+        login,
+        signup,
+        logout,
       }}
     >
       {children}
