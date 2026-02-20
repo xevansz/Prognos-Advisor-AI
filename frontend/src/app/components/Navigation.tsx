@@ -4,12 +4,12 @@ import { useState } from 'react';
 import { Button } from './ui/button';
 
 const navItems = [
-  { path: '/', label: 'Overview' },
-  { path: '/accounts', label: 'Accounts' },
-  { path: '/transactions', label: 'Transactions' },
-  { path: '/profile', label: 'Profile' },
-  { path: '/settings', label: 'Settings' },
-  { path: '/prognosis', label: 'Prognosis AI' },
+  { path: '/dashboard', label: 'Overview' },
+  { path: '/dashboard/accounts', label: 'Accounts' },
+  { path: '/dashboard/transactions', label: 'Transactions' },
+  { path: '/dashboard/profile', label: 'Profile' },
+  { path: '/dashboard/settings', label: 'Settings' },
+  { path: '/dashboard/prognosis', label: 'Prognosis AI' },
 ];
 
 export function Navigation() {
@@ -31,7 +31,7 @@ export function Navigation() {
                 <NavLink
                   key={item.path}
                   to={item.path}
-                  end={item.path === '/'}
+                  end={item.path === '/dashboard'}
                   className={({ isActive }) =>
                     `px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                       isActive
@@ -65,7 +65,7 @@ export function Navigation() {
               <NavLink
                 key={item.path}
                 to={item.path}
-                end={item.path === '/'}
+                end={item.path === '/dashboard'}
                 onClick={() => setMobileMenuOpen(false)}
                 className={({ isActive }) =>
                   `block px-4 py-2 rounded-md text-sm font-medium transition-colors ${

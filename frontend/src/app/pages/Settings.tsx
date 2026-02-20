@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -10,7 +11,8 @@ import { useApp, type RiskAppetite, type GoalStatus } from '../context/AppContex
 import { Moon, Sun, Plus, Pencil, Trash2, LogOut } from 'lucide-react';
 
 export function Settings() {
-  const { profile, updateProfile, settings, updateSettings, theme, toggleTheme, goals, addGoal, updateGoal, deleteGoal } = useApp();
+  const navigate = useNavigate();
+  const { profile, updateProfile, settings, updateSettings, theme, toggleTheme, goals, addGoal, updateGoal, deleteGoal, logout } = useApp();
   const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState<string | null>(null);
@@ -373,7 +375,8 @@ export function Settings() {
               Cancel
             </Button>
             <Button onClick={() => {
-              // Add logout logic here
+              logout();
+              navigate('/login');
               setIsLogoutDialogOpen(false);
             }}>
               Logout
