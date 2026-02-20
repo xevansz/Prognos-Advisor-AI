@@ -1,15 +1,15 @@
-import { NavLink } from 'react-router';
-import { Wallet, Menu, X } from 'lucide-react';
-import { useState } from 'react';
-import { Button } from './ui/button';
+import { NavLink } from "react-router";
+import { Wallet, Menu, X } from "lucide-react";
+import { useState } from "react";
+import { Button } from "./ui/button";
 
 const navItems = [
-  { path: '/dashboard', label: 'Overview' },
-  { path: '/dashboard/accounts', label: 'Accounts' },
-  { path: '/dashboard/transactions', label: 'Transactions' },
-  { path: '/dashboard/profile', label: 'Profile' },
-  { path: '/dashboard/settings', label: 'Settings' },
-  { path: '/dashboard/prognosis', label: 'Prognosis AI' },
+  { path: "/dashboard", label: "Overview" },
+  { path: "/dashboard/accounts", label: "Accounts" },
+  { path: "/dashboard/transactions", label: "Transactions" },
+  { path: "/dashboard/profile", label: "Profile" },
+  { path: "/dashboard/settings", label: "Settings" },
+  { path: "/dashboard/prognosis", label: "Prognosis AI" },
 ];
 
 export function Navigation() {
@@ -24,19 +24,19 @@ export function Navigation() {
               <div className="rounded-lg bg-primary p-2">
                 <Wallet className="h-5 w-5 text-primary-foreground" />
               </div>
-              <span className="text-lg font-semibold">FinanceHub</span>
+              <span className="text-lg font-semibold">Progonosis AI</span>
             </div>
             <div className="hidden md:flex items-center gap-1">
-              {navItems.map(item => (
+              {navItems.map((item) => (
                 <NavLink
                   key={item.path}
                   to={item.path}
-                  end={item.path === '/dashboard'}
+                  end={item.path === "/dashboard"}
                   className={({ isActive }) =>
                     `px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                       isActive
-                        ? 'bg-accent text-accent-foreground'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
+                        ? "bg-accent text-accent-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                     }`
                   }
                 >
@@ -45,7 +45,7 @@ export function Navigation() {
               ))}
             </div>
           </div>
-          
+
           {/* Mobile menu button */}
           <div className="md:hidden">
             <Button
@@ -53,25 +53,29 @@ export function Navigation() {
               size="sm"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {mobileMenuOpen ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Menu className="h-5 w-5" />
+              )}
             </Button>
           </div>
         </div>
-        
+
         {/* Mobile menu */}
         {mobileMenuOpen && (
           <div className="md:hidden py-4 space-y-1">
-            {navItems.map(item => (
+            {navItems.map((item) => (
               <NavLink
                 key={item.path}
                 to={item.path}
-                end={item.path === '/dashboard'}
+                end={item.path === "/dashboard"}
                 onClick={() => setMobileMenuOpen(false)}
                 className={({ isActive }) =>
                   `block px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive
-                      ? 'bg-accent text-accent-foreground'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
+                      ? "bg-accent text-accent-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                   }`
                 }
               >

@@ -1,8 +1,22 @@
-import { Link } from 'react-router';
-import { Button } from '../components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Wallet, TrendingUp, PieChart, Target, Shield, Sparkles, ArrowRight } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { Link } from "react-router";
+import { Button } from "../components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import {
+  Wallet,
+  TrendingUp,
+  PieChart,
+  Target,
+  Shield,
+  Sparkles,
+  ArrowRight,
+} from "lucide-react";
+import { useApp } from "../context/AppContext";
 
 export function Landing() {
   const { theme, toggleTheme } = useApp();
@@ -10,23 +24,26 @@ export function Landing() {
   const features = [
     {
       icon: PieChart,
-      title: 'Smart Analytics',
-      description: 'Visualize your spending patterns with beautiful charts and insights',
+      title: "Smart Analytics",
+      description:
+        "Visualize your spending patterns with beautiful charts and insights",
     },
     {
       icon: Target,
-      title: 'Goal Tracking',
-      description: 'Set and achieve your financial goals with intelligent progress tracking',
+      title: "Goal Tracking",
+      description:
+        "Set and achieve your financial goals with intelligent progress tracking",
     },
     {
       icon: TrendingUp,
-      title: 'AI Prognosis',
-      description: 'Get personalized financial recommendations powered by AI',
+      title: "AI Prognosis",
+      description: "Get personalized financial recommendations powered by AI",
     },
     {
       icon: Shield,
-      title: 'Secure & Private',
-      description: 'Your financial data is encrypted and protected at all times',
+      title: "Secure & Private",
+      description:
+        "Your financial data is encrypted and protected at all times",
     },
   ];
 
@@ -40,7 +57,7 @@ export function Landing() {
               <div className="rounded-lg bg-primary p-2">
                 <Wallet className="h-5 w-5 text-primary-foreground" />
               </div>
-              <span className="text-lg font-semibold">FinanceHub</span>
+              <span className="text-lg font-semibold">Progonosis AI</span>
             </div>
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="sm" asChild>
@@ -62,14 +79,14 @@ export function Landing() {
             Modern Finance Management
           </div>
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight max-w-4xl mx-auto">
-            Take Control of Your{' '}
+            Take Control of Your{" "}
             <span className="bg-gradient-to-r from-primary to-chart-2 bg-clip-text text-transparent">
               Financial Future
             </span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Track expenses, manage accounts, and achieve your financial goals with FinanceHub's 
-            intelligent dashboard and AI-powered insights.
+            Track expenses, manage accounts, and achieve your financial goals
+            with Progonosis AI's intelligent dashboard and AI-powered insights.
           </p>
           <div className="flex items-center justify-center gap-4 pt-4">
             <Button size="lg" asChild>
@@ -109,14 +126,18 @@ export function Landing() {
               Everything You Need to Succeed
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Powerful features designed to help you manage your finances efficiently
+              Powerful features designed to help you manage your finances
+              efficiently
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {features.map((feature, index) => {
               const Icon = feature.icon;
               return (
-                <Card key={index} className="shadow-sm hover:shadow-md transition-shadow border-border/50">
+                <Card
+                  key={index}
+                  className="shadow-sm hover:shadow-md transition-shadow border-border/50"
+                >
                   <CardHeader className="space-y-3">
                     <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
                       <Icon className="h-6 w-6 text-primary" />
@@ -143,7 +164,8 @@ export function Landing() {
               Ready to Get Started?
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Join thousands of users who are already managing their finances smarter with FinanceHub
+              Join thousands of users who are already managing their finances
+              smarter with Progonosis AI
             </p>
             <div className="flex items-center justify-center gap-4 pt-4">
               <Button size="lg" asChild>
@@ -165,10 +187,10 @@ export function Landing() {
               <div className="rounded-lg bg-primary p-1.5">
                 <Wallet className="h-4 w-4 text-primary-foreground" />
               </div>
-              <span className="font-semibold">FinanceHub</span>
+              <span className="font-semibold">Progonosis AI</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              © 2026 FinanceHub. All rights reserved.
+              © 2026 Progonosis AI. All rights reserved.
             </p>
           </div>
         </div>
