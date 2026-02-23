@@ -36,7 +36,9 @@ class FinancialEnv:
         self.goal_months_remaining = self.initial_state["goal_months_remaining"]
 
         self.savings_rate = clamp(
-            (self.monthly_income - self.monthly_expenses) / self.monthly_income,
+            (self.monthly_income - self.monthly_expenses) / self.monthly_income
+            if self.monthly_income > 0
+            else 0.0,
             0.0,
             1.0,
         )
@@ -55,13 +57,16 @@ class FinancialEnv:
             if self.monthly_income * (1 - self.savings_rate) > 0
             else 12
         )
-        stability = self.monthly_income / self.monthly_expenses
+        stability = (
+            self.monthly_income / self.monthly_expenses
+            if self.monthly_expenses > 0
+            else 2.0
+        )
         risk_score = (
             40 * min(runway / 12, 1)
             + 30 * min(stability / 2, 1)
             + 30 * self.savings_rate
         )
-        risk_score = risk_score * 100
 
         risk_metrics = {
             "runway_months": (
@@ -147,7 +152,9 @@ class FinancialEnv:
 
         net_worth_change = self.balance - previous_balance
 
-        runway = self.balance / self.monthly_expenses if self.monthly_income > 0 else 0
+        runway = (
+            self.balance / self.monthly_expenses if self.monthly_expenses > 0 else 0
+        )
 
         # goal
         months_left = max(self.goal_months_remaining, 1)

@@ -1,6 +1,6 @@
-from datetime import datetime
+from datetime import date, datetime
 
-from sqlalchemy import DateTime, ForeignKey
+from sqlalchemy import Date, DateTime, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -50,5 +50,5 @@ class PrognosisUsage(Base):
         ForeignKey("users.id", ondelete="CASCADE"),
         index=True,
     )
-    date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    date: Mapped[date] = mapped_column(Date, nullable=False)
     count: Mapped[int] = mapped_column(nullable=False, default=0)

@@ -1,6 +1,8 @@
 import random
 from pathlib import Path
 
+from tinygrad import Tensor
+
 from agents.dqn_model import DQNAgent
 from agents.rl_env import FinancialEnv
 
@@ -32,6 +34,7 @@ def train(episodes=1000, batch_size=32):
 
     Path("backend/agents/models").mkdir(parents=True, exist_ok=True)
 
+    Tensor.training = True
     agent = DQNAgent()
 
     for episode in range(episodes):

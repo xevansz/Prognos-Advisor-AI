@@ -119,7 +119,7 @@ def recommend_allocation(
         # More aggressive allocation despite low capacity (with warning)
         agg_equity = min(75, equity_pct + 15)
         agg_cash = 5
-        agg_debt = 95 - agg_equity - agg_cash - 5
+        agg_debt = max(0, 100 - agg_equity - agg_cash - 5)
 
         aggressive_alternative = {
             "equity": round(agg_equity / 100, 3),

@@ -1,5 +1,5 @@
 from tinygrad import Tensor, nn
-from tinygrad.nn.state import get_state_dict, load_state_dict
+from tinygrad.nn.state import get_state_dict, get_parameters, load_state_dict
 import random
 from collections import deque
 import numpy as np
@@ -17,11 +17,7 @@ class QNetwork:
         return self.l3(x)
 
     def parameters(self):
-        return [
-            *self.l1.parameters(),
-            *self.l2.parameters(),
-            *self.l3.parameters(),
-        ]
+        return get_parameters(self)
 
 
 class ReplayBuffer:
@@ -60,9 +56,9 @@ class DQNAgent:
 
         self.replay_buffer = ReplayBuffer()
 
-        self.replay_buffer = ReplayBuffer()
+        self.optimizer = nn.optim.Adam(get_parameters(self.network), lr=self.lr)
 
-    # Action selectiohn
+    # Action selection
     def select_action(self, state):
         if random.random() < self.epsilon:
             return random.randint(0, 4)
@@ -96,14 +92,13 @@ class DQNAgent:
 
         target_q = rewards + (1 - dones) * self.gamma * next_q_values
 
-        # gather Q values for taken actions
-        q_selected = q_values[range(batch_size), actions]
+        # gather Q values for taken actions (tinygrad doesn't support advanced indexing)
+        action_mask = Tensor.eye(5)[Tensor(actions)]
+        q_selected = (q_values * action_mask).sum(axis=1)
 
         loss = (q_selected - target_q).square().mean()
 
         # backprop
-        loss.backward()
-
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
