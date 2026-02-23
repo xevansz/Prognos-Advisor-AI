@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from agents.goal_agent import evaluate_goals
 from agents.investment_agent import recommend_allocation
 from agents.risk_agent import compute_risk_metrics
+from agents.strategy_agent import StrategyAgent
 from core.config import settings
 from core.logging import get_logger
 from integrations.llm_client import generate_prognosis_report
@@ -218,6 +219,13 @@ async def generate_prognosis(db: AsyncSession, user_id: str) -> dict:
         goal_time_horizon=goal_time_horizon,
     )
 
+    # Run strategy agent (RL or heuristic fallback)
+    strategy_agent = StrategyAgent()
+    savings_rate = risk_metrics.get("savings_ratio", 0.0)
+    strategy = strategy_agent.get_strategy(
+        risk_metrics, goal_evaluations, allocation, savings_rate
+    )
+
     stmt = select(PrognosisReport).where(PrognosisReport.user_id == user_id)
     result = await db.execute(stmt)
     previous_report = result.scalar_one_or_none()
@@ -231,6 +239,7 @@ async def generate_prognosis(db: AsyncSession, user_id: str) -> dict:
         "risk": risk_metrics,
         "goals": goal_evaluations,
         "allocation": allocation,
+        "strategy": strategy,
         "previous_report": previous_report.report_json if previous_report else None,
     }
 
