@@ -15,12 +15,19 @@ class PrognosisReportOut(BaseModel):
 class RiskMetrics(BaseModel):
     burn_rate: float
     runway_months: float
-    risk_capacity_score: int
+    stability_ratio: float
+    savings_ratio: float
+    risk_score: int
+    risk_label: str
 
 
 class GoalEvaluation(BaseModel):
     goal_id: str
+    goal_name: str
     status: str
+    projected_value: float
+    success_probability: float
+    goal_pressure: float
     required_monthly_savings: float
     actual_monthly_savings: float
 
