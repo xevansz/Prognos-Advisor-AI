@@ -1,141 +1,140 @@
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  /* Jellybeans Theme - Light Mode */
-  --font-size: 16px;
+  /* Base */
 
-  /* Main colors - Clean, vibrant but balanced */
-  --background: #fafbfc;
-  --foreground: #1a1f2e;
+  --background: #f6f4ed; /* warm silk */
+  --foreground: #3e3e4e; /* refined ink */
+
   --card: #ffffff;
-  --card-foreground: #1a1f2e;
+  --card-foreground: #3e3e4e;
+
   --popover: #ffffff;
-  --popover-foreground: #1a1f2e;
+  --popover-foreground: #3e3e4e;
 
-  /* Primary - Vibrant blue */
-  --primary: #2563eb;
-  --primary-foreground: #ffffff;
+  /* Primary – softened Kanagawa teal */
 
-  /* Secondary - Soft purple */
-  --secondary: #f3f4f6;
-  --secondary-foreground: #1a1f2e;
+  --primary: #5a7785;
+  --primary-foreground: #f8f9fa;
 
-  /* Muted */
-  --muted: #f3f4f6;
-  --muted-foreground: #6b7280;
+  /* Secondary – muted indigo */
 
-  /* Accent - Bright teal */
-  --accent: #f0f9ff;
-  --accent-foreground: #0369a1;
+  --secondary: #e6e3d7;
+  --secondary-foreground: #545464;
 
-  /* Destructive */
-  --destructive: #dc2626;
-  --destructive-foreground: #ffffff;
+  /* Muted layers */
 
-  /* Borders */
-  --border: #e5e7eb;
-  --input: #e5e7eb;
+  --muted: #ece9de;
+  --muted-foreground: #7a7a85;
+
+  /* Accent – cool mist */
+
+  --accent: #dce3e8;
+  --accent-foreground: #4c5c68;
+
+  /* Status */
+
+  --destructive: #c4746e;
+  --destructive-foreground: #fff6f5;
+
+  --success: #6f894e;
+  --success-foreground: #f4f8f1;
+
+  --warning: #c4b28a;
+  --warning-foreground: #3e3e4e;
+
+  --info: #7e9cd8;
+  --info-foreground: #f4f6fc;
+
+  /* Structure */
+
+  --border: #e2dfd2;
+  --input: #e2dfd2;
   --input-background: #ffffff;
-  --switch-background: #d1d5db;
+  --switch-background: #cfcbb8;
 
-  /* Ring */
-  --ring: #2563eb;
+  --ring: #5a7785;
 
-  /* Chart colors - Vibrant Jellybeans palette */
-  --chart-1: #3b82f6; /* Blue */
-  --chart-2: #10b981; /* Green */
-  --chart-3: #f59e0b; /* Amber */
-  --chart-4: #8b5cf6; /* Purple */
-  --chart-5: #ec4899; /* Pink */
+  /* Charts (harmonized with dark theme) */
 
-  /* Financial status colors */
-  --success: #10b981;
-  --success-foreground: #ffffff;
-  --warning: #f59e0b;
-  --warning-foreground: #ffffff;
-  --info: #3b82f6;
-  --info-foreground: #ffffff;
+  --chart-1: #7e9cd8;
+  --chart-2: #6f894e;
+  --chart-3: #c4b28a;
+  --chart-4: #5a7785;
+  --chart-5: #938056;
+
+  /* Sidebar */
+
+  --sidebar: #f1eee4;
+  --sidebar-foreground: #3e3e4e;
+  --sidebar-primary: #5a7785;
+  --sidebar-primary-foreground: #f8f9fa;
+  --sidebar-accent: #e6e3d7;
+  --sidebar-accent-foreground: #545464;
+  --sidebar-border: #ddd9c8;
+  --sidebar-ring: #5a7785;
 
   --font-weight-medium: 500;
   --font-weight-normal: 400;
   --radius: 0.75rem;
-
-  --sidebar: #ffffff;
-  --sidebar-foreground: #1a1f2e;
-  --sidebar-primary: #2563eb;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f3f4f6;
-  --sidebar-accent-foreground: #1a1f2e;
-  --sidebar-border: #e5e7eb;
-  --sidebar-ring: #2563eb;
 }
 
 .dark {
-  /* Kanagawa Theme - Dark Mode */
+  /* Kanagawa Dark Theme */
 
-  /* Main colors - Deep indigo with muted tones */
-  --background: #1f1f28;
-  --foreground: #dcd7ba;
-  --card: #2a2a37;
-  --card-foreground: #dcd7ba;
-  --popover: #2a2a37;
-  --popover-foreground: #dcd7ba;
+  --background: #181820;
+  --foreground: #c5c9c5;
+  --card: #1f1f28;
+  --card-foreground: #c5c9c5;
+  --popover: #1f1f28;
+  --popover-foreground: #c5c9c5;
 
-  /* Primary - Muted purple */
-  --primary: #957fb8;
-  --primary-foreground: #1f1f28;
+  --primary: #7aa89f;
+  --primary-foreground: #181820;
 
-  /* Secondary */
-  --secondary: #363646;
-  --secondary-foreground: #dcd7ba;
+  --secondary: #223249;
+  --secondary-foreground: #c5c9c5;
 
-  /* Muted */
-  --muted: #363646;
+  --muted: #2a2a37;
   --muted-foreground: #727169;
 
-  /* Accent - Soft teal */
-  --accent: #2d4f67;
-  --accent-foreground: #7fb4ca;
+  --accent: #223249;
+  --accent-foreground: #7e9cd8;
 
-  /* Destructive - Warm red */
-  --destructive: #c34043;
-  --destructive-foreground: #dcd7ba;
+  --destructive: #c4746e;
+  --destructive-foreground: #c5c9c5;
 
-  /* Borders */
-  --border: #363646;
-  --input: #363646;
-  --input-background: #2a2a37;
-  --switch-background: #54546d;
+  --border: #2a2a37;
+  --input: #2a2a37;
+  --input-background: #1f1f28;
+  --switch-background: #3a3a4a;
 
-  /* Ring */
-  --ring: #957fb8;
+  --ring: #7aa89f;
 
-  /* Chart colors - Kanagawa palette */
-  --chart-1: #7e9cd8; /* Soft blue */
-  --chart-2: #76946a; /* Soft green */
-  --chart-3: #ffa066; /* Warm orange */
-  --chart-4: #957fb8; /* Muted purple */
-  --chart-5: #dca561; /* Warm yellow */
+  --chart-1: #7e9cd8;
+  --chart-2: #87a987;
+  --chart-3: #c4b28a;
+  --chart-4: #7aa89f;
+  --chart-5: #938056;
 
-  /* Financial status colors */
-  --success: #76946a;
-  --success-foreground: #1f1f28;
-  --warning: #dca561;
-  --warning-foreground: #1f1f28;
-  --info: #7fb4ca;
-  --info-foreground: #1f1f28;
+  --success: #87a987;
+  --success-foreground: #181820;
+  --warning: #c4b28a;
+  --warning-foreground: #181820;
+  --info: #7e9cd8;
+  --info-foreground: #181820;
 
   --font-weight-medium: 500;
   --font-weight-normal: 400;
 
   --sidebar: #1f1f28;
-  --sidebar-foreground: #dcd7ba;
-  --sidebar-primary: #957fb8;
-  --sidebar-primary-foreground: #1f1f28;
-  --sidebar-accent: #363646;
-  --sidebar-accent-foreground: #dcd7ba;
-  --sidebar-border: #363646;
-  --sidebar-ring: #957fb8;
+  --sidebar-foreground: #c5c9c5;
+  --sidebar-primary: #7aa89f;
+  --sidebar-primary-foreground: #181820;
+  --sidebar-accent: #223249;
+  --sidebar-accent-foreground: #c5c9c5;
+  --sidebar-border: #2a2a37;
+  --sidebar-ring: #7aa89f;
 }
 
 @theme inline {

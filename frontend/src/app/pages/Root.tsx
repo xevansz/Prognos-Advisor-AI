@@ -1,7 +1,14 @@
-import { Outlet } from 'react-router';
-import { Navigation } from '../components/Navigation';
+import { Outlet, Navigate } from "react-router";
+import { Navigation } from "../components/Navigation";
+import { useApp } from "../context/AppContext";
 
 export function Root() {
+  const { isAuthenticated } = useApp();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />

@@ -1,22 +1,50 @@
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Label } from '../components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
-import { useApp } from '../context/AppContext';
-import { Plus, Trash2 } from 'lucide-react';
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../components/ui/table";
+import { useApp } from "../context/AppContext";
+import { CURRENCIES, formatCurrency } from "../constants";
+import { Plus, Trash2 } from "lucide-react";
 
 export function Accounts() {
-  const { accounts, addAccount, deleteAccount } = useApp();
+  const { accounts, addAccount, deleteAccount, settings, profile } = useApp();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [accountForm, setAccountForm] = useState({
-    name: '',
-    type: 'Checking',
-    currency: 'USD',
-    balance: '',
+    name: "",
+    type: "Checking",
+    currency: "INR",
+    balance: "",
   });
 
   const handleSubmit = () => {
@@ -27,10 +55,10 @@ export function Accounts() {
       balance: parseFloat(accountForm.balance),
     });
     setAccountForm({
-      name: '',
-      type: 'Checking',
-      currency: 'USD',
-      balance: '',
+      name: "",
+      type: "Checking",
+      currency: "USD",
+      balance: "",
     });
     setIsDialogOpen(false);
   };
@@ -42,7 +70,9 @@ export function Accounts() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="mb-2">Accounts</h1>
-          <p className="text-muted-foreground">Manage your financial accounts</p>
+          <p className="text-muted-foreground">
+            Manage your financial accounts
+          </p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
@@ -64,14 +94,21 @@ export function Accounts() {
                 <Input
                   id="accountName"
                   value={accountForm.name}
-                  onChange={(e) => setAccountForm({ ...accountForm, name: e.target.value })}
+                  onChange={(e) =>
+                    setAccountForm({ ...accountForm, name: e.target.value })
+                  }
                   placeholder="e.g., Primary Checking"
                 />
               </div>
               <div className="grid gap-4 grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="accountType">Account Type</Label>
-                  <Select value={accountForm.type} onValueChange={(value) => setAccountForm({ ...accountForm, type: value })}>
+                  <Select
+                    value={accountForm.type}
+                    onValueChange={(value) =>
+                      setAccountForm({ ...accountForm, type: value })
+                    }
+                  >
                     <SelectTrigger id="accountType">
                       <SelectValue />
                     </SelectTrigger>
@@ -86,16 +123,21 @@ export function Accounts() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="accountCurrency">Currency</Label>
-                  <Select value={accountForm.currency} onValueChange={(value) => setAccountForm({ ...accountForm, currency: value })}>
+                  <Select
+                    value={accountForm.currency}
+                    onValueChange={(value) =>
+                      setAccountForm({ ...accountForm, currency: value })
+                    }
+                  >
                     <SelectTrigger id="accountCurrency">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="USD">USD</SelectItem>
-                      <SelectItem value="EUR">EUR</SelectItem>
-                      <SelectItem value="GBP">GBP</SelectItem>
-                      <SelectItem value="JPY">JPY</SelectItem>
-                      <SelectItem value="AUD">AUD</SelectItem>
+                    <SelectContent className="max-h-60">
+                      {CURRENCIES.map((c) => (
+                        <SelectItem key={c.code} value={c.code}>
+                          {c.code} ({c.symbol})
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -107,7 +149,9 @@ export function Accounts() {
                   type="number"
                   step="0.01"
                   value={accountForm.balance}
-                  onChange={(e) => setAccountForm({ ...accountForm, balance: e.target.value })}
+                  onChange={(e) =>
+                    setAccountForm({ ...accountForm, balance: e.target.value })
+                  }
                   placeholder="0.00"
                 />
               </div>
@@ -116,9 +160,7 @@ export function Accounts() {
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleSubmit}>
-                Add Account
-              </Button>
+              <Button onClick={handleSubmit}>Add Account</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -131,7 +173,11 @@ export function Accounts() {
         </CardHeader>
         <CardContent>
           <div className="text-3xl font-bold">
-            ${totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {formatCurrency(
+              totalBalance,
+              profile.baseCurrency,
+              settings.currencyFormat,
+            )}
           </div>
         </CardContent>
       </Card>
@@ -139,7 +185,9 @@ export function Accounts() {
       <Card className="shadow-sm">
         <CardHeader>
           <CardTitle>Your Accounts</CardTitle>
-          <CardDescription>View and manage all your financial accounts</CardDescription>
+          <CardDescription>
+            View and manage all your financial accounts
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {/* Desktop table view */}
@@ -157,23 +205,27 @@ export function Accounts() {
               <TableBody>
                 {accounts.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                    <TableCell
+                      colSpan={5}
+                      className="text-center text-muted-foreground py-8"
+                    >
                       No accounts yet. Add your first account to get started.
                     </TableCell>
                   </TableRow>
                 ) : (
                   accounts.map((account) => (
                     <TableRow key={account.id}>
-                      <TableCell className="font-medium">{account.name}</TableCell>
+                      <TableCell className="font-medium">
+                        {account.name}
+                      </TableCell>
                       <TableCell>{account.type}</TableCell>
                       <TableCell>{account.currency}</TableCell>
                       <TableCell className="text-right font-mono">
-                        {account.currency === 'USD' && '$'}
-                        {account.currency === 'EUR' && '€'}
-                        {account.currency === 'GBP' && '£'}
-                        {account.currency === 'JPY' && '¥'}
-                        {account.currency === 'AUD' && 'A$'}
-                        {account.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        {formatCurrency(
+                          account.balance,
+                          account.currency,
+                          settings.currencyFormat,
+                        )}
                       </TableCell>
                       <TableCell>
                         <Button
@@ -199,11 +251,16 @@ export function Accounts() {
               </div>
             ) : (
               accounts.map((account) => (
-                <div key={account.id} className="border rounded-lg p-4 space-y-2">
+                <div
+                  key={account.id}
+                  className="border rounded-lg p-4 space-y-2"
+                >
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="font-medium">{account.name}</div>
-                      <div className="text-sm text-muted-foreground">{account.type} • {account.currency}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {account.type} • {account.currency}
+                      </div>
                     </div>
                     <Button
                       variant="ghost"
@@ -214,12 +271,11 @@ export function Accounts() {
                     </Button>
                   </div>
                   <div className="text-xl font-bold font-mono">
-                    {account.currency === 'USD' && '$'}
-                    {account.currency === 'EUR' && '€'}
-                    {account.currency === 'GBP' && '£'}
-                    {account.currency === 'JPY' && '¥'}
-                    {account.currency === 'AUD' && 'A$'}
-                    {account.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    {formatCurrency(
+                      account.balance,
+                      account.currency,
+                      settings.currencyFormat,
+                    )}
                   </div>
                 </div>
               ))

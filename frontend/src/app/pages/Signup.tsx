@@ -22,11 +22,25 @@ export function Signup() {
     password: "",
     confirmPassword: "",
   });
+  const [error, setError] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    if (!formData.name.trim()) {
+      setError("Please enter your full name.");
+      return;
+    }
+    if (!formData.email.trim()) {
+      setError("Please enter your email.");
+      return;
+    }
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match");
+      setError("Passwords do not match.");
       return;
     }
     signup(formData.name, formData.email, formData.password);
@@ -43,15 +57,12 @@ export function Signup() {
               <div className="rounded-lg bg-primary p-2">
                 <Wallet className="h-5 w-5 text-primary-foreground" />
               </div>
-              <span className="text-lg font-semibold">Progonosis AI</span>
+              <span className="text-lg font-semibold">Prognosis AI</span>
             </Link>
             <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground">
-                Already have an account?
+              <span className="text-sm tracking-wide text-muted-foreground">
+                Live • Work • Build
               </span>
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/login">Sign In</Link>
-              </Button>
             </div>
           </div>
         </div>
@@ -123,6 +134,7 @@ export function Signup() {
                   required
                 />
               </div>
+              {error && <p className="text-sm text-destructive">{error}</p>}
               <Button type="submit" className="w-full" size="lg">
                 Create Account
               </Button>
