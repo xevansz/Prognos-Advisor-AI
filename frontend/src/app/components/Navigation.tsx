@@ -61,7 +61,7 @@ export function Navigation() {
               }
             >
               <Brain className="h-4 w-4" />
-              Prognosis Log
+              Prognosis Report
             </NavLink>
 
             <div className="md:hidden">
@@ -112,7 +112,7 @@ export function Navigation() {
               }
             >
               <Brain className="h-4 w-4" />
-              Prognosis Log
+              Prognosis Report
             </NavLink>
           </div>
         )}

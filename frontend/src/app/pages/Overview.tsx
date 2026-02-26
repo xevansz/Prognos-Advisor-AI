@@ -19,10 +19,15 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
 } from "recharts";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
+  type ChartConfig,
+} from "../components/ui/chart";
 
 export function Overview() {
   const { accounts, transactions, profile, settings } = useApp();
@@ -58,12 +63,21 @@ export function Overview() {
   }));
 
   const COLORS = [
-    "hsl(var(--chart-1))",
-    "hsl(var(--chart-2))",
-    "hsl(var(--chart-3))",
-    "hsl(var(--chart-4))",
-    "hsl(var(--chart-5))",
+    "var(--chart-1)",
+    "var(--chart-2)",
+    "var(--chart-3)",
+    "var(--chart-4)",
+    "var(--chart-5)",
   ];
+
+  const lineChartConfig: ChartConfig = {
+    income: { label: "Income", color: "var(--chart-2)" },
+    spending: { label: "Spending", color: "var(--chart-3)" },
+  };
+
+  const assetChartConfig: ChartConfig = Object.fromEntries(
+    assetData.map((d) => [d.name, { label: d.name }]),
+  );
 
   const renderPieLabel = ({
     cx,
@@ -88,7 +102,7 @@ export function Overview() {
       <text
         x={x}
         y={y}
-        fill="hsl(var(--foreground))"
+        fill="var(--foreground)"
         textAnchor={x > cx ? "start" : "end"}
         dominantBaseline="central"
         fontSize={11}
@@ -139,10 +153,10 @@ export function Overview() {
             <CardTitle className="text-sm font-medium">
               Monthly Income
             </CardTitle>
-            <TrendingUp className="h-4 w-4 text-[hsl(var(--success))]" />
+            <TrendingUp className="h-4 w-4 text-[var(--success)]" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl sm:text-3xl font-bold text-[hsl(var(--success))]">
+            <div className="text-2xl sm:text-3xl font-bold text-[var(--success)]">
               {formatCurrency(
                 totalIncome,
                 profile.baseCurrency,
@@ -158,10 +172,10 @@ export function Overview() {
             <CardTitle className="text-sm font-medium">
               Monthly Expenses
             </CardTitle>
-            <TrendingDown className="h-4 w-4 text-[hsl(var(--destructive))]" />
+            <TrendingDown className="h-4 w-4 text-[var(--destructive)]" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl sm:text-3xl font-bold text-[hsl(var(--destructive))]">
+            <div className="text-2xl sm:text-3xl font-bold text-[var(--destructive)]">
               {formatCurrency(
                 totalExpenses,
                 profile.baseCurrency,
@@ -183,47 +197,32 @@ export function Overview() {
             <CardDescription>Last 7 months trend</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={monthlyData}>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="hsl(var(--border))"
-                  />
-                  <XAxis
-                    dataKey="month"
-                    stroke="hsl(var(--muted-foreground))"
-                    fontSize={12}
-                  />
-                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
-                      color: "hsl(var(--foreground))",
-                    }}
-                    labelStyle={{ color: "hsl(var(--foreground))" }}
-                    itemStyle={{ color: "hsl(var(--foreground))" }}
-                  />
-                  <Legend wrapperStyle={{ color: "hsl(var(--foreground))" }} />
-                  <Line
-                    type="monotone"
-                    dataKey="income"
-                    stroke="hsl(var(--chart-2))"
-                    strokeWidth={2}
-                    name="Income"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="spending"
-                    stroke="hsl(var(--chart-3))"
-                    strokeWidth={2}
-                    name="Spending"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+            <ChartContainer
+              config={lineChartConfig}
+              className="h-[300px] w-full"
+            >
+              <LineChart data={monthlyData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <ChartLegend content={<ChartLegendContent />} />
+                <Line
+                  type="monotone"
+                  dataKey="income"
+                  stroke="var(--chart-2)"
+                  strokeWidth={2}
+                  name="Income"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="spending"
+                  stroke="var(--chart-3)"
+                  strokeWidth={2}
+                  name="Spending"
+                />
+              </LineChart>
+            </ChartContainer>
           </CardContent>
         </Card>
 
@@ -233,46 +232,51 @@ export function Overview() {
             <CardDescription>Current allocation</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={assetData}
-                    cx="50%"
-                    cy="50%"
-                    label={renderPieLabel}
-                    labelLine={{ stroke: "hsl(var(--muted-foreground))" }}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {assetData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={COLORS[index % COLORS.length]}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
-                      color: "hsl(var(--foreground))",
-                    }}
-                    labelStyle={{ color: "hsl(var(--foreground))" }}
-                    itemStyle={{ color: "hsl(var(--foreground))" }}
-                    formatter={(value: number) =>
-                      formatCurrency(
-                        value,
-                        profile.baseCurrency,
-                        settings.currencyFormat,
-                      )
-                    }
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
+            <ChartContainer
+              config={assetChartConfig}
+              className="h-[300px] w-full"
+            >
+              <PieChart>
+                <Pie
+                  data={assetData}
+                  cx="50%"
+                  cy="50%"
+                  label={renderPieLabel}
+                  labelLine={{ stroke: "var(--muted-foreground)" }}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {assetData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+                <ChartTooltip
+                  content={
+                    <ChartTooltipContent
+                      nameKey="name"
+                      formatter={(value) => {
+                        const num =
+                          typeof value === "number"
+                            ? value
+                            : Array.isArray(value)
+                              ? parseFloat(String(value[0])) || 0
+                              : parseFloat(String(value)) || 0;
+                        return formatCurrency(
+                          num,
+                          profile.baseCurrency,
+                          settings.currencyFormat,
+                        );
+                      }}
+                    />
+                  }
+                />
+                <ChartLegend content={<ChartLegendContent nameKey="name" />} />
+              </PieChart>
+            </ChartContainer>
           </CardContent>
         </Card>
       </div>
@@ -299,8 +303,8 @@ export function Overview() {
                 <div
                   className={`text-sm font-medium ${
                     transaction.type === "Income"
-                      ? "text-[hsl(var(--success))]"
-                      : "text-[hsl(var(--destructive))]"
+                      ? "text-[var(--success)]"
+                      : "text-[var(--destructive)]"
                   }`}
                 >
                   {transaction.type === "Income" ? "+" : "-"}{" "}
