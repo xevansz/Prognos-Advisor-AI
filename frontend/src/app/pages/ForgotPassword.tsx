@@ -1,37 +1,41 @@
-import { useState } from 'react';
-import { Link } from 'react-router';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Label } from '../components/ui/label';
+import { useState } from "react";
+import { Link } from "react-router";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '../components/ui/card';
-import { Wallet, ArrowLeft, Mail, KeyRound, CheckCircle } from 'lucide-react';
+} from "../components/ui/card";
+import { Wallet, ArrowLeft, Mail, KeyRound, CheckCircle } from "lucide-react";
+import { ThemeToggle } from "../components/ThemeToggle";
 
-type Step = 'email' | 'otp' | 'reset' | 'done';
+type Step = "email" | "otp" | "reset" | "done";
 
 export function ForgotPassword() {
-  const [step, setStep] = useState<Step>('email');
-  const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState(['', '', '', '', '', '']);
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
+  const [step, setStep] = useState<Step>("email");
+  const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    if (!email) { setError('Please enter your email address.'); return; }
+    setError("");
+    if (!email) {
+      setError("Please enter your email address.");
+      return;
+    }
     setIsLoading(true);
     // Mock: simulate sending OTP
-    await new Promise(r => setTimeout(r, 1000));
+    await new Promise((r) => setTimeout(r, 1000));
     setIsLoading(false);
-    setStep('otp');
+    setStep("otp");
   };
 
   const handleOtpChange = (index: number, value: string) => {
@@ -46,7 +50,7 @@ export function ForgotPassword() {
   };
 
   const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
       const prevInput = document.getElementById(`otp-${index - 1}`);
       prevInput?.focus();
     }
@@ -54,36 +58,48 @@ export function ForgotPassword() {
 
   const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    const code = otp.join('');
-    if (code.length !== 6) { setError('Please enter the complete 6-digit code.'); return; }
+    setError("");
+    const code = otp.join("");
+    if (code.length !== 6) {
+      setError("Please enter the complete 6-digit code.");
+      return;
+    }
     setIsLoading(true);
     // Mock: simulate OTP verification (accept any 6-digit code)
-    await new Promise(r => setTimeout(r, 800));
+    await new Promise((r) => setTimeout(r, 800));
     setIsLoading(false);
-    setStep('reset');
+    setStep("reset");
   };
 
   const handleResendOtp = async () => {
-    setError('');
-    setOtp(['', '', '', '', '', '']);
+    setError("");
+    setOtp(["", "", "", "", "", ""]);
     setIsLoading(true);
-    await new Promise(r => setTimeout(r, 800));
+    await new Promise((r) => setTimeout(r, 800));
     setIsLoading(false);
-    document.getElementById('otp-0')?.focus();
+    document.getElementById("otp-0")?.focus();
   };
 
   const handleResetSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    if (!newPassword) { setError('Please enter a new password.'); return; }
-    if (newPassword.length < 8) { setError('Password must be at least 8 characters.'); return; }
-    if (newPassword !== confirmPassword) { setError('Passwords do not match.'); return; }
+    setError("");
+    if (!newPassword) {
+      setError("Please enter a new password.");
+      return;
+    }
+    if (newPassword.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
     setIsLoading(true);
     // Mock: simulate password reset
-    await new Promise(r => setTimeout(r, 1000));
+    await new Promise((r) => setTimeout(r, 1000));
     setIsLoading(false);
-    setStep('done');
+    setStep("done");
   };
 
   return (
@@ -97,21 +113,20 @@ export function ForgotPassword() {
               </div>
               <span className="text-lg font-semibold">Prognosis AI</span>
             </Link>
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/login" className="gap-2 flex items-center">
-                <ArrowLeft className="h-4 w-4" />
-                Back to Login
-              </Link>
-            </Button>
+            <div className="flex items-center gap-3">
+              <ThemeToggle />
+              <span className="text-sm tracking-wide text-muted-foreground">
+                Live • Work • Build
+              </span>
+            </div>
           </div>
         </div>
       </nav>
 
       <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
         <Card className="w-full max-w-md shadow-lg">
-
           {/* Step 1: Email */}
-          {step === 'email' && (
+          {step === "email" && (
             <>
               <CardHeader className="space-y-1 text-center">
                 <div className="flex justify-center mb-2">
@@ -121,7 +136,8 @@ export function ForgotPassword() {
                 </div>
                 <CardTitle className="text-2xl">Forgot Password</CardTitle>
                 <CardDescription>
-                  Enter your email and we'll send you a 6-digit verification code
+                  Enter your email and we'll send you a 6-digit verification
+                  code
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -137,15 +153,21 @@ export function ForgotPassword() {
                       required
                     />
                   </div>
-                  {error && (
-                    <p className="text-sm text-destructive">{error}</p>
-                  )}
-                  <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
-                    {isLoading ? 'Sending...' : 'Send Verification Code'}
+                  {error && <p className="text-sm text-destructive">{error}</p>}
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    size="lg"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Sending..." : "Send Verification Code"}
                   </Button>
                   <p className="text-center text-sm text-muted-foreground">
-                    Remember your password?{' '}
-                    <Link to="/login" className="text-primary font-medium hover:underline">
+                    Remember your password?{" "}
+                    <Link
+                      to="/login"
+                      className="text-primary font-medium hover:underline"
+                    >
                       Sign in
                     </Link>
                   </p>
@@ -155,7 +177,7 @@ export function ForgotPassword() {
           )}
 
           {/* Step 2: OTP */}
-          {step === 'otp' && (
+          {step === "otp" && (
             <>
               <CardHeader className="space-y-1 text-center">
                 <div className="flex justify-center mb-2">
@@ -165,13 +187,16 @@ export function ForgotPassword() {
                 </div>
                 <CardTitle className="text-2xl">Check Your Email</CardTitle>
                 <CardDescription>
-                  We sent a 6-digit code to <span className="font-medium text-foreground">{email}</span>
+                  We sent a 6-digit code to{" "}
+                  <span className="font-medium text-foreground">{email}</span>
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleOtpSubmit} className="space-y-6">
                   <div className="space-y-3">
-                    <Label className="text-center block">Verification Code</Label>
+                    <Label className="text-center block">
+                      Verification Code
+                    </Label>
                     <div className="flex gap-2 justify-center">
                       {otp.map((digit, index) => (
                         <Input
@@ -181,7 +206,9 @@ export function ForgotPassword() {
                           inputMode="numeric"
                           maxLength={1}
                           value={digit}
-                          onChange={(e) => handleOtpChange(index, e.target.value)}
+                          onChange={(e) =>
+                            handleOtpChange(index, e.target.value)
+                          }
                           onKeyDown={(e) => handleOtpKeyDown(index, e)}
                           className="w-11 h-11 text-center text-lg font-semibold p-0"
                           autoFocus={index === 0}
@@ -190,13 +217,22 @@ export function ForgotPassword() {
                     </div>
                   </div>
                   {error && (
-                    <p className="text-sm text-destructive text-center">{error}</p>
+                    <p className="text-sm text-destructive text-center">
+                      {error}
+                    </p>
                   )}
-                  <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
-                    {isLoading ? 'Verifying...' : 'Verify Code'}
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    size="lg"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Verifying..." : "Verify Code"}
                   </Button>
                   <div className="text-center space-y-2">
-                    <p className="text-sm text-muted-foreground">Didn't receive the code?</p>
+                    <p className="text-sm text-muted-foreground">
+                      Didn't receive the code?
+                    </p>
                     <Button
                       type="button"
                       variant="ghost"
@@ -210,7 +246,10 @@ export function ForgotPassword() {
                   <p className="text-center text-sm text-muted-foreground">
                     <button
                       type="button"
-                      onClick={() => { setStep('email'); setError(''); }}
+                      onClick={() => {
+                        setStep("email");
+                        setError("");
+                      }}
                       className="text-primary hover:underline"
                     >
                       Use a different email
@@ -222,7 +261,7 @@ export function ForgotPassword() {
           )}
 
           {/* Step 3: New Password */}
-          {step === 'reset' && (
+          {step === "reset" && (
             <>
               <CardHeader className="space-y-1 text-center">
                 <div className="flex justify-center mb-2">
@@ -259,11 +298,14 @@ export function ForgotPassword() {
                       required
                     />
                   </div>
-                  {error && (
-                    <p className="text-sm text-destructive">{error}</p>
-                  )}
-                  <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
-                    {isLoading ? 'Updating...' : 'Update Password'}
+                  {error && <p className="text-sm text-destructive">{error}</p>}
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    size="lg"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Updating..." : "Update Password"}
                   </Button>
                 </form>
               </CardContent>
@@ -271,7 +313,7 @@ export function ForgotPassword() {
           )}
 
           {/* Step 4: Done */}
-          {step === 'done' && (
+          {step === "done" && (
             <>
               <CardHeader className="space-y-1 text-center">
                 <div className="flex justify-center mb-2">
@@ -281,7 +323,8 @@ export function ForgotPassword() {
                 </div>
                 <CardTitle className="text-2xl">Password Updated</CardTitle>
                 <CardDescription>
-                  Your password has been successfully reset. You can now sign in.
+                  Your password has been successfully reset. You can now sign
+                  in.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -291,7 +334,6 @@ export function ForgotPassword() {
               </CardContent>
             </>
           )}
-
         </Card>
       </div>
     </div>

@@ -12,6 +12,7 @@ import {
 } from "../components/ui/card";
 import { Wallet } from "lucide-react";
 import { useApp } from "../context/AppContext";
+import { ThemeToggle } from "../components/ThemeToggle";
 
 export function Login() {
   const navigate = useNavigate();
@@ -43,6 +44,7 @@ export function Login() {
               <span className="text-lg font-semibold">Prognosis AI</span>
             </Link>
             <div className="flex items-center gap-3">
+              <ThemeToggle />
               <span className="text-sm tracking-wide text-muted-foreground">
                 Live • Work • Build
               </span>

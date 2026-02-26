@@ -2,6 +2,7 @@ import { NavLink, Link } from "react-router";
 import { Wallet, Menu, X, Brain } from "lucide-react";
 import { useState } from "react";
 import { Button } from "./ui/button";
+import { ThemeToggle } from "./ThemeToggle";
 
 const pageNavItems = [
   { path: "/dashboard", label: "Overview" },
@@ -48,8 +49,9 @@ export function Navigation() {
             </div>
           </div>
 
-          {/* Right: Prognosis AI link + mobile toggle */}
+          {/* Right: Prognosis AI link + theme toggle + mobile toggle */}
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <NavLink
               to="/dashboard/prognosis"
               className={({ isActive }) =>
@@ -100,6 +102,7 @@ export function Navigation() {
                 {item.label}
               </NavLink>
             ))}
+            <ThemeToggle />
             <NavLink
               to="/dashboard/prognosis"
               onClick={() => setMobileMenuOpen(false)}
@@ -114,6 +117,11 @@ export function Navigation() {
               <Brain className="h-4 w-4" />
               Prognosis Report
             </NavLink>
+            <div className="flex items-center justify-between px-4 py-2">
+              <span className="text-sm font-medium text-muted-foreground">
+                Theme
+              </span>
+            </div>
           </div>
         )}
       </div>

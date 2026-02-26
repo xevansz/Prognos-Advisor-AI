@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import { ReactNode } from "react";
 import { Button } from "../components/ui/button";
+import { ThemeToggle } from "../components/ThemeToggle";
 import {
   Card,
   CardContent,
@@ -121,6 +122,7 @@ export function Landing() {
               <span className="text-sm tracking-wide text-muted-foreground hidden sm:block">
                 Live • Work • Build
               </span>
+              <ThemeToggle />
               <Button size="sm" asChild>
                 <Link to="/login">Get Started</Link>
               </Button>

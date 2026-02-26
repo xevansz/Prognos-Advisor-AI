@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router";
 import { Button } from "../components/ui/button";
 import { Wallet, Home, ArrowLeft, User } from "lucide-react";
 import { useApp } from "../context/AppContext";
+import { ThemeToggle } from "../components/ThemeToggle";
 
 export function NotFound() {
   const navigate = useNavigate();
@@ -12,7 +13,8 @@ export function NotFound() {
     <div className="min-h-screen bg-background flex flex-col">
       <nav className="w-full border-b border-border bg-card">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center">
+          <div className="flex h-16 items-center justify-between">
+            <ThemeToggle />
             <Link to="/" className="flex items-center gap-2">
               <div className="rounded-lg bg-primary p-2">
                 <Wallet className="h-5 w-5 text-primary-foreground" />
