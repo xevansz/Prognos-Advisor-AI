@@ -1,3 +1,4 @@
+import React from "react";
 import { createBrowserRouter } from "react-router";
 import { lazy } from "react";
 import { Root } from "./pages/Root";
@@ -35,15 +36,35 @@ export const PrognosisAI = lazy(() =>
 export const NotFound = lazy(() =>
   import("./pages/NotFound").then((m) => ({ default: m.NotFound })),
 );
+export const ErrorPage = lazy(() =>
+  import("./pages/ErrorPage").then((m) => ({ default: m.ErrorPage })),
+);
 
 export const router = createBrowserRouter([
-  { path: "/", Component: Landing },
-  { path: "/login", Component: Login },
-  { path: "/signup", Component: Signup },
-  { path: "/forgot-password", Component: ForgotPassword },
+  {
+    path: "/",
+    Component: Landing,
+    errorElement: React.createElement(ErrorPage),
+  },
+  {
+    path: "/login",
+    Component: Login,
+    errorElement: React.createElement(ErrorPage),
+  },
+  {
+    path: "/signup",
+    Component: Signup,
+    errorElement: React.createElement(ErrorPage),
+  },
+  {
+    path: "/forgot-password",
+    Component: ForgotPassword,
+    errorElement: "Errorpage",
+  },
   {
     path: "/dashboard",
     Component: Root,
+    errorElement: React.createElement(ErrorPage),
     children: [
       { index: true, Component: Overview },
       { path: "profile", Component: Profile },
