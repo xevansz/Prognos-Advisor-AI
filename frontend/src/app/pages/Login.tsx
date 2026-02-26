@@ -16,13 +16,16 @@ import { useApp } from "../context/AppContext";
 export function Login() {
   const navigate = useNavigate();
   const { login } = useApp();
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    if (!formData.email || !formData.password) {
+      setError("Please enter your email and password.");
+      return;
+    }
     login(formData.email, formData.password);
     navigate("/dashboard");
   };
@@ -37,15 +40,12 @@ export function Login() {
               <div className="rounded-lg bg-primary p-2">
                 <Wallet className="h-5 w-5 text-primary-foreground" />
               </div>
-              <span className="text-lg font-semibold">Progonosis AI</span>
+              <span className="text-lg font-semibold">Prognosis AI</span>
             </Link>
             <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground">
-                Don't have an account?
+              <span className="text-sm tracking-wide text-muted-foreground">
+                Live • Work • Build
               </span>
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/signup">Sign Up</Link>
-              </Button>
             </div>
           </div>
         </div>
@@ -78,7 +78,10 @@ export function Login() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
-                  <Link to="#" className="text-sm text-primary hover:underline">
+                  <Link
+                    to="/forgot-password"
+                    className="text-sm text-primary hover:underline"
+                  >
                     Forgot password?
                   </Link>
                 </div>
@@ -93,6 +96,7 @@ export function Login() {
                   required
                 />
               </div>
+              {error && <p className="text-sm text-destructive">{error}</p>}
               <Button type="submit" className="w-full" size="lg">
                 Sign In
               </Button>

@@ -1,41 +1,78 @@
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Label } from '../components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Switch } from '../components/ui/switch';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
-import { Textarea } from '../components/ui/textarea';
-import { Badge } from '../components/ui/badge';
-import { useApp } from '../context/AppContext';
-import { Plus, Pencil, Trash2, Filter, RepeatIcon } from 'lucide-react';
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
+import { Switch } from "../components/ui/switch";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../components/ui/table";
+import { Textarea } from "../components/ui/textarea";
+import { Badge } from "../components/ui/badge";
+import { useApp } from "../context/AppContext";
+import { CURRENCIES, formatCurrency } from "../constants";
+import { Plus, Pencil, Trash2, Filter, RepeatIcon } from "lucide-react";
 
 export function Transactions() {
-  const { transactions, accounts, addTransaction, updateTransaction, deleteTransaction } = useApp();
+  const {
+    transactions,
+    accounts,
+    addTransaction,
+    updateTransaction,
+    deleteTransaction,
+    settings,
+  } = useApp();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingTransaction, setEditingTransaction] = useState<string | null>(null);
+  const [editingTransaction, setEditingTransaction] = useState<string | null>(
+    null,
+  );
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
-    accountId: 'all',
-    type: 'all',
-    recurring: 'all',
+    accountId: "all",
+    type: "all",
+    recurring: "all",
   });
   const [transactionForm, setTransactionForm] = useState({
-    accountId: accounts[0]?.id || '',
-    label: '',
-    description: '',
-    date: new Date().toISOString().split('T')[0],
-    amount: '',
-    type: 'Expense' as 'Income' | 'Expense',
-    currency: 'USD',
+    accountId: accounts[0]?.id || "",
+    label: "",
+    description: "",
+    date: new Date().toISOString().split("T")[0],
+    amount: "",
+    type: "Expense" as "Income" | "Expense",
+    currency: "INR",
     isRecurring: false,
   });
 
   const openDialog = (transactionId?: string) => {
     if (transactionId) {
-      const transaction = transactions.find(t => t.id === transactionId);
+      const transaction = transactions.find((t) => t.id === transactionId);
       if (transaction) {
         setTransactionForm({
           accountId: transaction.accountId,
@@ -51,13 +88,13 @@ export function Transactions() {
       }
     } else {
       setTransactionForm({
-        accountId: accounts[0]?.id || '',
-        label: '',
-        description: '',
-        date: new Date().toISOString().split('T')[0],
-        amount: '',
-        type: 'Expense',
-        currency: 'USD',
+        accountId: accounts[0]?.id || "",
+        label: "",
+        description: "",
+        date: new Date().toISOString().split("T")[0],
+        amount: "",
+        type: "Expense",
+        currency: "INR",
         isRecurring: false,
       });
       setEditingTransaction(null);
@@ -92,11 +129,16 @@ export function Transactions() {
     setIsDialogOpen(false);
   };
 
-  const filteredTransactions = transactions.filter(transaction => {
-    if (filters.accountId !== 'all' && transaction.accountId !== filters.accountId) return false;
-    if (filters.type !== 'all' && transaction.type !== filters.type) return false;
-    if (filters.recurring !== 'all') {
-      const isRecurring = filters.recurring === 'true';
+  const filteredTransactions = transactions.filter((transaction) => {
+    if (
+      filters.accountId !== "all" &&
+      transaction.accountId !== filters.accountId
+    )
+      return false;
+    if (filters.type !== "all" && transaction.type !== filters.type)
+      return false;
+    if (filters.recurring !== "all") {
+      const isRecurring = filters.recurring === "true";
       if (transaction.isRecurring !== isRecurring) return false;
     }
     return true;
@@ -107,10 +149,15 @@ export function Transactions() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="mb-2">Transactions</h1>
-          <p className="text-muted-foreground">Track your income and expenses</p>
+          <p className="text-muted-foreground">
+            Track your income and expenses
+          </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
+          <Button
+            variant="outline"
+            onClick={() => setShowFilters(!showFilters)}
+          >
             <Filter className="h-4 w-4 mr-2" />
             Filters
           </Button>
@@ -123,20 +170,34 @@ export function Transactions() {
             </DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader>
-                <DialogTitle>{editingTransaction ? 'Edit Transaction' : 'Create Transaction'}</DialogTitle>
+                <DialogTitle>
+                  {editingTransaction
+                    ? "Edit Transaction"
+                    : "Create Transaction"}
+                </DialogTitle>
                 <DialogDescription>
-                  {editingTransaction ? 'Update transaction details' : 'Add a new transaction to your account'}
+                  {editingTransaction
+                    ? "Update transaction details"
+                    : "Add a new transaction to your account"}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
                   <Label htmlFor="account">Account</Label>
-                  <Select value={transactionForm.accountId} onValueChange={(value) => setTransactionForm({ ...transactionForm, accountId: value })}>
+                  <Select
+                    value={transactionForm.accountId}
+                    onValueChange={(value) =>
+                      setTransactionForm({
+                        ...transactionForm,
+                        accountId: value,
+                      })
+                    }
+                  >
                     <SelectTrigger id="account">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {accounts.map(account => (
+                      {accounts.map((account) => (
                         <SelectItem key={account.id} value={account.id}>
                           {account.name}
                         </SelectItem>
@@ -149,7 +210,12 @@ export function Transactions() {
                   <Input
                     id="label"
                     value={transactionForm.label}
-                    onChange={(e) => setTransactionForm({ ...transactionForm, label: e.target.value })}
+                    onChange={(e) =>
+                      setTransactionForm({
+                        ...transactionForm,
+                        label: e.target.value,
+                      })
+                    }
                     placeholder="e.g., Groceries"
                   />
                 </div>
@@ -158,7 +224,12 @@ export function Transactions() {
                   <Textarea
                     id="description"
                     value={transactionForm.description}
-                    onChange={(e) => setTransactionForm({ ...transactionForm, description: e.target.value })}
+                    onChange={(e) =>
+                      setTransactionForm({
+                        ...transactionForm,
+                        description: e.target.value,
+                      })
+                    }
                     placeholder="Optional details..."
                     rows={2}
                   />
@@ -170,7 +241,12 @@ export function Transactions() {
                       id="date"
                       type="date"
                       value={transactionForm.date}
-                      onChange={(e) => setTransactionForm({ ...transactionForm, date: e.target.value })}
+                      onChange={(e) =>
+                        setTransactionForm({
+                          ...transactionForm,
+                          date: e.target.value,
+                        })
+                      }
                     />
                   </div>
                   <div className="space-y-2">
@@ -180,7 +256,12 @@ export function Transactions() {
                       type="number"
                       step="0.01"
                       value={transactionForm.amount}
-                      onChange={(e) => setTransactionForm({ ...transactionForm, amount: e.target.value })}
+                      onChange={(e) =>
+                        setTransactionForm({
+                          ...transactionForm,
+                          amount: e.target.value,
+                        })
+                      }
                       placeholder="0.00"
                     />
                   </div>
@@ -188,7 +269,12 @@ export function Transactions() {
                 <div className="grid gap-4 grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="type">Type</Label>
-                    <Select value={transactionForm.type} onValueChange={(value: 'Income' | 'Expense') => setTransactionForm({ ...transactionForm, type: value })}>
+                    <Select
+                      value={transactionForm.type}
+                      onValueChange={(value: "Income" | "Expense") =>
+                        setTransactionForm({ ...transactionForm, type: value })
+                      }
+                    >
                       <SelectTrigger id="type">
                         <SelectValue />
                       </SelectTrigger>
@@ -200,16 +286,24 @@ export function Transactions() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="currency">Currency</Label>
-                    <Select value={transactionForm.currency} onValueChange={(value) => setTransactionForm({ ...transactionForm, currency: value })}>
+                    <Select
+                      value={transactionForm.currency}
+                      onValueChange={(value) =>
+                        setTransactionForm({
+                          ...transactionForm,
+                          currency: value,
+                        })
+                      }
+                    >
                       <SelectTrigger id="currency">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="USD">USD</SelectItem>
-                        <SelectItem value="EUR">EUR</SelectItem>
-                        <SelectItem value="GBP">GBP</SelectItem>
-                        <SelectItem value="JPY">JPY</SelectItem>
-                        <SelectItem value="AUD">AUD</SelectItem>
+                      <SelectContent className="max-h-60">
+                        {CURRENCIES.map((c) => (
+                          <SelectItem key={c.code} value={c.code}>
+                            {c.code} ({c.symbol})
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -224,16 +318,24 @@ export function Transactions() {
                   <Switch
                     id="recurring"
                     checked={transactionForm.isRecurring}
-                    onCheckedChange={(checked) => setTransactionForm({ ...transactionForm, isRecurring: checked })}
+                    onCheckedChange={(checked) =>
+                      setTransactionForm({
+                        ...transactionForm,
+                        isRecurring: checked,
+                      })
+                    }
                   />
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsDialogOpen(false)}
+                >
                   Cancel
                 </Button>
                 <Button onClick={handleSubmit}>
-                  {editingTransaction ? 'Update' : 'Create'}
+                  {editingTransaction ? "Update" : "Create"}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -250,13 +352,18 @@ export function Transactions() {
             <div className="grid gap-4 md:grid-cols-3">
               <div className="space-y-2">
                 <Label htmlFor="filterAccount">Account</Label>
-                <Select value={filters.accountId} onValueChange={(value) => setFilters({ ...filters, accountId: value })}>
+                <Select
+                  value={filters.accountId}
+                  onValueChange={(value) =>
+                    setFilters({ ...filters, accountId: value })
+                  }
+                >
                   <SelectTrigger id="filterAccount">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Accounts</SelectItem>
-                    {accounts.map(account => (
+                    {accounts.map((account) => (
                       <SelectItem key={account.id} value={account.id}>
                         {account.name}
                       </SelectItem>
@@ -266,7 +373,12 @@ export function Transactions() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="filterType">Type</Label>
-                <Select value={filters.type} onValueChange={(value) => setFilters({ ...filters, type: value })}>
+                <Select
+                  value={filters.type}
+                  onValueChange={(value) =>
+                    setFilters({ ...filters, type: value })
+                  }
+                >
                   <SelectTrigger id="filterType">
                     <SelectValue />
                   </SelectTrigger>
@@ -279,7 +391,12 @@ export function Transactions() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="filterRecurring">Recurring</Label>
-                <Select value={filters.recurring} onValueChange={(value) => setFilters({ ...filters, recurring: value })}>
+                <Select
+                  value={filters.recurring}
+                  onValueChange={(value) =>
+                    setFilters({ ...filters, recurring: value })
+                  }
+                >
                   <SelectTrigger id="filterRecurring">
                     <SelectValue />
                   </SelectTrigger>
@@ -309,49 +426,78 @@ export function Transactions() {
                   <TableHead className="min-w-[120px]">Label</TableHead>
                   <TableHead className="min-w-[120px]">Account</TableHead>
                   <TableHead className="min-w-[80px]">Type</TableHead>
-                  <TableHead className="text-right min-w-[100px]">Amount</TableHead>
+                  <TableHead className="text-right min-w-[100px]">
+                    Amount
+                  </TableHead>
                   <TableHead className="w-[100px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredTransactions.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                    <TableCell
+                      colSpan={6}
+                      className="text-center text-muted-foreground py-8"
+                    >
                       No transactions found.
                     </TableCell>
                   </TableRow>
                 ) : (
                   filteredTransactions.map((transaction) => {
-                    const account = accounts.find(a => a.id === transaction.accountId);
+                    const account = accounts.find(
+                      (a) => a.id === transaction.accountId,
+                    );
                     return (
                       <TableRow key={transaction.id}>
-                        <TableCell className="font-medium">{transaction.date}</TableCell>
+                        <TableCell className="font-medium">
+                          {transaction.date}
+                        </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <span className="truncate max-w-[150px]">{transaction.label}</span>
+                            <span className="truncate max-w-[150px]">
+                              {transaction.label}
+                            </span>
                             {transaction.isRecurring && (
-                              <Badge variant="outline" className="text-xs whitespace-nowrap">
+                              <Badge
+                                variant="outline"
+                                className="text-xs whitespace-nowrap"
+                              >
                                 <RepeatIcon className="h-3 w-3 mr-1" />
                                 Recurring
                               </Badge>
                             )}
                           </div>
                         </TableCell>
-                        <TableCell>{account?.name || 'Unknown'}</TableCell>
+                        <TableCell>{account?.name || "Unknown"}</TableCell>
                         <TableCell>
                           <Badge
-                            variant={transaction.type === 'Income' ? 'default' : 'secondary'}
-                            className={transaction.type === 'Income' ? 'bg-[hsl(var(--success))]' : ''}
+                            variant={
+                              transaction.type === "Income"
+                                ? "default"
+                                : "secondary"
+                            }
+                            className={
+                              transaction.type === "Income"
+                                ? "bg-[hsl(var(--success))]"
+                                : ""
+                            }
                           >
                             {transaction.type}
                           </Badge>
                         </TableCell>
-                        <TableCell className={`text-right font-mono font-semibold whitespace-nowrap ${
-                          transaction.type === 'Income' 
-                            ? 'text-[hsl(var(--success))]' 
-                            : 'text-[hsl(var(--destructive))]'
-                        }`}>
-                          {transaction.type === 'Income' ? '+' : '-'}${transaction.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        <TableCell
+                          className={`text-right font-mono font-semibold whitespace-nowrap ${
+                            transaction.type === "Income"
+                              ? "text-[hsl(var(--success))]"
+                              : "text-[hsl(var(--destructive))]"
+                          }`}
+                        >
+                          {transaction.type === "Income" ? "+" : "-"}
+                          {formatCurrency(
+                            transaction.amount,
+                            transaction.currency,
+                            settings.currencyFormat,
+                          )}
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-1">
