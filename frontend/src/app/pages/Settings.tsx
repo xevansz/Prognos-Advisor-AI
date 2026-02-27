@@ -30,7 +30,7 @@ import {
 import {
   useApp,
   type RiskAppetite,
-  type GoalStatus,
+  type GoalPriority,
 } from "../context/AppContext";
 import { CURRENCIES } from "../constants";
 import {
@@ -86,7 +86,7 @@ export function Settings() {
   const [searchParams, setSearchParams] = useSearchParams();
   const {
     profile,
-    updateProfile,
+    saveProfile,
     settings,
     updateSettings,
     theme,
@@ -96,6 +96,7 @@ export function Settings() {
     updateGoal,
     deleteGoal,
     logout,
+    userEmail,
   } = useApp();
 
   const initialTab = (searchParams.get("tab") as SettingsTab) || "profile";
@@ -106,14 +107,33 @@ export function Settings() {
   const [editingGoal, setEditingGoal] = useState<string | null>(null);
   const [profileError, setProfileError] = useState("");
   const [profileSuccess, setProfileSuccess] = useState("");
+  const [profileSaving, setProfileSaving] = useState(false);
   const [goalError, setGoalError] = useState("");
+  const [goalSaving, setGoalSaving] = useState(false);
+  const [localProfile, setLocalProfile] = useState({
+    displayName: profile?.display_name ?? "",
+    age: profile?.age ?? 0,
+    baseCurrency: profile?.base_currency ?? "INR",
+    riskAppetite: (profile?.risk_appetite ?? "moderate") as RiskAppetite,
+  });
   const [goalForm, setGoalForm] = useState({
     name: "",
     targetAmount: "",
+    targetCurrency: profile?.base_currency ?? "INR",
     targetDate: "",
-    priority: "1",
-    status: "On Track" as GoalStatus,
+    priority: "medium" as GoalPriority,
   });
+
+  useEffect(() => {
+    if (profile) {
+      setLocalProfile({
+        displayName: profile.display_name ?? "",
+        age: profile.age,
+        baseCurrency: profile.base_currency,
+        riskAppetite: profile.risk_appetite as RiskAppetite,
+      });
+    }
+  }, [profile]);
 
   useEffect(() => {
     const tab = searchParams.get("tab") as SettingsTab;
@@ -130,27 +150,30 @@ export function Settings() {
     setGoalError("");
   };
 
-  const handleProfileChange = (field: string, value: string | number) => {
-    setProfileSuccess("");
+  const handleProfileSave = async () => {
     setProfileError("");
-    updateProfile({ [field]: value });
-  };
-
-  const handleProfileSave = () => {
-    if (!profile.displayName.trim()) {
-      setProfileError("Display name cannot be empty.");
-      return;
-    }
-    if (!profile.email.trim()) {
-      setProfileError("Email cannot be empty.");
-      return;
-    }
-    if (profile.age < 1 || profile.age > 120) {
+    setProfileSuccess("");
+    if (localProfile.age < 1 || localProfile.age > 120) {
       setProfileError("Please enter a valid age.");
       return;
     }
-    setProfileSuccess("Profile saved successfully.");
-    setTimeout(() => setProfileSuccess(""), 3000);
+    setProfileSaving(true);
+    try {
+      await saveProfile({
+        display_name: localProfile.displayName || null,
+        age: localProfile.age,
+        base_currency: localProfile.baseCurrency,
+        risk_appetite: localProfile.riskAppetite,
+      });
+      setProfileSuccess("Profile saved successfully.");
+      setTimeout(() => setProfileSuccess(""), 3000);
+    } catch (err) {
+      setProfileError(
+        err instanceof Error ? err.message : "Failed to save profile.",
+      );
+    } finally {
+      setProfileSaving(false);
+    }
   };
 
   const handleSettingsChange = (field: string, value: boolean | string) => {
@@ -164,10 +187,10 @@ export function Settings() {
       if (goal) {
         setGoalForm({
           name: goal.name,
-          targetAmount: goal.targetAmount.toString(),
-          targetDate: goal.targetDate,
-          priority: goal.priority.toString(),
-          status: goal.status,
+          targetAmount: goal.target_amount.toString(),
+          targetCurrency: goal.target_currency,
+          targetDate: goal.target_date,
+          priority: goal.priority as GoalPriority,
         });
         setEditingGoal(goalId);
       }
@@ -175,16 +198,16 @@ export function Settings() {
       setGoalForm({
         name: "",
         targetAmount: "",
+        targetCurrency: profile?.base_currency ?? "INR",
         targetDate: "",
-        priority: "1",
-        status: "On Track",
+        priority: "medium",
       });
       setEditingGoal(null);
     }
     setIsGoalDialogOpen(true);
   };
 
-  const handleGoalSubmit = () => {
+  const handleGoalSubmit = async () => {
     setGoalError("");
     if (!goalForm.name.trim()) {
       setGoalError("Goal name is required.");
@@ -198,24 +221,31 @@ export function Settings() {
       setGoalError("Target date is required.");
       return;
     }
-    if (editingGoal) {
-      updateGoal(editingGoal, {
-        name: goalForm.name,
-        targetAmount: parseFloat(goalForm.targetAmount),
-        targetDate: goalForm.targetDate,
-        priority: parseInt(goalForm.priority),
-        status: goalForm.status,
-      });
-    } else {
-      addGoal({
-        name: goalForm.name,
-        targetAmount: parseFloat(goalForm.targetAmount),
-        targetDate: goalForm.targetDate,
-        priority: parseInt(goalForm.priority),
-        status: goalForm.status,
-      });
+    setGoalSaving(true);
+    try {
+      if (editingGoal) {
+        await updateGoal(editingGoal, {
+          name: goalForm.name,
+          target_amount: parseFloat(goalForm.targetAmount),
+          target_currency: goalForm.targetCurrency,
+          target_date: goalForm.targetDate,
+          priority: goalForm.priority,
+        });
+      } else {
+        await addGoal({
+          name: goalForm.name,
+          target_amount: parseFloat(goalForm.targetAmount),
+          target_currency: goalForm.targetCurrency,
+          target_date: goalForm.targetDate,
+          priority: goalForm.priority,
+        });
+      }
+      setIsGoalDialogOpen(false);
+    } catch (err) {
+      setGoalError(err instanceof Error ? err.message : "Failed to save goal.");
+    } finally {
+      setGoalSaving(false);
     }
-    setIsGoalDialogOpen(false);
   };
 
   return (
@@ -281,10 +311,15 @@ export function Settings() {
                     <Label htmlFor="displayName">Display Name</Label>
                     <Input
                       id="displayName"
-                      value={profile.displayName}
-                      onChange={(e) =>
-                        handleProfileChange("displayName", e.target.value)
-                      }
+                      value={localProfile.displayName}
+                      onChange={(e) => {
+                        setProfileSuccess("");
+                        setProfileError("");
+                        setLocalProfile((p) => ({
+                          ...p,
+                          displayName: e.target.value,
+                        }));
+                      }}
                     />
                   </div>
                   <div className="space-y-2">
@@ -292,10 +327,9 @@ export function Settings() {
                     <Input
                       id="email"
                       type="email"
-                      value={profile.email}
-                      onChange={(e) =>
-                        handleProfileChange("email", e.target.value)
-                      }
+                      value={userEmail ?? ""}
+                      readOnly
+                      className="bg-muted cursor-not-allowed"
                     />
                   </div>
                 </div>
@@ -305,13 +339,15 @@ export function Settings() {
                     <Input
                       id="age"
                       type="number"
-                      value={profile.age}
-                      onChange={(e) =>
-                        handleProfileChange(
-                          "age",
-                          parseInt(e.target.value) || 0,
-                        )
-                      }
+                      value={localProfile.age}
+                      onChange={(e) => {
+                        setProfileSuccess("");
+                        setProfileError("");
+                        setLocalProfile((p) => ({
+                          ...p,
+                          age: parseInt(e.target.value) || 0,
+                        }));
+                      }}
                       min={1}
                       max={120}
                     />
@@ -319,10 +355,11 @@ export function Settings() {
                   <div className="space-y-2">
                     <Label htmlFor="currency">Base Currency</Label>
                     <Select
-                      value={profile.baseCurrency}
-                      onValueChange={(v) =>
-                        handleProfileChange("baseCurrency", v)
-                      }
+                      value={localProfile.baseCurrency}
+                      onValueChange={(v) => {
+                        setProfileSuccess("");
+                        setLocalProfile((p) => ({ ...p, baseCurrency: v }));
+                      }}
                     >
                       <SelectTrigger id="currency">
                         <SelectValue />
@@ -340,22 +377,26 @@ export function Settings() {
                 <div className="space-y-2">
                   <Label>Risk Appetite</Label>
                   <div className="flex gap-2">
-                    {(["Aggressive", "Moderate", "Conservative"] as const).map(
+                    {(["conservative", "moderate", "aggressive"] as const).map(
                       (risk) => (
                         <Button
                           key={risk}
                           variant={
-                            profile.riskAppetite === risk
+                            localProfile.riskAppetite === risk
                               ? "default"
                               : "outline"
                           }
                           size="sm"
-                          className="flex-1"
-                          onClick={() =>
-                            handleProfileChange("riskAppetite", risk)
-                          }
+                          className="flex-1 capitalize"
+                          onClick={() => {
+                            setProfileSuccess("");
+                            setLocalProfile((p) => ({
+                              ...p,
+                              riskAppetite: risk,
+                            }));
+                          }}
                         >
-                          {risk}
+                          {risk.charAt(0).toUpperCase() + risk.slice(1)}
                         </Button>
                       ),
                     )}
@@ -367,7 +408,9 @@ export function Settings() {
                 {profileSuccess && (
                   <p className="text-sm text-success">{profileSuccess}</p>
                 )}
-                <Button onClick={handleProfileSave}>Save Changes</Button>
+                <Button onClick={handleProfileSave} disabled={profileSaving}>
+                  {profileSaving ? "Saving…" : "Save Changes"}
+                </Button>
               </CardContent>
             </Card>
           )}
@@ -433,55 +476,59 @@ export function Settings() {
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="priority">Priority</Label>
+                            <Label htmlFor="targetCurrency">Currency</Label>
+                            <Select
+                              value={goalForm.targetCurrency}
+                              onValueChange={(v) =>
+                                setGoalForm({ ...goalForm, targetCurrency: v })
+                              }
+                            >
+                              <SelectTrigger id="targetCurrency">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent className="max-h-60">
+                                {CURRENCIES.map((c) => (
+                                  <SelectItem key={c.code} value={c.code}>
+                                    {c.code} ({c.symbol})
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        <div className="grid gap-4 grid-cols-2">
+                          <div className="space-y-2">
+                            <Label htmlFor="targetDate">Target Date</Label>
                             <Input
-                              id="priority"
-                              type="number"
-                              value={goalForm.priority}
+                              id="targetDate"
+                              type="date"
+                              value={goalForm.targetDate}
                               onChange={(e) =>
                                 setGoalForm({
                                   ...goalForm,
-                                  priority: e.target.value,
+                                  targetDate: e.target.value,
                                 })
                               }
-                              placeholder="1"
-                              min="1"
                             />
                           </div>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="targetDate">Target Date</Label>
-                          <Input
-                            id="targetDate"
-                            type="date"
-                            value={goalForm.targetDate}
-                            onChange={(e) =>
-                              setGoalForm({
-                                ...goalForm,
-                                targetDate: e.target.value,
-                              })
-                            }
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="goalStatus">Status</Label>
-                          <Select
-                            value={goalForm.status}
-                            onValueChange={(v: GoalStatus) =>
-                              setGoalForm({ ...goalForm, status: v })
-                            }
-                          >
-                            <SelectTrigger id="goalStatus">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="On Track">On Track</SelectItem>
-                              <SelectItem value="At Risk">At Risk</SelectItem>
-                              <SelectItem value="Unrealistic">
-                                Unrealistic
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <div className="space-y-2">
+                            <Label htmlFor="goalPriority">Priority</Label>
+                            <Select
+                              value={goalForm.priority}
+                              onValueChange={(v: GoalPriority) =>
+                                setGoalForm({ ...goalForm, priority: v })
+                              }
+                            >
+                              <SelectTrigger id="goalPriority">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="high">High</SelectItem>
+                                <SelectItem value="medium">Medium</SelectItem>
+                                <SelectItem value="low">Low</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </div>
                         {goalError && (
                           <p className="text-sm text-destructive">
@@ -496,8 +543,13 @@ export function Settings() {
                         >
                           Cancel
                         </Button>
-                        <Button onClick={handleGoalSubmit}>
-                          {editingGoal ? "Update" : "Create"} Goal
+                        <Button
+                          onClick={handleGoalSubmit}
+                          disabled={goalSaving}
+                        >
+                          {goalSaving
+                            ? "Saving…"
+                            : (editingGoal ? "Update" : "Create") + " Goal"}
                         </Button>
                       </DialogFooter>
                     </DialogContent>
@@ -522,9 +574,12 @@ export function Settings() {
                         <div>
                           <div className="font-medium">{goal.name}</div>
                           <div className="text-sm text-muted-foreground">
-                            {goal.targetAmount.toLocaleString()} by{" "}
-                            {new Date(goal.targetDate).toLocaleDateString()} ·
-                            Priority {goal.priority}
+                            {goal.target_amount.toLocaleString()}{" "}
+                            {goal.target_currency} by{" "}
+                            {new Date(goal.target_date).toLocaleDateString()} ·{" "}
+                            {goal.priority.charAt(0).toUpperCase() +
+                              goal.priority.slice(1)}{" "}
+                            priority
                           </div>
                         </div>
                         <div className="flex items-center gap-1">
@@ -640,16 +695,17 @@ export function Settings() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="newEmail">New Email Address</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        id="newEmail"
-                        type="email"
-                        placeholder={profile.email}
-                        className="flex-1"
-                      />
-                      <Button variant="outline">Update Email</Button>
-                    </div>
+                    <Label htmlFor="currentEmail">Current Email</Label>
+                    <Input
+                      id="currentEmail"
+                      type="email"
+                      value={userEmail ?? ""}
+                      readOnly
+                      className="bg-muted cursor-not-allowed"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Email changes are managed through Supabase Auth.
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -727,8 +783,8 @@ export function Settings() {
               Cancel
             </Button>
             <Button
-              onClick={() => {
-                logout();
+              onClick={async () => {
+                await logout();
                 navigate("/");
                 setIsLogoutDialogOpen(false);
               }}
@@ -758,8 +814,8 @@ export function Settings() {
             </Button>
             <Button
               variant="destructive"
-              onClick={() => {
-                logout();
+              onClick={async () => {
+                await logout();
                 navigate("/");
                 setIsDeleteDialogOpen(false);
               }}

@@ -1,4 +1,9 @@
-from fastapi import FastAPI
+from typing import Annotated
+
+from core.database import get_db
+from fastapi import Depends, FastAPI, Query
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.accounts import router as accounts_router
 from api.goals import router as goals_router
@@ -7,6 +12,7 @@ from api.prognosis import router as prognosis_router
 from api.transactions import router as transactions_router
 from core.config import settings
 from core.logging import setup_logging
+from integrations.fx_client import get_cached_rates
 
 setup_logging()
 
@@ -15,6 +21,14 @@ app = FastAPI(
     version="0.2.0",
     docs_url="/api/docs",
     openapi_url="/api/openapi.json",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://localhost:5174"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -28,6 +42,19 @@ async def health_check() -> dict:
         "environment": settings.environment,
         "app_version": app.version,
     }
+
+
+@app.get("/api/fx-rates")
+async def get_fx_rates(
+    base: Annotated[str, Query(min_length=3, max_length=3)] = "USD",
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """
+    Return cached FX rates for the given base currency.
+    Reuses the same cache as the prognosis engine.
+    """
+    rates = await get_cached_rates(db, base.upper())
+    return {"base": base.upper(), "rates": rates}
 
 
 app.include_router(profile_router)

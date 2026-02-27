@@ -3,7 +3,15 @@ import { Navigation } from "../components/Navigation";
 import { useApp } from "../context/AppContext";
 
 export function Root() {
-  const { isAuthenticated } = useApp();
+  const { isAuthenticated, authLoading } = useApp();
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground text-sm">Loading…</div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/" replace />;

@@ -13,21 +13,17 @@ repos:
         language: system
         pass_filenames: false
 
+      # - id: mypy
+      #   name: mypy
+      #   entry: bash -c "cd backend && pdm run python -m mypy ."
+      #   language: system
+      #   pass_filenames: false
+
       - id: check-yaml
         name: check yaml
         entry: check-yaml
         language: system
         types: [yaml]
-
-      - id: end-of-file-fixer
-        name: end of file fixer
-        entry: end-of-file-fixer
-        language: system
-
-      - id: trailing-whitespace
-        name: trailing whitespace
-        entry: trailing-whitespace-fixer
-        language: system
 
       - id: check-added-large-files
         name: check added large files
