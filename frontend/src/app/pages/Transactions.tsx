@@ -36,7 +36,7 @@ import {
 } from "../components/ui/table";
 import { Textarea } from "../components/ui/textarea";
 import { Badge } from "../components/ui/badge";
-import { useApp } from "../context/AppContext";
+import { useApp, type TransactionType } from "../context/AppContext";
 import { CURRENCIES, formatCurrency } from "../constants";
 import { Plus, Pencil, Trash2, Filter, RepeatIcon } from "lucide-react";
 
@@ -48,11 +48,13 @@ export function Transactions() {
     updateTransaction,
     deleteTransaction,
     settings,
+    profile,
   } = useApp();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<string | null>(
     null,
   );
+  const [submitError, setSubmitError] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     accountId: "all",
@@ -65,24 +67,25 @@ export function Transactions() {
     description: "",
     date: new Date().toISOString().split("T")[0],
     amount: "",
-    type: "Expense" as "Income" | "Expense",
-    currency: "INR",
+    type: "debit" as TransactionType,
+    currency: profile?.base_currency ?? "INR",
     isRecurring: false,
   });
 
   const openDialog = (transactionId?: string) => {
+    setSubmitError("");
     if (transactionId) {
       const transaction = transactions.find((t) => t.id === transactionId);
       if (transaction) {
         setTransactionForm({
-          accountId: transaction.accountId,
+          accountId: transaction.account_id,
           label: transaction.label,
-          description: transaction.description,
+          description: transaction.description ?? "",
           date: transaction.date,
           amount: transaction.amount.toString(),
           type: transaction.type,
           currency: transaction.currency,
-          isRecurring: transaction.isRecurring,
+          isRecurring: transaction.is_recurring,
         });
         setEditingTransaction(transactionId);
       }
@@ -93,8 +96,8 @@ export function Transactions() {
         description: "",
         date: new Date().toISOString().split("T")[0],
         amount: "",
-        type: "Expense",
-        currency: "INR",
+        type: "debit",
+        currency: profile?.base_currency ?? "INR",
         isRecurring: false,
       });
       setEditingTransaction(null);
@@ -102,44 +105,49 @@ export function Transactions() {
     setIsDialogOpen(true);
   };
 
-  const handleSubmit = () => {
-    if (editingTransaction) {
-      updateTransaction(editingTransaction, {
-        accountId: transactionForm.accountId,
-        label: transactionForm.label,
-        description: transactionForm.description,
-        date: transactionForm.date,
-        amount: parseFloat(transactionForm.amount),
-        type: transactionForm.type,
-        currency: transactionForm.currency,
-        isRecurring: transactionForm.isRecurring,
-      });
-    } else {
-      addTransaction({
-        accountId: transactionForm.accountId,
-        label: transactionForm.label,
-        description: transactionForm.description,
-        date: transactionForm.date,
-        amount: parseFloat(transactionForm.amount),
-        type: transactionForm.type,
-        currency: transactionForm.currency,
-        isRecurring: transactionForm.isRecurring,
-      });
+  const handleSubmit = async () => {
+    setSubmitError("");
+    try {
+      if (editingTransaction) {
+        await updateTransaction(editingTransaction, {
+          account_id: transactionForm.accountId,
+          label: transactionForm.label,
+          description: transactionForm.description || null,
+          date: transactionForm.date,
+          amount: parseFloat(transactionForm.amount),
+          type: transactionForm.type,
+        });
+      } else {
+        await addTransaction({
+          account_id: transactionForm.accountId,
+          label: transactionForm.label,
+          description: transactionForm.description || null,
+          date: transactionForm.date,
+          amount: parseFloat(transactionForm.amount),
+          type: transactionForm.type,
+          currency: transactionForm.currency,
+          is_recurring: transactionForm.isRecurring,
+        });
+      }
+      setIsDialogOpen(false);
+    } catch (err) {
+      setSubmitError(
+        err instanceof Error ? err.message : "Failed to save transaction.",
+      );
     }
-    setIsDialogOpen(false);
   };
 
   const filteredTransactions = transactions.filter((transaction) => {
     if (
       filters.accountId !== "all" &&
-      transaction.accountId !== filters.accountId
+      transaction.account_id !== filters.accountId
     )
       return false;
     if (filters.type !== "all" && transaction.type !== filters.type)
       return false;
     if (filters.recurring !== "all") {
       const isRecurring = filters.recurring === "true";
-      if (transaction.isRecurring !== isRecurring) return false;
+      if (transaction.is_recurring !== isRecurring) return false;
     }
     return true;
   });
@@ -271,16 +279,19 @@ export function Transactions() {
                     <Label htmlFor="type">Type</Label>
                     <Select
                       value={transactionForm.type}
-                      onValueChange={(value: "Income" | "Expense") =>
-                        setTransactionForm({ ...transactionForm, type: value })
+                      onValueChange={(value) =>
+                        setTransactionForm({
+                          ...transactionForm,
+                          type: value as TransactionType,
+                        })
                       }
                     >
                       <SelectTrigger id="type">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Income">Income</SelectItem>
-                        <SelectItem value="Expense">Expense</SelectItem>
+                        <SelectItem value="credit">Credit (Income)</SelectItem>
+                        <SelectItem value="debit">Debit (Expense)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -328,6 +339,11 @@ export function Transactions() {
                 </div>
               </div>
               <DialogFooter>
+                {submitError && (
+                  <p className="text-sm text-destructive w-full">
+                    {submitError}
+                  </p>
+                )}
                 <Button
                   variant="outline"
                   onClick={() => setIsDialogOpen(false)}
@@ -445,7 +461,7 @@ export function Transactions() {
                 ) : (
                   filteredTransactions.map((transaction) => {
                     const account = accounts.find(
-                      (a) => a.id === transaction.accountId,
+                      (a) => a.id === transaction.account_id,
                     );
                     return (
                       <TableRow key={transaction.id}>
@@ -457,7 +473,7 @@ export function Transactions() {
                             <span className="truncate max-w-[150px]">
                               {transaction.label}
                             </span>
-                            {transaction.isRecurring && (
+                            {transaction.is_recurring && (
                               <Badge
                                 variant="outline"
                                 className="text-xs whitespace-nowrap"
@@ -472,27 +488,27 @@ export function Transactions() {
                         <TableCell>
                           <Badge
                             variant={
-                              transaction.type === "Income"
+                              transaction.type === "credit"
                                 ? "default"
                                 : "secondary"
                             }
                             className={
-                              transaction.type === "Income"
+                              transaction.type === "credit"
                                 ? "bg-[hsl(var(--success))]"
                                 : ""
                             }
                           >
-                            {transaction.type}
+                            {transaction.type === "credit" ? "Credit" : "Debit"}
                           </Badge>
                         </TableCell>
                         <TableCell
                           className={`text-right font-mono font-semibold whitespace-nowrap ${
-                            transaction.type === "Income"
+                            transaction.type === "credit"
                               ? "text-[hsl(var(--success))]"
                               : "text-[hsl(var(--destructive))]"
                           }`}
                         >
-                          {transaction.type === "Income" ? "+" : "-"}
+                          {transaction.type === "credit" ? "+" : "-"}
                           {formatCurrency(
                             transaction.amount,
                             transaction.currency,

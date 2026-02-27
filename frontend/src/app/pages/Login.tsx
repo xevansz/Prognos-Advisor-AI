@@ -19,16 +19,26 @@ export function Login() {
   const { login } = useApp();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     if (!formData.email || !formData.password) {
       setError("Please enter your email and password.");
       return;
     }
-    login(formData.email, formData.password);
-    navigate("/dashboard");
+    setLoading(true);
+    try {
+      await login(formData.email, formData.password);
+      navigate("/dashboard");
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Login failed. Please try again.",
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -99,8 +109,13 @@ export function Login() {
                 />
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
-              <Button type="submit" className="w-full" size="lg">
-                Sign In
+              <Button
+                type="submit"
+                className="w-full"
+                size="lg"
+                disabled={loading}
+              >
+                {loading ? "Signing in…" : "Sign In"}
               </Button>
             </form>
 

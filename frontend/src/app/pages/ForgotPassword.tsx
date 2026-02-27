@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router";
+import { supabase } from "../../lib/supabase";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -32,10 +33,18 @@ export function ForgotPassword() {
       return;
     }
     setIsLoading(true);
-    // Mock: simulate sending OTP
-    await new Promise((r) => setTimeout(r, 1000));
-    setIsLoading(false);
-    setStep("otp");
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { shouldCreateUser: false },
+      });
+      if (error) throw error;
+      setStep("otp");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to send code.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleOtpChange = (index: number, value: string) => {
@@ -65,19 +74,37 @@ export function ForgotPassword() {
       return;
     }
     setIsLoading(true);
-    // Mock: simulate OTP verification (accept any 6-digit code)
-    await new Promise((r) => setTimeout(r, 800));
-    setIsLoading(false);
-    setStep("reset");
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token: code,
+        type: "email",
+      });
+      if (error) throw error;
+      setStep("reset");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Invalid or expired code.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleResendOtp = async () => {
     setError("");
     setOtp(["", "", "", "", "", ""]);
     setIsLoading(true);
-    await new Promise((r) => setTimeout(r, 800));
-    setIsLoading(false);
-    document.getElementById("otp-0")?.focus();
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { shouldCreateUser: false },
+      });
+      if (error) throw error;
+      document.getElementById("otp-0")?.focus();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to resend code.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleResetSubmit = async (e: React.FormEvent) => {
@@ -96,10 +123,20 @@ export function ForgotPassword() {
       return;
     }
     setIsLoading(true);
-    // Mock: simulate password reset
-    await new Promise((r) => setTimeout(r, 1000));
-    setIsLoading(false);
-    setStep("done");
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+      if (error) throw error;
+      await supabase.auth.signOut();
+      setStep("done");
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to update password.",
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

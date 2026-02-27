@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
-import { useApp } from "../context/AppContext";
+import { useApp, convertToBase } from "../context/AppContext";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { formatCurrency } from "../constants";
 import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
@@ -30,12 +30,11 @@ import {
 } from "../components/ui/chart";
 
 export function Overview() {
-  const { accounts, transactions, profile, settings } = useApp();
+  const { accounts, transactions, profile, settings, fxRates } = useApp();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate loading
-    const timer = setTimeout(() => setLoading(false), 800);
+    const timer = setTimeout(() => setLoading(false), 400);
     return () => clearTimeout(timer);
   }, []);
 
@@ -43,23 +42,43 @@ export function Overview() {
     return <LoadingSkeleton />;
   }
 
-  const netWorth = accounts.reduce((sum, acc) => sum + acc.balance, 0);
+  const baseCurrency = profile?.base_currency ?? "INR";
 
-  // Calculate monthly income vs spending
-  const monthlyData = [
-    { month: "Aug", income: 5000, spending: 1800 },
-    { month: "Sep", income: 5000, spending: 2100 },
-    { month: "Oct", income: 5200, spending: 1950 },
-    { month: "Nov", income: 5000, spending: 2200 },
-    { month: "Dec", income: 5500, spending: 2800 },
-    { month: "Jan", income: 5000, spending: 1900 },
-    { month: "Feb", income: 5000, spending: 1850 },
-  ];
+  const netWorth = accounts.reduce(
+    (sum, acc) =>
+      sum + convertToBase(acc.balance, acc.currency, baseCurrency, fxRates),
+    0,
+  );
 
-  // Calculate asset distribution
+  // Compute real monthly income vs spending for last 7 months
+  const now = new Date();
+  const monthlyData = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (6 - i), 1);
+    const label = d.toLocaleString("default", { month: "short" });
+    const yr = d.getFullYear();
+    const mo = d.getMonth();
+    let income = 0;
+    let spending = 0;
+    transactions.forEach((t) => {
+      const td = new Date(t.date);
+      if (td.getFullYear() === yr && td.getMonth() === mo) {
+        const converted = convertToBase(
+          t.amount,
+          t.currency,
+          baseCurrency,
+          fxRates,
+        );
+        if (t.type === "credit") income += converted;
+        else spending += converted;
+      }
+    });
+    return { month: label, income, spending };
+  });
+
+  // Calculate asset distribution (values converted to base currency)
   const assetData = accounts.map((acc) => ({
     name: acc.name,
-    value: acc.balance,
+    value: convertToBase(acc.balance, acc.currency, baseCurrency, fxRates),
   }));
 
   const COLORS = [
@@ -112,13 +131,38 @@ export function Overview() {
     );
   };
 
+  // Current month totals in base currency
+  const curMonth = now.getMonth();
+  const curYear = now.getFullYear();
   const totalIncome = transactions
-    .filter((t) => t.type === "Income")
-    .reduce((sum, t) => sum + t.amount, 0);
+    .filter((t) => {
+      const d = new Date(t.date);
+      return (
+        t.type === "credit" &&
+        d.getMonth() === curMonth &&
+        d.getFullYear() === curYear
+      );
+    })
+    .reduce(
+      (sum, t) =>
+        sum + convertToBase(t.amount, t.currency, baseCurrency, fxRates),
+      0,
+    );
 
   const totalExpenses = transactions
-    .filter((t) => t.type === "Expense")
-    .reduce((sum, t) => sum + t.amount, 0);
+    .filter((t) => {
+      const d = new Date(t.date);
+      return (
+        t.type === "debit" &&
+        d.getMonth() === curMonth &&
+        d.getFullYear() === curYear
+      );
+    })
+    .reduce(
+      (sum, t) =>
+        sum + convertToBase(t.amount, t.currency, baseCurrency, fxRates),
+      0,
+    );
 
   const savingsRate =
     totalIncome > 0
@@ -136,11 +180,7 @@ export function Overview() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl sm:text-3xl font-bold">
-              {formatCurrency(
-                netWorth,
-                profile.baseCurrency,
-                settings.currencyFormat,
-              )}
+              {formatCurrency(netWorth, baseCurrency, settings.currencyFormat)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               +12.5% from last month
@@ -159,7 +199,7 @@ export function Overview() {
             <div className="text-2xl sm:text-3xl font-bold text-[var(--success)]">
               {formatCurrency(
                 totalIncome,
-                profile.baseCurrency,
+                baseCurrency,
                 settings.currencyFormat,
               )}
             </div>
@@ -178,7 +218,7 @@ export function Overview() {
             <div className="text-2xl sm:text-3xl font-bold text-[var(--destructive)]">
               {formatCurrency(
                 totalExpenses,
-                profile.baseCurrency,
+                baseCurrency,
                 settings.currencyFormat,
               )}
             </div>
@@ -267,7 +307,7 @@ export function Overview() {
                               : parseFloat(String(value)) || 0;
                         return formatCurrency(
                           num,
-                          profile.baseCurrency,
+                          baseCurrency,
                           settings.currencyFormat,
                         );
                       }}
@@ -289,33 +329,39 @@ export function Overview() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {transactions.slice(0, 5).map((transaction) => (
-              <div
-                key={transaction.id}
-                className="flex items-center justify-between"
-              >
-                <div className="space-y-1">
-                  <p className="text-sm font-medium">{transaction.label}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {transaction.date}
-                  </p>
-                </div>
+            {[...transactions]
+              .sort(
+                (a, b) =>
+                  new Date(b.date).getTime() - new Date(a.date).getTime(),
+              )
+              .slice(0, 5)
+              .map((transaction) => (
                 <div
-                  className={`text-sm font-medium ${
-                    transaction.type === "Income"
-                      ? "text-[var(--success)]"
-                      : "text-[var(--destructive)]"
-                  }`}
+                  key={transaction.id}
+                  className="flex items-center justify-between"
                 >
-                  {transaction.type === "Income" ? "+" : "-"}{" "}
-                  {formatCurrency(
-                    transaction.amount,
-                    transaction.currency,
-                    settings.currencyFormat,
-                  )}
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">{transaction.label}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {transaction.date}
+                    </p>
+                  </div>
+                  <div
+                    className={`text-sm font-medium ${
+                      transaction.type === "credit"
+                        ? "text-[var(--success)]"
+                        : "text-[var(--destructive)]"
+                    }`}
+                  >
+                    {transaction.type === "credit" ? "+" : "-"}{" "}
+                    {formatCurrency(
+                      transaction.amount,
+                      transaction.currency,
+                      settings.currencyFormat,
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
         </CardContent>
       </Card>

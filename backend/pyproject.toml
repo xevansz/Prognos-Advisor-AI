@@ -29,4 +29,5 @@ dev = [
     "ruff>=0.15.4",
     "pre-commit>=4.5.1",
     "pre-commit-hooks>=6.0.0",
+    "mypy>=1.19.1",
 ]

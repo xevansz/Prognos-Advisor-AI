@@ -1,80 +1,112 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import { supabase } from "../../lib/supabase";
+import {
+  accountsApi,
+  fxApi,
+  goalsApi,
+  prognosisApi,
+  profileApi,
+  transactionsApi,
+  type AccountCreate,
+  type AccountOut,
+  type AccountType,
+  type GoalCreate,
+  type GoalOut,
+  type GoalPriority,
+  type GoalUpdate,
+  type ProfileOut,
+  type ProfileUpsert,
+  type PrognosisReport,
+  type TransactionCreate,
+  type TransactionOut,
+  type TransactionType,
+  type TransactionUpdate,
+} from "../../lib/api";
 
-export type RiskAppetite = "Aggressive" | "Moderate" | "Conservative";
-export type GoalStatus = "On Track" | "At Risk" | "Unrealistic";
+// ── Re-export types used by pages ────────────────────────────────────────────
+export type RiskAppetite = "conservative" | "moderate" | "aggressive";
+export type { AccountType, GoalPriority, TransactionType };
+export type { AccountOut as Account };
+export type { TransactionOut as Transaction };
+export type { GoalOut as Goal };
+export type { ProfileOut as Profile };
 
-export interface Account {
-  id: string;
-  name: string;
-  type: string;
-  currency: string;
-  balance: number;
+// ── FX helper ────────────────────────────────────────────────────────────────
+export function convertToBase(
+  amount: number,
+  fromCurrency: string,
+  baseCurrency: string,
+  rates: Record<string, number>,
+): number {
+  if (fromCurrency === baseCurrency) return amount;
+  const toBase = rates[baseCurrency];
+  const fromBase = rates[fromCurrency];
+  if (!toBase || !fromBase) return amount;
+  return (amount / fromBase) * toBase;
 }
 
-export interface Transaction {
-  id: string;
-  date: string;
-  label: string;
-  description: string;
-  accountId: string;
-  type: "Income" | "Expense";
-  amount: number;
-  currency: string;
-  isRecurring: boolean;
-}
-
-export interface Goal {
-  id: string;
-  name: string;
-  targetAmount: number;
-  targetDate: string;
-  priority: number;
-  status: GoalStatus;
-}
-
-export interface Profile {
-  age: number;
-  baseCurrency: string;
-  riskAppetite: RiskAppetite;
-  displayName: string;
-  email: string;
-}
-
+// ── Settings ─────────────────────────────────────────────────────────────────
 interface AppSettings {
   currencyFormat: "symbol" | "code";
   notifications: boolean;
 }
 
+// ── Context type ──────────────────────────────────────────────────────────────
 interface AppContextType {
   theme: "light" | "dark";
   toggleTheme: () => void;
-  profile: Profile;
-  updateProfile: (profile: Partial<Profile>) => void;
-  goals: Goal[];
-  addGoal: (goal: Omit<Goal, "id">) => void;
-  updateGoal: (id: string, goal: Partial<Goal>) => void;
-  deleteGoal: (id: string) => void;
-  accounts: Account[];
-  addAccount: (account: Omit<Account, "id">) => void;
-  updateAccount: (id: string, account: Partial<Account>) => void;
-  deleteAccount: (id: string) => void;
-  transactions: Transaction[];
-  addTransaction: (transaction: Omit<Transaction, "id">) => void;
-  updateTransaction: (id: string, transaction: Partial<Transaction>) => void;
-  deleteTransaction: (id: string) => void;
+
+  isAuthenticated: boolean;
+  authLoading: boolean;
+  userEmail: string | null;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (name: string, email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+
+  profile: ProfileOut | null;
+  profileLoading: boolean;
+  saveProfile: (data: ProfileUpsert) => Promise<void>;
+
+  goals: GoalOut[];
+  goalsLoading: boolean;
+  addGoal: (goal: GoalCreate) => Promise<void>;
+  updateGoal: (id: string, goal: GoalUpdate) => Promise<void>;
+  deleteGoal: (id: string) => Promise<void>;
+
+  accounts: AccountOut[];
+  accountsLoading: boolean;
+  addAccount: (account: AccountCreate) => Promise<void>;
+  deleteAccount: (id: string) => Promise<void>;
+
+  transactions: TransactionOut[];
+  transactionsLoading: boolean;
+  addTransaction: (transaction: TransactionCreate) => Promise<void>;
+  updateTransaction: (
+    id: string,
+    transaction: TransactionUpdate,
+  ) => Promise<void>;
+  deleteTransaction: (id: string) => Promise<void>;
+
   settings: AppSettings;
   updateSettings: (settings: Partial<AppSettings>) => void;
-  prognosisReport: string | null;
-  generatePrognosis: () => void;
-  isAuthenticated: boolean;
-  login: (email: string, password: string) => void;
-  signup: (name: string, email: string, password: string) => void;
-  logout: () => void;
+
+  fxRates: Record<string, number>;
+
+  prognosisReport: PrognosisReport | null;
+  prognosisLoading: boolean;
+  generatePrognosis: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
+  // ── Theme ──────────────────────────────────────────────────────────────────
   const [theme, setTheme] = useState<"light" | "dark">(() => {
     try {
       return (
@@ -84,112 +116,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return "dark";
     }
   });
-  const [profile, setProfile] = useState<Profile>({
-    age: 30,
-    baseCurrency: "INR",
-    riskAppetite: "Moderate",
-    displayName: "John Doe",
-    email: "john@example.com",
-  });
-
-  const [goals, setGoals] = useState<Goal[]>([
-    {
-      id: "1",
-      name: "Emergency Fund",
-      targetAmount: 10000,
-      targetDate: "2025-12-31",
-      priority: 1,
-      status: "On Track",
-    },
-    {
-      id: "2",
-      name: "Down Payment",
-      targetAmount: 50000,
-      targetDate: "2027-06-30",
-      priority: 2,
-      status: "At Risk",
-    },
-  ]);
-
-  const [accounts, setAccounts] = useState<Account[]>([
-    {
-      id: "1",
-      name: "Checking Account",
-      type: "Checking",
-      currency: "USD",
-      balance: 5234.67,
-    },
-    {
-      id: "2",
-      name: "Savings Account",
-      type: "Savings",
-      currency: "USD",
-      balance: 12500.0,
-    },
-    {
-      id: "3",
-      name: "Investment Portfolio",
-      type: "Investment",
-      currency: "USD",
-      balance: 28750.5,
-    },
-  ]);
-
-  const [transactions, setTransactions] = useState<Transaction[]>([
-    {
-      id: "1",
-      date: "2026-02-10",
-      label: "Salary",
-      description: "Monthly salary",
-      accountId: "1",
-      type: "Income",
-      amount: 5000,
-      currency: "USD",
-      isRecurring: true,
-    },
-    {
-      id: "2",
-      date: "2026-02-08",
-      label: "Rent",
-      description: "Monthly rent payment",
-      accountId: "1",
-      type: "Expense",
-      amount: 1500,
-      currency: "USD",
-      isRecurring: true,
-    },
-    {
-      id: "3",
-      date: "2026-02-05",
-      label: "Groceries",
-      description: "Weekly groceries",
-      accountId: "1",
-      type: "Expense",
-      amount: 150,
-      currency: "USD",
-      isRecurring: false,
-    },
-    {
-      id: "4",
-      date: "2026-02-01",
-      label: "Utilities",
-      description: "Electric and water",
-      accountId: "1",
-      type: "Expense",
-      amount: 200,
-      currency: "USD",
-      isRecurring: true,
-    },
-  ]);
-
-  const [settings, setSettings] = useState<AppSettings>({
-    currencyFormat: "symbol",
-    notifications: true,
-  });
-
-  const [prognosisReport, setPrognosisReport] = useState<string | null>(null);
-
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     if (theme === "dark") {
@@ -209,132 +135,273 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const updateProfile = (newProfile: Partial<Profile>) => {
-    setProfile((prev) => ({ ...prev, ...newProfile }));
+  // ── Auth ───────────────────────────────────────────────────────────────────
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      const session = data.session;
+      setIsAuthenticated(!!session);
+      setUserEmail(session?.user.email ?? null);
+      setAuthLoading(false);
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setIsAuthenticated(!!session);
+        setUserEmail(session?.user.email ?? null);
+      },
+    );
+    return () => listener.subscription.unsubscribe();
+  }, []);
+
+  const login = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) throw new Error(error.message);
   };
 
-  const addGoal = (goal: Omit<Goal, "id">) => {
-    const newGoal = { ...goal, id: Date.now().toString() };
-    setGoals((prev) => [...prev, newGoal]);
+  const signup = async (name: string, email: string, password: string) => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { display_name: name } },
+    });
+    if (error) throw new Error(error.message);
   };
 
-  const updateGoal = (id: string, goal: Partial<Goal>) => {
-    setGoals((prev) => prev.map((g) => (g.id === id ? { ...g, ...goal } : g)));
+  const logout = async () => {
+    await supabase.auth.signOut();
   };
 
-  const deleteGoal = (id: string) => {
+  // ── Profile ────────────────────────────────────────────────────────────────
+  const [profile, setProfile] = useState<ProfileOut | null>(null);
+  const [profileLoading, setProfileLoading] = useState(false);
+
+  const fetchProfile = useCallback(async () => {
+    setProfileLoading(true);
+    try {
+      const data = await profileApi.get();
+      setProfile(data);
+    } catch {
+      setProfile(null);
+    } finally {
+      setProfileLoading(false);
+    }
+  }, []);
+
+  const saveProfile = async (data: ProfileUpsert) => {
+    const updated = await profileApi.upsert(data);
+    setProfile(updated);
+  };
+
+  // ── Goals ──────────────────────────────────────────────────────────────────
+  const [goals, setGoals] = useState<GoalOut[]>([]);
+  const [goalsLoading, setGoalsLoading] = useState(false);
+
+  const fetchGoals = useCallback(async () => {
+    setGoalsLoading(true);
+    try {
+      const data = await goalsApi.list();
+      setGoals(data);
+    } catch {
+      setGoals([]);
+    } finally {
+      setGoalsLoading(false);
+    }
+  }, []);
+
+  const addGoal = async (goal: GoalCreate) => {
+    const created = await goalsApi.create(goal);
+    setGoals((prev) => [...prev, created]);
+  };
+
+  const updateGoal = async (id: string, goal: GoalUpdate) => {
+    const updated = await goalsApi.update(id, goal);
+    setGoals((prev) => prev.map((g) => (g.id === id ? updated : g)));
+  };
+
+  const deleteGoal = async (id: string) => {
+    await goalsApi.delete(id);
     setGoals((prev) => prev.filter((g) => g.id !== id));
   };
 
-  const addAccount = (account: Omit<Account, "id">) => {
-    const newAccount = { ...account, id: Date.now().toString() };
-    setAccounts((prev) => [...prev, newAccount]);
+  // ── Accounts ───────────────────────────────────────────────────────────────
+  const [accounts, setAccounts] = useState<AccountOut[]>([]);
+  const [accountsLoading, setAccountsLoading] = useState(false);
+
+  const fetchAccounts = useCallback(async () => {
+    setAccountsLoading(true);
+    try {
+      const data = await accountsApi.list();
+      setAccounts(data);
+    } catch {
+      setAccounts([]);
+    } finally {
+      setAccountsLoading(false);
+    }
+  }, []);
+
+  const addAccount = async (account: AccountCreate) => {
+    const created = await accountsApi.create(account);
+    setAccounts((prev) => [...prev, created]);
   };
 
-  const updateAccount = (id: string, account: Partial<Account>) => {
-    setAccounts((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, ...account } : a)),
-    );
-  };
-
-  const deleteAccount = (id: string) => {
+  const deleteAccount = async (id: string) => {
+    await accountsApi.delete(id);
     setAccounts((prev) => prev.filter((a) => a.id !== id));
   };
 
-  const addTransaction = (transaction: Omit<Transaction, "id">) => {
-    const newTransaction = { ...transaction, id: Date.now().toString() };
-    setTransactions((prev) => [newTransaction, ...prev]);
+  // ── Transactions ───────────────────────────────────────────────────────────
+  const [transactions, setTransactions] = useState<TransactionOut[]>([]);
+  const [transactionsLoading, setTransactionsLoading] = useState(false);
+
+  const fetchTransactions = useCallback(async () => {
+    setTransactionsLoading(true);
+    try {
+      const data = await transactionsApi.list();
+      setTransactions(data);
+    } catch {
+      setTransactions([]);
+    } finally {
+      setTransactionsLoading(false);
+    }
+  }, []);
+
+  const addTransaction = async (transaction: TransactionCreate) => {
+    const created = await transactionsApi.create(transaction);
+    setTransactions((prev) => [created, ...prev]);
   };
 
-  const updateTransaction = (id: string, transaction: Partial<Transaction>) => {
-    setTransactions((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, ...transaction } : t)),
-    );
+  const updateTransaction = async (
+    id: string,
+    transaction: TransactionUpdate,
+  ) => {
+    const updated = await transactionsApi.update(id, transaction);
+    setTransactions((prev) => prev.map((t) => (t.id === id ? updated : t)));
   };
 
-  const deleteTransaction = (id: string) => {
+  const deleteTransaction = async (id: string) => {
+    await transactionsApi.delete(id);
     setTransactions((prev) => prev.filter((t) => t.id !== id));
   };
+
+  // ── FX Rates ───────────────────────────────────────────────────────────────
+  const [fxRates, setFxRates] = useState<Record<string, number>>({});
+
+  const fetchFxRates = useCallback(async (baseCurrency: string) => {
+    try {
+      const data = await fxApi.getRates(baseCurrency);
+      setFxRates(data.rates);
+    } catch {
+      setFxRates({});
+    }
+  }, []);
+
+  // ── Prognosis ──────────────────────────────────────────────────────────────
+  const [prognosisReport, setPrognosisReport] =
+    useState<PrognosisReport | null>(null);
+  const [prognosisLoading, setPrognosisLoading] = useState(false);
+
+  const fetchLatestPrognosis = useCallback(async () => {
+    try {
+      const data = await prognosisApi.current();
+      setPrognosisReport(data);
+    } catch {
+      setPrognosisReport(null);
+    }
+  }, []);
+
+  const generatePrognosis = async () => {
+    setPrognosisLoading(true);
+    try {
+      const report = await prognosisApi.generate();
+      setPrognosisReport(report);
+    } finally {
+      setPrognosisLoading(false);
+    }
+  };
+
+  // ── Settings ───────────────────────────────────────────────────────────────
+  const [settings, setSettings] = useState<AppSettings>({
+    currencyFormat: "symbol",
+    notifications: true,
+  });
 
   const updateSettings = (newSettings: Partial<AppSettings>) => {
     setSettings((prev) => ({ ...prev, ...newSettings }));
   };
 
-  const generatePrognosis = () => {
-    // Mock AI report generation
-    const report = `Based on your current financial data analysis (as of ${new Date().toLocaleDateString()}), here are your key insights:
+  // ── Load data when authenticated ───────────────────────────────────────────
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setProfile(null);
+      setGoals([]);
+      setAccounts([]);
+      setTransactions([]);
+      setPrognosisReport(null);
+      setFxRates({});
+      return;
+    }
+    fetchProfile();
+    fetchGoals();
+    fetchAccounts();
+    fetchTransactions();
+    fetchLatestPrognosis();
+  }, [
+    isAuthenticated,
+    fetchProfile,
+    fetchGoals,
+    fetchAccounts,
+    fetchTransactions,
+    fetchLatestPrognosis,
+  ]);
 
-**Summary:**
-• Net Worth: $${accounts.reduce((sum, acc) => sum + acc.balance, 0).toLocaleString()}
-• Monthly Income: $5,000
-• Monthly Expenses: $1,850
-• Savings Rate: 63%
-
-**Insights:**
-
-Your financial health is strong with a healthy savings rate of 63%. You're currently on track to meet your Emergency Fund goal by the end of 2025. However, your Down Payment goal may need adjustment or increased contributions to stay on schedule.
-
-**Recommendations:**
-
-1. Continue your current savings strategy for the Emergency Fund - you're making excellent progress.
-
-2. Consider increasing monthly contributions to your Down Payment fund by $200-300 to improve your trajectory toward the 2027 target.
-
-3. Your investment portfolio shows solid diversification. Given your Moderate risk appetite, consider reviewing your asset allocation quarterly.
-
-4. You have strong expense discipline. Consider automating an additional 5% of income toward long-term investments to maximize compound growth.
-
-**Next Steps:**
-
-Review and adjust your Down Payment goal timeline or increase monthly contributions. Schedule a quarterly review of your investment portfolio performance.`;
-
-    setPrognosisReport(report);
-  };
-
-  const login = (email: string, password: string) => {
-    // Mock login logic
-    setIsAuthenticated(true);
-    updateProfile({ email });
-  };
-
-  const signup = (name: string, email: string, password: string) => {
-    // Mock signup logic
-    setIsAuthenticated(true);
-    updateProfile({ displayName: name, email });
-  };
-
-  const logout = () => {
-    // Mock logout logic
-    setIsAuthenticated(false);
-  };
+  // Fetch FX rates when profile (and thus baseCurrency) is known
+  useEffect(() => {
+    if (profile?.base_currency) {
+      fetchFxRates(profile.base_currency);
+    }
+  }, [profile?.base_currency, fetchFxRates]);
 
   return (
     <AppContext.Provider
       value={{
         theme,
         toggleTheme,
+        isAuthenticated,
+        authLoading,
+        userEmail,
+        login,
+        signup,
+        logout,
         profile,
-        updateProfile,
+        profileLoading,
+        saveProfile,
         goals,
+        goalsLoading,
         addGoal,
         updateGoal,
         deleteGoal,
         accounts,
+        accountsLoading,
         addAccount,
-        updateAccount,
         deleteAccount,
         transactions,
+        transactionsLoading,
         addTransaction,
         updateTransaction,
         deleteTransaction,
         settings,
         updateSettings,
+        fxRates,
         prognosisReport,
+        prognosisLoading,
         generatePrognosis,
-        isAuthenticated,
-        login,
-        signup,
-        logout,
       }}
     >
       {children}

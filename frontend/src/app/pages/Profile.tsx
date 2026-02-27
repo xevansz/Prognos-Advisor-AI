@@ -18,30 +18,25 @@ import {
   Settings,
   Mail,
 } from "lucide-react";
-import { getCurrencySymbol } from "../constants";
+import { getCurrencySymbol, formatCurrency } from "../constants";
 
 export function Profile() {
-  const { profile, goals } = useApp();
+  const { profile, goals, userEmail } = useApp();
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "On Track":
-        return "bg-success text-success-foreground";
-      case "At Risk":
-        return "bg-warning text-warning-foreground";
-      case "Unrealistic":
-        return "bg-destructive text-destructive-foreground";
-      default:
-        return "bg-muted text-muted-foreground";
-    }
-  };
+  if (!profile) {
+    return (
+      <div className="text-center py-20 text-muted-foreground">
+        <p className="text-sm">Loading profile…</p>
+      </div>
+    );
+  }
 
   const riskColor =
     {
-      Aggressive: "text-destructive",
-      Moderate: "text-warning",
-      Conservative: "text-success",
-    }[profile.riskAppetite] ?? "";
+      aggressive: "text-destructive",
+      moderate: "text-warning",
+      conservative: "text-success",
+    }[profile.risk_appetite] ?? "";
 
   return (
     <div className="space-y-6">
@@ -74,13 +69,15 @@ export function Profile() {
               <dt className="text-xs text-muted-foreground uppercase tracking-wide flex items-center gap-1">
                 <User className="h-3 w-3" /> Display Name
               </dt>
-              <dd className="text-base font-medium">{profile.displayName}</dd>
+              <dd className="text-base font-medium">
+                {profile.display_name ?? "—"}
+              </dd>
             </div>
             <div className="space-y-1">
               <dt className="text-xs text-muted-foreground uppercase tracking-wide flex items-center gap-1">
                 <Mail className="h-3 w-3" /> Email
               </dt>
-              <dd className="text-base font-medium">{profile.email}</dd>
+              <dd className="text-base font-medium">{userEmail ?? "—"}</dd>
             </div>
             <div className="space-y-1">
               <dt className="text-xs text-muted-foreground uppercase tracking-wide">
@@ -93,16 +90,16 @@ export function Profile() {
                 <Wallet className="h-3 w-3" /> Base Currency
               </dt>
               <dd className="text-base font-medium">
-                {profile.baseCurrency} (
-                {getCurrencySymbol(profile.baseCurrency)})
+                {profile.base_currency} (
+                {getCurrencySymbol(profile.base_currency)})
               </dd>
             </div>
             <div className="space-y-1">
               <dt className="text-xs text-muted-foreground uppercase tracking-wide flex items-center gap-1">
                 <ShieldAlert className="h-3 w-3" /> Risk Appetite
               </dt>
-              <dd className={`text-base font-semibold ${riskColor}`}>
-                {profile.riskAppetite}
+              <dd className={`text-base font-semibold capitalize ${riskColor}`}>
+                {profile.risk_appetite}
               </dd>
             </div>
           </dl>
@@ -136,20 +133,17 @@ export function Profile() {
                   className="rounded-lg border bg-background p-4"
                 >
                   <div className="flex items-start justify-between mb-3">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Target className="h-4 w-4 text-primary" />
-                        <span className="font-semibold">{goal.name}</span>
-                      </div>
-                      <Badge className={getStatusColor(goal.status)}>
-                        {goal.status}
-                      </Badge>
+                    <div className="flex items-center gap-2">
+                      <Target className="h-4 w-4 text-primary" />
+                      <span className="font-semibold">{goal.name}</span>
                     </div>
                     <div className="text-right">
                       <div className="text-xs text-muted-foreground">
                         Priority
                       </div>
-                      <div className="text-xl font-bold">{goal.priority}</div>
+                      <div className="text-sm font-semibold capitalize">
+                        {goal.priority}
+                      </div>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4 text-sm">
@@ -159,8 +153,10 @@ export function Profile() {
                       </div>
                       <div className="font-semibold flex items-center gap-1">
                         <TrendingUp className="h-3 w-3" />
-                        {getCurrencySymbol(profile.baseCurrency)}
-                        {goal.targetAmount.toLocaleString()}
+                        {formatCurrency(
+                          goal.target_amount,
+                          goal.target_currency,
+                        )}
                       </div>
                     </div>
                     <div>
@@ -169,7 +165,7 @@ export function Profile() {
                       </div>
                       <div className="font-semibold flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
-                        {new Date(goal.targetDate).toLocaleDateString()}
+                        {new Date(goal.target_date).toLocaleDateString()}
                       </div>
                     </div>
                   </div>
