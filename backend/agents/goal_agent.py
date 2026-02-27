@@ -39,14 +39,11 @@ def evaluate_goals(
             continue
 
         if isinstance(target_date, str):
-            target_date = datetime.fromisoformat(
-                target_date.replace("Z", "+00:00")
-            ).date()
+            target_date = datetime.fromisoformat(target_date.replace("Z", "+00:00")).date()
 
         months_remaining = max(
             1,
-            (target_date.year - datetime.utcnow().year) * 12
-            + (target_date.month - datetime.utcnow().month),
+            (target_date.year - datetime.utcnow().year) * 12 + (target_date.month - datetime.utcnow().month),
         )
 
         # Calculate Future Value using compound interest formula
@@ -55,14 +52,11 @@ def evaluate_goals(
 
         if monthly_rate > 0:
             future_value_savings = float(
-                Decimal(str(current_savings))
-                * Decimal(str((1 + monthly_rate) ** months_remaining))
+                Decimal(str(current_savings)) * Decimal(str((1 + monthly_rate) ** months_remaining))
             )
             future_value_contributions = float(
                 Decimal(str(monthly_savings))
-                * Decimal(
-                    str(((1 + monthly_rate) ** months_remaining - 1) / monthly_rate)
-                )
+                * Decimal(str(((1 + monthly_rate) ** months_remaining - 1) / monthly_rate))
             )
             projected_value = future_value_savings + future_value_contributions
         else:
@@ -79,13 +73,10 @@ def evaluate_goals(
             simulated_monthly_rate = simulated_return / 12.0
 
             if simulated_monthly_rate > -0.05:  # Avoid extreme negative scenarios
-                sim_fv_savings = current_savings * (
-                    (1 + simulated_monthly_rate) ** months_remaining
-                )
+                sim_fv_savings = current_savings * ((1 + simulated_monthly_rate) ** months_remaining)
                 if simulated_monthly_rate != 0:
                     sim_fv_contributions = monthly_savings * (
-                        ((1 + simulated_monthly_rate) ** months_remaining - 1)
-                        / simulated_monthly_rate
+                        ((1 + simulated_monthly_rate) ** months_remaining - 1) / simulated_monthly_rate
                     )
                 else:
                     sim_fv_contributions = monthly_savings * months_remaining
@@ -114,9 +105,7 @@ def evaluate_goals(
                 "projected_value": round(projected_value, 2),
                 "success_probability": round(success_probability, 2),
                 "goal_pressure": round(goal_pressure, 2),
-                "required_monthly_savings": round(
-                    float(target_amount) / months_remaining, 2
-                ),
+                "required_monthly_savings": round(float(target_amount) / months_remaining, 2),
                 "actual_monthly_savings": monthly_savings,
             }
         )

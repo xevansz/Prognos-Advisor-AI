@@ -33,9 +33,7 @@ async def get_profile(db: AsyncSession, user_id: str) -> Profile | None:
     return result.scalar_one_or_none()
 
 
-async def upsert_profile(
-    db: AsyncSession, user_id: str, payload: ProfileCreate | ProfileUpdate
-) -> Profile:
+async def upsert_profile(db: AsyncSession, user_id: str, payload: ProfileCreate | ProfileUpdate) -> Profile:
     """
     Create or update a user's profile.
     """

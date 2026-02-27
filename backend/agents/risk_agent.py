@@ -26,9 +26,7 @@ def compute_risk_metrics(
     """
 
     if not transactions:
-        total_liquid = sum(
-            Decimal(str(acc.get("balance", 0))) for acc in liquid_accounts
-        )
+        total_liquid = sum(Decimal(str(acc.get("balance", 0))) for acc in liquid_accounts)
         stability_ratio = 2.0 if monthly_income > 0 else 1.0
         savings_ratio = 1.0 if monthly_income > 0 else 0.0
         return {
@@ -41,9 +39,7 @@ def compute_risk_metrics(
         }
 
     cutoff_date = datetime.utcnow().date() - timedelta(days=60)
-    recent_transactions = [
-        tx for tx in transactions if tx.get("date") and tx["date"] >= cutoff_date
-    ]
+    recent_transactions = [tx for tx in transactions if tx.get("date") and tx["date"] >= cutoff_date]
 
     total_debits = Decimal("0")
     total_credits = Decimal("0")
@@ -77,10 +73,7 @@ def compute_risk_metrics(
 
     # Calculate savings ratio: (income - expenses) / income
     if monthly_income > 0:
-        savings_ratio = float(
-            (Decimal(str(monthly_income)) - Decimal(str(burn_rate)))
-            / Decimal(str(monthly_income))
-        )
+        savings_ratio = float((Decimal(str(monthly_income)) - Decimal(str(burn_rate))) / Decimal(str(monthly_income)))
         savings_ratio = max(0.0, min(1.0, savings_ratio))  # Clamp to [0, 1]
     else:
         savings_ratio = 0.0
@@ -97,11 +90,7 @@ def compute_risk_metrics(
     runway_normalized = normalize(min(runway_months, 12.0), 0.0, 12.0)
     stability_normalized = normalize(stability_ratio, 0.5, 2.0)
 
-    risk_score = int(
-        40 * runway_normalized * 100
-        + 30 * stability_normalized * 100
-        + 30 * savings_ratio * 100
-    )
+    risk_score = int(40 * runway_normalized * 100 + 30 * stability_normalized * 100 + 30 * savings_ratio * 100)
     risk_score = max(0, min(100, risk_score))
 
     # Determine risk label

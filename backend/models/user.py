@@ -8,7 +8,7 @@ from models.base import Base, TimestampMixin
 class User(Base, TimestampMixin):
     """
     Shadow user table keyed by Supabase user id.
-    
+
     The id field IS the Supabase user.id (not a separate field).
     """
 

@@ -1,7 +1,6 @@
 from datetime import date as date_type
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -21,11 +20,11 @@ class GoalCreate(GoalBase):
 
 
 class GoalUpdate(BaseModel):
-    name: Optional[str] = Field(default=None, min_length=1, max_length=255)
-    target_amount: Optional[Decimal] = Field(default=None, gt=0)
-    target_currency: Optional[str] = Field(default=None, min_length=3, max_length=3)
-    target_date: Optional[date_type] = None
-    priority: Optional[GoalPriority] = None
+    name: str | None = Field(default=None, min_length=1, max_length=255)
+    target_amount: Decimal | None = Field(default=None, gt=0)
+    target_currency: str | None = Field(default=None, min_length=3, max_length=3)
+    target_date: date_type | None = None
+    priority: GoalPriority | None = None
 
 
 class GoalOut(GoalBase):

@@ -1,6 +1,6 @@
 ## Prognosis AI – MVP Specification
 
-**Timeline:** ~50 days  
+**Timeline:** ~50 days
 **Goal:** Deliver a demo-ready, end-to-end version of Prognosis AI focused on simple, understandable financial tracking and AI-generated planning suggestions (not financial advice).
 
 ---
@@ -98,4 +98,3 @@
 - The UI and copy consistently:
   - Avoid direct “buy/sell” recommendations.
   - Focus on education, clarity, and optional suggestions at the **asset-class level** only.
-

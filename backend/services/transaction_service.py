@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date
 from decimal import Decimal
 
 from fastapi import HTTPException, status
@@ -37,15 +37,11 @@ async def list_transactions(
     return list(result.scalars().all())
 
 
-async def get_transaction(
-    db: AsyncSession, transaction_id: str, user_id: str
-) -> Transaction:
+async def get_transaction(db: AsyncSession, transaction_id: str, user_id: str) -> Transaction:
     """
     Get a specific transaction, ensuring it belongs to the user.
     """
-    stmt = select(Transaction).where(
-        Transaction.id == transaction_id, Transaction.user_id == user_id
-    )
+    stmt = select(Transaction).where(Transaction.id == transaction_id, Transaction.user_id == user_id)
     result = await db.execute(stmt)
     transaction = result.scalar_one_or_none()
 
@@ -80,15 +76,11 @@ async def _update_account_balance(
             account.balance -= amount
 
 
-async def create_transaction(
-    db: AsyncSession, user_id: str, payload: TransactionCreate
-) -> Transaction:
+async def create_transaction(db: AsyncSession, user_id: str, payload: TransactionCreate) -> Transaction:
     """
     Create a new transaction and update account balance atomically.
     """
-    stmt = select(Account).where(
-        Account.id == payload.account_id, Account.user_id == user_id
-    )
+    stmt = select(Account).where(Account.id == payload.account_id, Account.user_id == user_id)
     result = await db.execute(stmt)
     account = result.scalar_one_or_none()
 
@@ -141,9 +133,7 @@ async def update_transaction(
     """
     transaction = await get_transaction(db, transaction_id, user_id)
 
-    stmt = select(Account).where(
-        Account.id == transaction.account_id, Account.user_id == user_id
-    )
+    stmt = select(Account).where(Account.id == transaction.account_id, Account.user_id == user_id)
     result = await db.execute(stmt)
     old_account = result.scalar_one_or_none()
 
@@ -153,9 +143,7 @@ async def update_transaction(
             detail="Account not found",
         )
 
-    await _update_account_balance(
-        db, old_account, transaction.amount, transaction.type, is_reversal=True
-    )
+    await _update_account_balance(db, old_account, transaction.amount, transaction.type, is_reversal=True)
 
     if payload.label is not None:
         transaction.label = payload.label
@@ -169,9 +157,7 @@ async def update_transaction(
         transaction.type = payload.type
 
     if payload.account_id is not None and payload.account_id != transaction.account_id:
-        stmt = select(Account).where(
-            Account.id == payload.account_id, Account.user_id == user_id
-        )
+        stmt = select(Account).where(Account.id == payload.account_id, Account.user_id == user_id)
         result = await db.execute(stmt)
         new_account = result.scalar_one_or_none()
 
@@ -192,24 +178,18 @@ async def update_transaction(
     return transaction
 
 
-async def delete_transaction(
-    db: AsyncSession, transaction_id: str, user_id: str
-) -> None:
+async def delete_transaction(db: AsyncSession, transaction_id: str, user_id: str) -> None:
     """
     Delete a transaction and revert its effect on account balance.
     """
     transaction = await get_transaction(db, transaction_id, user_id)
 
-    stmt = select(Account).where(
-        Account.id == transaction.account_id, Account.user_id == user_id
-    )
+    stmt = select(Account).where(Account.id == transaction.account_id, Account.user_id == user_id)
     result = await db.execute(stmt)
     account = result.scalar_one_or_none()
 
     if account:
-        await _update_account_balance(
-            db, account, transaction.amount, transaction.type, is_reversal=True
-        )
+        await _update_account_balance(db, account, transaction.amount, transaction.type, is_reversal=True)
 
     await db.delete(transaction)
     await db.commit()

@@ -5,8 +5,8 @@
 
 #TODO
 
-**DISCLAIMER and LICENSE:** 
-* *Artificial Intelligence models can make mistakes.* 
+**DISCLAIMER and LICENSE:**
+* *Artificial Intelligence models can make mistakes.*
 
 * Any financial suggestions or insights provided by the application or its AI advisors are purely informational and non-binding.
 

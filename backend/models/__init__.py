@@ -10,8 +10,8 @@ from models.enums import (
 )
 from models.fx_rate import FXRate
 from models.goal import Goal
-from models.prognosis import PrognosisReport, PrognosisUsage
 from models.profile import Profile
+from models.prognosis import PrognosisReport, PrognosisUsage
 from models.recurrence_rule import RecurrenceRule
 from models.transaction import Transaction
 from models.user import User

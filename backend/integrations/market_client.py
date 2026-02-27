@@ -44,9 +44,7 @@ async def get_macro_state() -> str:
         vix_level = indicators.get("vix_level", 20)
 
         # Calculate key metrics
-        trend_strength = (
-            (index_level - index_200d_ma) / index_200d_ma if index_200d_ma > 0 else 0
-        )
+        trend_strength = (index_level - index_200d_ma) / index_200d_ma if index_200d_ma > 0 else 0
         is_above_ma = index_level > index_200d_ma
         high_volatility = vix_level > 25
 

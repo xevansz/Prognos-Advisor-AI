@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter
 
 from api.deps import CurrentUserDep, DbDep
 from schemas.prognosis import PrognosisReportOut

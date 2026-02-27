@@ -37,9 +37,7 @@ async def create_transaction(
     """
     Create a new transaction and update account balance.
     """
-    transaction = await transaction_service.create_transaction(
-        db, current_user.user_id, payload
-    )
+    transaction = await transaction_service.create_transaction(db, current_user.user_id, payload)
     return transaction
 
 
@@ -52,9 +50,7 @@ async def get_transaction(
     """
     Get a specific transaction.
     """
-    transaction = await transaction_service.get_transaction(
-        db, transaction_id, current_user.user_id
-    )
+    transaction = await transaction_service.get_transaction(db, transaction_id, current_user.user_id)
     return transaction
 
 
@@ -68,9 +64,7 @@ async def update_transaction(
     """
     Update a transaction and adjust balances.
     """
-    transaction = await transaction_service.update_transaction(
-        db, transaction_id, current_user.user_id, payload
-    )
+    transaction = await transaction_service.update_transaction(db, transaction_id, current_user.user_id, payload)
     return transaction
 
 

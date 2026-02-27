@@ -21,7 +21,7 @@ export function PrognosisAI() {
             </div>
             <h2 className="mb-3">Generate Your Financial Report</h2>
             <p className="text-muted-foreground mb-6 max-w-md">
-              Get AI-powered insights, analysis, and recommendations based on your financial data. 
+              Get AI-powered insights, analysis, and recommendations based on your financial data.
               Our algorithm will analyze your accounts, transactions, and goals to provide personalized guidance.
             </p>
             <Button size="lg" onClick={generatePrognosis}>
@@ -105,9 +105,9 @@ export function PrognosisAI() {
           <div className="text-sm">
             <p className="font-medium mb-1">Disclaimer</p>
             <p className="text-muted-foreground">
-              This report is generated using automated algorithms based on your financial data. 
-              It should not be considered as professional financial advice. Always consult with a 
-              qualified financial advisor before making significant financial decisions. Past 
+              This report is generated using automated algorithms based on your financial data.
+              It should not be considered as professional financial advice. Always consult with a
+              qualified financial advisor before making significant financial decisions. Past
               performance does not guarantee future results.
             </p>
           </div>

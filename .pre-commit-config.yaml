@@ -1,0 +1,35 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff lint
+        entry: bash -c "cd backend && pdm run ruff check . --fix"
+        language: system
+        pass_filenames: false
+
+      - id: ruff-format
+        name: ruff format
+        entry: bash -c "cd backend && pdm run ruff format ."
+        language: system
+        pass_filenames: false
+
+      - id: check-yaml
+        name: check yaml
+        entry: check-yaml
+        language: system
+        types: [yaml]
+
+      - id: end-of-file-fixer
+        name: end of file fixer
+        entry: end-of-file-fixer
+        language: system
+
+      - id: trailing-whitespace
+        name: trailing whitespace
+        entry: trailing-whitespace-fixer
+        language: system
+
+      - id: check-added-large-files
+        name: check added large files
+        entry: check-added-large-files
+        language: system

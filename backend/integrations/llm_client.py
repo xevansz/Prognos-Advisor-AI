@@ -14,9 +14,10 @@ async def generate_prognosis_report(input_data: dict) -> dict:
     Future: Integrate with Google Gemini Flash or other LLM providers.
     """
 
-    system_prompt = """You are a financial planning assistant. Analyze the provided data and generate a clear, 
+    system_prompt = """
+    You are a financial planning assistant. Analyze the provided data and generate a clear,
     non-judgmental financial prognosis report. Always emphasize that this is not financial advice.
-    
+
     Return a JSON object with these fields:
     - summary_bullets: array of 3-8 key points
     - cashflow_section: string describing cash flow situation
@@ -33,9 +34,7 @@ async def generate_prognosis_report(input_data: dict) -> dict:
 
             client = genai.Client(api_key=settings.llm_api_key)
 
-            prompt = (
-                f"{system_prompt}\n\nInput data:\n{json.dumps(input_data, indent=2)}"
-            )
+            prompt = f"{system_prompt}\n\nInput data:\n{json.dumps(input_data, indent=2)}"
             response = client.models.generate_content(
                 model=settings.llm_model,
                 contents=prompt,

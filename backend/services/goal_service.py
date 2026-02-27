@@ -52,9 +52,7 @@ async def create_goal(db: AsyncSession, user_id: str, payload: GoalCreate) -> Go
     return goal
 
 
-async def update_goal(
-    db: AsyncSession, goal_id: str, user_id: str, payload: GoalUpdate
-) -> Goal:
+async def update_goal(db: AsyncSession, goal_id: str, user_id: str, payload: GoalUpdate) -> Goal:
     """
     Update a goal.
     """

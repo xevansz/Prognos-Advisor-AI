@@ -1,13 +1,13 @@
-import enum
+from enum import StrEnum
 
 
-class RiskAppetite(str, enum.Enum):
+class RiskAppetite(StrEnum):
     CONSERVATIVE = "conservative"
     MODERATE = "moderate"
     AGGRESSIVE = "aggressive"
 
 
-class AccountType(str, enum.Enum):
+class AccountType(StrEnum):
     BANK = "bank"
     CASH = "cash"
     HOLDINGS = "holdings"
@@ -15,22 +15,22 @@ class AccountType(str, enum.Enum):
     OTHER = "other"
 
 
-class TransactionType(str, enum.Enum):
+class TransactionType(StrEnum):
     DEBIT = "debit"
     CREDIT = "credit"
 
 
-class RecurrenceFrequency(str, enum.Enum):
+class RecurrenceFrequency(StrEnum):
     MONTHLY = "monthly"
 
 
-class GoalPriority(str, enum.Enum):
+class GoalPriority(StrEnum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
 
 
-class GoalStatus(str, enum.Enum):
+class GoalStatus(StrEnum):
     ON_TRACK = "on_track"
     AT_RISK = "at_risk"
     UNREALISTIC = "unrealistic"

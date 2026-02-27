@@ -34,12 +34,7 @@ async def get_cached_rates(db: AsyncSession, base_currency: str = "USD") -> dict
     """
     Get cached FX rates, fetching new ones if cache is stale (>3 days).
     """
-    stmt = (
-        select(FXRate)
-        .where(FXRate.base_currency == base_currency)
-        .order_by(FXRate.fetched_at.desc())
-        .limit(1)
-    )
+    stmt = select(FXRate).where(FXRate.base_currency == base_currency).order_by(FXRate.fetched_at.desc()).limit(1)
     result = await db.execute(stmt)
     cached = result.scalar_one_or_none()
 

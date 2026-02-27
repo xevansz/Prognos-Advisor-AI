@@ -1,9 +1,10 @@
 from functools import lru_cache
-from os import path
 from pathlib import Path
+
 from pydantic_settings import BaseSettings
 
 BASE_DIR = Path(__file__).resolve().parents[1]
+
 
 class Settings(BaseSettings):
     """

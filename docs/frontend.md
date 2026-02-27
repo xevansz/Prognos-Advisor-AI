@@ -296,4 +296,3 @@ These components should be generic and used across pages for a consistent look.
 - Keep page `load` functions slim; move logic into `lib/api` and `lib/utils` helpers where possible.
 
 This spec should be sufficient to implement the entire MVP frontend without the original chat history.
-

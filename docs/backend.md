@@ -429,7 +429,7 @@ def recommend_allocation(
   "allocation_section": "...",
   "changes_since_last": "...",
   "disclaimer": "...",
-  "markdown_body": "..." 
+  "markdown_body": "..."
 }
 ```
 
@@ -445,4 +445,3 @@ def recommend_allocation(
   - If LLM call fails, return a structured error and **do not** cache a partial report.
 
 This spec should be sufficient to implement the entire MVP backend without our chat history.
-

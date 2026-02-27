@@ -31,7 +31,6 @@ def random_initail_state():
 
 
 def train(episodes=1000, batch_size=32):
-
     Path("backend/agents/models").mkdir(parents=True, exist_ok=True)
 
     Tensor.training = True
@@ -61,11 +60,7 @@ def train(episodes=1000, batch_size=32):
             agent.update_target()
 
         if episode % 100 == 0:
-            print(
-                f"Episode {episode:4d} | "
-                f"Reward: {total_reward:8.2f} | "
-                f"Epsilon: {agent.epsilon:.4f}"
-            )
+            print(f"Episode {episode:4d} | Reward: {total_reward:8.2f} | Epsilon: {agent.epsilon:.4f}")
 
     agent.save(MODEL_SAVE_PATH)
     print(f"\nTraining complete. Model saved to {MODEL_SAVE_PATH}")

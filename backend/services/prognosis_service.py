@@ -100,7 +100,7 @@ async def generate_prognosis(db: AsyncSession, user_id: str) -> dict:
             return cached
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail=f"Rate limit exceeded. Maximum {settings.prognosis_max_requests_per_day} reports per day.",
+            detail=(f"Rate limit exceeded. Maximum {settings.prognosis_max_requests_per_day} reports per day."),
         )
 
     stmt = select(Profile).where(Profile.user_id == user_id)
@@ -203,8 +203,7 @@ async def generate_prognosis(db: AsyncSession, user_id: str) -> dict:
         nearest_goal_months = min(
             max(
                 1,
-                (g.target_date.year - datetime.utcnow().year) * 12
-                + (g.target_date.month - datetime.utcnow().month),
+                (g.target_date.year - datetime.utcnow().year) * 12 + (g.target_date.month - datetime.utcnow().month),
             )
             for g in goals
         )
@@ -222,9 +221,7 @@ async def generate_prognosis(db: AsyncSession, user_id: str) -> dict:
     # Run strategy agent (RL or heuristic fallback)
     strategy_agent = StrategyAgent()
     savings_rate = risk_metrics.get("savings_ratio", 0.0)
-    strategy = strategy_agent.get_strategy(
-        risk_metrics, goal_evaluations, allocation, savings_rate
-    )
+    strategy = strategy_agent.get_strategy(risk_metrics, goal_evaluations, allocation, savings_rate)
 
     stmt = select(PrognosisReport).where(PrognosisReport.user_id == user_id)
     result = await db.execute(stmt)

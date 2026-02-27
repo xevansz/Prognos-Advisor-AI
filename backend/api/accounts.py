@@ -55,9 +55,7 @@ async def update_account(
     """
     Update an account's metadata.
     """
-    account = await account_service.update_account(
-        db, account_id, current_user.user_id, payload
-    )
+    account = await account_service.update_account(db, account_id, current_user.user_id, payload)
     return account
 
 

@@ -21,6 +21,4 @@ class FXRate(Base):
     )
     base_currency: Mapped[str] = mapped_column(String(3), nullable=False)
     rates: Mapped[dict] = mapped_column(JSONB, nullable=False)
-    fetched_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, index=True
-    )
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)

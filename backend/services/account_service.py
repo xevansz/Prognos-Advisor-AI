@@ -34,9 +34,7 @@ async def get_account(db: AsyncSession, account_id: str, user_id: str) -> Accoun
     return account
 
 
-async def create_account(
-    db: AsyncSession, user_id: str, payload: AccountCreate
-) -> Account:
+async def create_account(db: AsyncSession, user_id: str, payload: AccountCreate) -> Account:
     """
     Create a new account for a user.
     """
@@ -57,9 +55,7 @@ async def create_account(
     return account
 
 
-async def update_account(
-    db: AsyncSession, account_id: str, user_id: str, payload: AccountUpdate
-) -> Account:
+async def update_account(db: AsyncSession, account_id: str, user_id: str, payload: AccountUpdate) -> Account:
     """
     Update an account's metadata (not balance).
     """

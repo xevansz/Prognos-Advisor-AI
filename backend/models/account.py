@@ -32,6 +32,4 @@ class Account(Base, TimestampMixin):
         nullable=False,
     )
     currency: Mapped[str] = mapped_column(String(3), nullable=False)
-    balance: Mapped[Decimal] = mapped_column(
-        Numeric(18, 4), nullable=False, default=0
-    )
+    balance: Mapped[Decimal] = mapped_column(Numeric(18, 4), nullable=False, default=0)

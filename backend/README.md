@@ -30,7 +30,7 @@ backend/
 ### Installation
 1. Install dependencies:
 ```bash
-# Use python3.12 
+# Use python3.12
 cd backend
 python3 -m venv .venv
 source .venv/bin/activate

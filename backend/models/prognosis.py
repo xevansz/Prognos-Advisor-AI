@@ -28,9 +28,7 @@ class PrognosisReport(Base):
 
     report_json: Mapped[dict] = mapped_column(JSONB, nullable=False)
     inputs_snapshot: Mapped[dict] = mapped_column(JSONB, nullable=False)
-    generated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, index=True
-    )
+    generated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
 
 
 class PrognosisUsage(Base):

@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import List
 
 from tinygrad import Tensor
 
@@ -54,7 +53,7 @@ class StrategyAgent:
     def get_strategy(
         self,
         risk_metrics: dict,
-        goal_evaluations: List[dict],
+        goal_evaluations: list[dict],
         allocation: dict,
         savings_rate: float,
     ):

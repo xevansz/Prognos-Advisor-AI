@@ -1,5 +1,3 @@
-from typing import List
-
 """
 We are a building a state vector for RL.
 The model expects these values (risk, goals, equity, runway)
@@ -22,10 +20,10 @@ def clamp(value: float, min_value: float = 0.0, max_value: float = 1.0) -> float
 
 def encode_state(
     risk_metrics: dict,
-    goal_evaluations: List[dict],
+    goal_evaluations: list[dict],
     allocation: dict,
     monthly_savings_rate: float,
-) -> List[float]:
+) -> list[float]:
     """
     Convert the raw outputs to a normalized fixed length state vector
 
@@ -38,9 +36,7 @@ def encode_state(
 
     # goal
     if goal_evaluations:
-        probabilities = [
-            goal.get("success_probability", 0.5) for goal in goal_evaluations
-        ]
+        probabilities = [goal.get("success_probability", 0.5) for goal in goal_evaluations]
         goal_feasibility = sum(probabilities) / len(probabilities)
     else:
         goal_feasibility = 0.5
