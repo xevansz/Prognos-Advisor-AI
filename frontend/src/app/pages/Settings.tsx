@@ -1,23 +1,24 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router";
+import React from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../components/ui/card";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
+} from '../components/ui/card'
+import { Input } from '../components/ui/input'
+import { Label } from '../components/ui/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../components/ui/select";
-import { Button } from "../components/ui/button";
-import { Switch } from "../components/ui/switch";
+} from '../components/ui/select'
+import { Button } from '../components/ui/button'
+import { Switch } from '../components/ui/switch'
 import {
   Dialog,
   DialogContent,
@@ -26,13 +27,13 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
-} from "../components/ui/dialog";
+} from '../components/ui/dialog'
 import {
   useApp,
   type RiskAppetite,
   type GoalPriority,
-} from "../context/AppContext";
-import { CURRENCIES } from "../constants";
+} from '../context/AppContext'
+import { CURRENCIES } from '../constants'
 import {
   Moon,
   Sun,
@@ -45,45 +46,45 @@ import {
   Settings2,
   Shield,
   ChevronRight,
-} from "lucide-react";
+} from 'lucide-react'
 
-type SettingsTab = "profile" | "goals" | "general" | "account";
+type SettingsTab = 'profile' | 'goals' | 'general' | 'account'
 
 const sidebarItems: {
-  id: SettingsTab;
-  label: string;
-  icon: React.ElementType;
-  description: string;
+  id: SettingsTab
+  label: string
+  icon: React.ElementType
+  description: string
 }[] = [
   {
-    id: "profile",
-    label: "Personal Info",
+    id: 'profile',
+    label: 'Personal Info',
     icon: User,
-    description: "Name, age, currency, risk",
+    description: 'Name, age, currency, risk',
   },
   {
-    id: "goals",
-    label: "Goals",
+    id: 'goals',
+    label: 'Goals',
     icon: Target,
-    description: "Financial goals & targets",
+    description: 'Financial goals & targets',
   },
   {
-    id: "general",
-    label: "General",
+    id: 'general',
+    label: 'General',
     icon: Settings2,
-    description: "Theme, format, notifications",
+    description: 'Theme, format, notifications',
   },
   {
-    id: "account",
-    label: "Account",
+    id: 'account',
+    label: 'Account',
     icon: Shield,
-    description: "Email, security, data",
+    description: 'Email, security, data',
   },
-];
+]
 
 export function Settings() {
-  const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const {
     profile,
     saveProfile,
@@ -97,93 +98,93 @@ export function Settings() {
     deleteGoal,
     logout,
     userEmail,
-  } = useApp();
+  } = useApp()
 
-  const initialTab = (searchParams.get("tab") as SettingsTab) || "profile";
-  const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab);
-  const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
-  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [editingGoal, setEditingGoal] = useState<string | null>(null);
-  const [profileError, setProfileError] = useState("");
-  const [profileSuccess, setProfileSuccess] = useState("");
-  const [profileSaving, setProfileSaving] = useState(false);
-  const [goalError, setGoalError] = useState("");
-  const [goalSaving, setGoalSaving] = useState(false);
+  const initialTab = (searchParams.get('tab') as SettingsTab) || 'profile'
+  const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab)
+  const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false)
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [editingGoal, setEditingGoal] = useState<string | null>(null)
+  const [profileError, setProfileError] = useState('')
+  const [profileSuccess, setProfileSuccess] = useState('')
+  const [profileSaving, setProfileSaving] = useState(false)
+  const [goalError, setGoalError] = useState('')
+  const [goalSaving, setGoalSaving] = useState(false)
   const [localProfile, setLocalProfile] = useState({
-    displayName: profile?.display_name ?? "",
+    displayName: profile?.display_name ?? '',
     age: profile?.age ?? 0,
-    baseCurrency: profile?.base_currency ?? "INR",
-    riskAppetite: (profile?.risk_appetite ?? "moderate") as RiskAppetite,
-  });
+    baseCurrency: profile?.base_currency ?? 'INR',
+    riskAppetite: (profile?.risk_appetite ?? 'moderate') as RiskAppetite,
+  })
   const [goalForm, setGoalForm] = useState({
-    name: "",
-    targetAmount: "",
-    targetCurrency: profile?.base_currency ?? "INR",
-    targetDate: "",
-    priority: "medium" as GoalPriority,
-  });
+    name: '',
+    targetAmount: '',
+    targetCurrency: profile?.base_currency ?? 'INR',
+    targetDate: '',
+    priority: 'medium' as GoalPriority,
+  })
 
   useEffect(() => {
     if (profile) {
       setLocalProfile({
-        displayName: profile.display_name ?? "",
+        displayName: profile.display_name ?? '',
         age: profile.age,
         baseCurrency: profile.base_currency,
         riskAppetite: profile.risk_appetite as RiskAppetite,
-      });
+      })
     }
-  }, [profile]);
+  }, [profile])
 
   useEffect(() => {
-    const tab = searchParams.get("tab") as SettingsTab;
+    const tab = searchParams.get('tab') as SettingsTab
     if (tab && sidebarItems.some((i) => i.id === tab)) {
-      setActiveTab(tab);
+      setActiveTab(tab)
     }
-  }, [searchParams]);
+  }, [searchParams])
 
   const handleTabChange = (tab: SettingsTab) => {
-    setActiveTab(tab);
-    setSearchParams({ tab });
-    setProfileError("");
-    setProfileSuccess("");
-    setGoalError("");
-  };
+    setActiveTab(tab)
+    setSearchParams({ tab })
+    setProfileError('')
+    setProfileSuccess('')
+    setGoalError('')
+  }
 
   const handleProfileSave = async () => {
-    setProfileError("");
-    setProfileSuccess("");
+    setProfileError('')
+    setProfileSuccess('')
     if (localProfile.age < 1 || localProfile.age > 120) {
-      setProfileError("Please enter a valid age.");
-      return;
+      setProfileError('Please enter a valid age.')
+      return
     }
-    setProfileSaving(true);
+    setProfileSaving(true)
     try {
       await saveProfile({
         display_name: localProfile.displayName || null,
         age: localProfile.age,
         base_currency: localProfile.baseCurrency,
         risk_appetite: localProfile.riskAppetite,
-      });
-      setProfileSuccess("Profile saved successfully.");
-      setTimeout(() => setProfileSuccess(""), 3000);
+      })
+      setProfileSuccess('Profile saved successfully.')
+      setTimeout(() => setProfileSuccess(''), 3000)
     } catch (err) {
       setProfileError(
-        err instanceof Error ? err.message : "Failed to save profile.",
-      );
+        err instanceof Error ? err.message : 'Failed to save profile.'
+      )
     } finally {
-      setProfileSaving(false);
+      setProfileSaving(false)
     }
-  };
+  }
 
   const handleSettingsChange = (field: string, value: boolean | string) => {
-    updateSettings({ [field]: value });
-  };
+    updateSettings({ [field]: value })
+  }
 
   const openGoalDialog = (goalId?: string) => {
-    setGoalError("");
+    setGoalError('')
     if (goalId) {
-      const goal = goals.find((g) => g.id === goalId);
+      const goal = goals.find((g) => g.id === goalId)
       if (goal) {
         setGoalForm({
           name: goal.name,
@@ -191,37 +192,37 @@ export function Settings() {
           targetCurrency: goal.target_currency,
           targetDate: goal.target_date,
           priority: goal.priority as GoalPriority,
-        });
-        setEditingGoal(goalId);
+        })
+        setEditingGoal(goalId)
       }
     } else {
       setGoalForm({
-        name: "",
-        targetAmount: "",
-        targetCurrency: profile?.base_currency ?? "INR",
-        targetDate: "",
-        priority: "medium",
-      });
-      setEditingGoal(null);
+        name: '',
+        targetAmount: '',
+        targetCurrency: profile?.base_currency ?? 'INR',
+        targetDate: '',
+        priority: 'medium',
+      })
+      setEditingGoal(null)
     }
-    setIsGoalDialogOpen(true);
-  };
+    setIsGoalDialogOpen(true)
+  }
 
   const handleGoalSubmit = async () => {
-    setGoalError("");
+    setGoalError('')
     if (!goalForm.name.trim()) {
-      setGoalError("Goal name is required.");
-      return;
+      setGoalError('Goal name is required.')
+      return
     }
     if (!goalForm.targetAmount || isNaN(parseFloat(goalForm.targetAmount))) {
-      setGoalError("Enter a valid target amount.");
-      return;
+      setGoalError('Enter a valid target amount.')
+      return
     }
     if (!goalForm.targetDate) {
-      setGoalError("Target date is required.");
-      return;
+      setGoalError('Target date is required.')
+      return
     }
-    setGoalSaving(true);
+    setGoalSaving(true)
     try {
       if (editingGoal) {
         await updateGoal(editingGoal, {
@@ -230,7 +231,7 @@ export function Settings() {
           target_currency: goalForm.targetCurrency,
           target_date: goalForm.targetDate,
           priority: goalForm.priority,
-        });
+        })
       } else {
         await addGoal({
           name: goalForm.name,
@@ -238,15 +239,15 @@ export function Settings() {
           target_currency: goalForm.targetCurrency,
           target_date: goalForm.targetDate,
           priority: goalForm.priority,
-        });
+        })
       }
-      setIsGoalDialogOpen(false);
+      setIsGoalDialogOpen(false)
     } catch (err) {
-      setGoalError(err instanceof Error ? err.message : "Failed to save goal.");
+      setGoalError(err instanceof Error ? err.message : 'Failed to save goal.')
     } finally {
-      setGoalSaving(false);
+      setGoalSaving(false)
     }
-  };
+  }
 
   return (
     <div className="space-y-6">
@@ -262,22 +263,22 @@ export function Settings() {
         <aside className="md:w-56 shrink-0">
           <nav className="rounded-lg border bg-card overflow-hidden">
             {sidebarItems.map((item, idx) => {
-              const Icon = item.icon;
-              const isActive = activeTab === item.id;
+              const Icon = item.icon
+              const isActive = activeTab === item.id
               return (
                 <button
                   key={item.id}
                   onClick={() => handleTabChange(item.id)}
                   className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors
-                    ${idx !== 0 ? "border-t border-border" : ""}
+                    ${idx !== 0 ? 'border-t border-border' : ''}
                     ${
                       isActive
-                        ? "bg-accent text-accent-foreground"
-                        : "hover:bg-accent/50 text-foreground"
+                        ? 'bg-accent text-accent-foreground'
+                        : 'hover:bg-accent/50 text-foreground'
                     }`}
                 >
                   <Icon
-                    className={`h-4 w-4 shrink-0 ${isActive ? "text-accent-foreground" : "text-muted-foreground"}`}
+                    className={`h-4 w-4 shrink-0 ${isActive ? 'text-accent-foreground' : 'text-muted-foreground'}`}
                   />
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium">{item.label}</div>
@@ -286,10 +287,10 @@ export function Settings() {
                     </div>
                   </div>
                   <ChevronRight
-                    className={`h-3 w-3 shrink-0 ${isActive ? "opacity-70" : "opacity-0"}`}
+                    className={`h-3 w-3 shrink-0 ${isActive ? 'opacity-70' : 'opacity-0'}`}
                   />
                 </button>
-              );
+              )
             })}
           </nav>
         </aside>
@@ -297,7 +298,7 @@ export function Settings() {
         {/* Content */}
         <div className="flex-1 min-w-0 space-y-4">
           {/* Personal Info */}
-          {activeTab === "profile" && (
+          {activeTab === 'profile' && (
             <Card className="shadow-sm">
               <CardHeader>
                 <CardTitle>Personal Information</CardTitle>
@@ -313,12 +314,12 @@ export function Settings() {
                       id="displayName"
                       value={localProfile.displayName}
                       onChange={(e) => {
-                        setProfileSuccess("");
-                        setProfileError("");
+                        setProfileSuccess('')
+                        setProfileError('')
                         setLocalProfile((p) => ({
                           ...p,
                           displayName: e.target.value,
-                        }));
+                        }))
                       }}
                     />
                   </div>
@@ -327,7 +328,7 @@ export function Settings() {
                     <Input
                       id="email"
                       type="email"
-                      value={userEmail ?? ""}
+                      value={userEmail ?? ''}
                       readOnly
                       className="bg-muted cursor-not-allowed"
                     />
@@ -341,12 +342,12 @@ export function Settings() {
                       type="number"
                       value={localProfile.age}
                       onChange={(e) => {
-                        setProfileSuccess("");
-                        setProfileError("");
+                        setProfileSuccess('')
+                        setProfileError('')
                         setLocalProfile((p) => ({
                           ...p,
                           age: parseInt(e.target.value) || 0,
-                        }));
+                        }))
                       }}
                       min={1}
                       max={120}
@@ -357,8 +358,8 @@ export function Settings() {
                     <Select
                       value={localProfile.baseCurrency}
                       onValueChange={(v) => {
-                        setProfileSuccess("");
-                        setLocalProfile((p) => ({ ...p, baseCurrency: v }));
+                        setProfileSuccess('')
+                        setLocalProfile((p) => ({ ...p, baseCurrency: v }))
                       }}
                     >
                       <SelectTrigger id="currency">
@@ -377,28 +378,28 @@ export function Settings() {
                 <div className="space-y-2">
                   <Label>Risk Appetite</Label>
                   <div className="flex gap-2">
-                    {(["conservative", "moderate", "aggressive"] as const).map(
+                    {(['conservative', 'moderate', 'aggressive'] as const).map(
                       (risk) => (
                         <Button
                           key={risk}
                           variant={
                             localProfile.riskAppetite === risk
-                              ? "default"
-                              : "outline"
+                              ? 'default'
+                              : 'outline'
                           }
                           size="sm"
                           className="flex-1 capitalize"
                           onClick={() => {
-                            setProfileSuccess("");
+                            setProfileSuccess('')
                             setLocalProfile((p) => ({
                               ...p,
                               riskAppetite: risk,
-                            }));
+                            }))
                           }}
                         >
                           {risk.charAt(0).toUpperCase() + risk.slice(1)}
                         </Button>
-                      ),
+                      )
                     )}
                   </div>
                 </div>
@@ -409,14 +410,14 @@ export function Settings() {
                   <p className="text-sm text-success">{profileSuccess}</p>
                 )}
                 <Button onClick={handleProfileSave} disabled={profileSaving}>
-                  {profileSaving ? "Saving…" : "Save Changes"}
+                  {profileSaving ? 'Saving…' : 'Save Changes'}
                 </Button>
               </CardContent>
             </Card>
           )}
 
           {/* Goals */}
-          {activeTab === "goals" && (
+          {activeTab === 'goals' && (
             <Card className="shadow-sm">
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -439,12 +440,12 @@ export function Settings() {
                     <DialogContent>
                       <DialogHeader>
                         <DialogTitle>
-                          {editingGoal ? "Edit Goal" : "Create New Goal"}
+                          {editingGoal ? 'Edit Goal' : 'Create New Goal'}
                         </DialogTitle>
                         <DialogDescription>
                           {editingGoal
-                            ? "Update your financial goal details"
-                            : "Add a new financial goal to track"}
+                            ? 'Update your financial goal details'
+                            : 'Add a new financial goal to track'}
                         </DialogDescription>
                       </DialogHeader>
                       <div className="space-y-4 py-4">
@@ -548,8 +549,8 @@ export function Settings() {
                           disabled={goalSaving}
                         >
                           {goalSaving
-                            ? "Saving…"
-                            : (editingGoal ? "Update" : "Create") + " Goal"}
+                            ? 'Saving…'
+                            : (editingGoal ? 'Update' : 'Create') + ' Goal'}
                         </Button>
                       </DialogFooter>
                     </DialogContent>
@@ -574,11 +575,11 @@ export function Settings() {
                         <div>
                           <div className="font-medium">{goal.name}</div>
                           <div className="text-sm text-muted-foreground">
-                            {goal.target_amount.toLocaleString()}{" "}
-                            {goal.target_currency} by{" "}
-                            {new Date(goal.target_date).toLocaleDateString()} ·{" "}
+                            {goal.target_amount.toLocaleString()}{' '}
+                            {goal.target_currency} by{' '}
+                            {new Date(goal.target_date).toLocaleDateString()} ·{' '}
                             {goal.priority.charAt(0).toUpperCase() +
-                              goal.priority.slice(1)}{" "}
+                              goal.priority.slice(1)}{' '}
                             priority
                           </div>
                         </div>
@@ -607,7 +608,7 @@ export function Settings() {
           )}
 
           {/* General */}
-          {activeTab === "general" && (
+          {activeTab === 'general' && (
             <Card className="shadow-sm">
               <CardHeader>
                 <CardTitle>General Settings</CardTitle>
@@ -629,7 +630,7 @@ export function Settings() {
                     onClick={toggleTheme}
                     className="gap-2 min-w-24"
                   >
-                    {theme === "dark" ? (
+                    {theme === 'dark' ? (
                       <>
                         <Moon className="h-4 w-4" /> Dark
                       </>
@@ -650,8 +651,8 @@ export function Settings() {
                   </div>
                   <Select
                     value={settings.currencyFormat}
-                    onValueChange={(v: "symbol" | "code") =>
-                      handleSettingsChange("currencyFormat", v)
+                    onValueChange={(v: 'symbol' | 'code') =>
+                      handleSettingsChange('currencyFormat', v)
                     }
                   >
                     <SelectTrigger id="currency-format" className="w-32">
@@ -675,7 +676,7 @@ export function Settings() {
                     id="notifications"
                     checked={settings.notifications}
                     onCheckedChange={(v) =>
-                      handleSettingsChange("notifications", v)
+                      handleSettingsChange('notifications', v)
                     }
                   />
                 </div>
@@ -684,7 +685,7 @@ export function Settings() {
           )}
 
           {/* Account */}
-          {activeTab === "account" && (
+          {activeTab === 'account' && (
             <div className="space-y-4">
               <Card className="shadow-sm">
                 <CardHeader>
@@ -699,7 +700,7 @@ export function Settings() {
                     <Input
                       id="currentEmail"
                       type="email"
-                      value={userEmail ?? ""}
+                      value={userEmail ?? ''}
                       readOnly
                       className="bg-muted cursor-not-allowed"
                     />
@@ -784,9 +785,9 @@ export function Settings() {
             </Button>
             <Button
               onClick={async () => {
-                await logout();
-                navigate("/");
-                setIsLogoutDialogOpen(false);
+                await logout()
+                navigate('/')
+                setIsLogoutDialogOpen(false)
               }}
             >
               Sign Out
@@ -815,9 +816,9 @@ export function Settings() {
             <Button
               variant="destructive"
               onClick={async () => {
-                await logout();
-                navigate("/");
-                setIsDeleteDialogOpen(false);
+                await logout()
+                navigate('/')
+                setIsDeleteDialogOpen(false)
               }}
             >
               Delete My Account
@@ -826,5 +827,5 @@ export function Settings() {
         </DialogContent>
       </Dialog>
     </div>
-  );
+  )
 }

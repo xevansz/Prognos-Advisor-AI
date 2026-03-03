@@ -1,23 +1,23 @@
-import React from "react";
+import React from 'react'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../components/ui/card";
-import { Button } from "../components/ui/button";
-import { useApp } from "../context/AppContext";
-import { Sparkles, AlertTriangle, Loader2 } from "lucide-react";
+} from '../components/ui/card'
+import { Button } from '../components/ui/button'
+import { useApp } from '../context/AppContext'
+import { Sparkles, AlertTriangle, Loader2 } from 'lucide-react'
 
 function renderValue(value: unknown): React.ReactNode {
-  if (value === null || value === undefined) return null;
+  if (value === null || value === undefined) return null
   if (
-    typeof value === "string" ||
-    typeof value === "number" ||
-    typeof value === "boolean"
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
   ) {
-    return <span>{String(value)}</span>;
+    return <span>{String(value)}</span>
   }
   if (Array.isArray(value)) {
     return (
@@ -26,39 +26,39 @@ function renderValue(value: unknown): React.ReactNode {
           <li key={i}>{renderValue(item)}</li>
         ))}
       </ul>
-    );
+    )
   }
-  if (typeof value === "object") {
+  if (typeof value === 'object') {
     return (
       <div className="space-y-2">
         {Object.entries(value as Record<string, unknown>).map(([k, v]) => (
           <div key={k}>
             <span className="font-medium capitalize">
-              {k.replace(/_/g, " ")}:{" "}
+              {k.replace(/_/g, ' ')}:{' '}
             </span>
             {renderValue(v)}
           </div>
         ))}
       </div>
-    );
+    )
   }
-  return null;
+  return null
 }
 
 export function PrognosisAI() {
-  const { prognosisReport, generatePrognosis, prognosisLoading } = useApp();
-  const [genError, setGenError] = React.useState("");
+  const { prognosisReport, generatePrognosis, prognosisLoading } = useApp()
+  const [genError, setGenError] = React.useState('')
 
   const handleGenerate = async () => {
-    setGenError("");
+    setGenError('')
     try {
-      await generatePrognosis();
+      await generatePrognosis()
     } catch (err) {
       setGenError(
-        err instanceof Error ? err.message : "Failed to generate report.",
-      );
+        err instanceof Error ? err.message : 'Failed to generate report.'
+      )
     }
-  };
+  }
 
   if (!prognosisReport) {
     return (
@@ -104,11 +104,11 @@ export function PrognosisAI() {
           </CardContent>
         </Card>
       </div>
-    );
+    )
   }
 
-  const report = prognosisReport.report_json;
-  const generatedAt = new Date(prognosisReport.created_at).toLocaleDateString();
+  const report = prognosisReport.report_json
+  const generatedAt = new Date(prognosisReport.created_at).toLocaleDateString()
 
   return (
     <div className="space-y-6">
@@ -148,7 +148,7 @@ export function PrognosisAI() {
           {Object.entries(report).map(([sectionKey, sectionValue]) => (
             <div key={sectionKey}>
               <h3 className="mb-3 capitalize">
-                {sectionKey.replace(/_/g, " ")}
+                {sectionKey.replace(/_/g, ' ')}
               </h3>
               <div className="prose prose-sm max-w-none text-foreground">
                 {renderValue(sectionValue)}
@@ -175,5 +175,5 @@ export function PrognosisAI() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

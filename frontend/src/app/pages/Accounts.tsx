@@ -1,21 +1,22 @@
-import { useState } from "react";
+import React from 'react'
+import { useState } from 'react'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../components/ui/card";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
+} from '../components/ui/card'
+import { Button } from '../components/ui/button'
+import { Input } from '../components/ui/input'
+import { Label } from '../components/ui/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../components/ui/select";
+} from '../components/ui/select'
 import {
   Dialog,
   DialogContent,
@@ -24,7 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "../components/ui/dialog";
+} from '../components/ui/dialog'
 import {
   Table,
   TableBody,
@@ -32,25 +33,25 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../components/ui/table";
-import { useApp, convertToBase, type AccountType } from "../context/AppContext";
-import { CURRENCIES, formatCurrency } from "../constants";
-import { Plus, Trash2 } from "lucide-react";
+} from '../components/ui/table'
+import { useApp, convertToBase, type AccountType } from '../context/AppContext'
+import { CURRENCIES, formatCurrency } from '../constants'
+import { Plus, Trash2 } from 'lucide-react'
 
 export function Accounts() {
   const { accounts, addAccount, deleteAccount, settings, profile, fxRates } =
-    useApp();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [submitError, setSubmitError] = useState("");
+    useApp()
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [submitError, setSubmitError] = useState('')
   const [accountForm, setAccountForm] = useState({
-    name: "",
-    type: "bank" as AccountType,
-    currency: profile?.base_currency ?? "INR",
-    balance: "",
-  });
+    name: '',
+    type: 'bank' as AccountType,
+    currency: profile?.base_currency ?? 'INR',
+    balance: '',
+  })
 
   const handleSubmit = async () => {
-    setSubmitError("");
+    setSubmitError('')
     try {
       await addAccount({
         name: accountForm.name,
@@ -59,27 +60,27 @@ export function Accounts() {
         initial_balance: accountForm.balance
           ? parseFloat(accountForm.balance)
           : undefined,
-      });
+      })
       setAccountForm({
-        name: "",
-        type: "bank",
-        currency: profile?.base_currency ?? "INR",
-        balance: "",
-      });
-      setIsDialogOpen(false);
+        name: '',
+        type: 'bank',
+        currency: profile?.base_currency ?? 'INR',
+        balance: '',
+      })
+      setIsDialogOpen(false)
     } catch (err) {
       setSubmitError(
-        err instanceof Error ? err.message : "Failed to add account.",
-      );
+        err instanceof Error ? err.message : 'Failed to add account.'
+      )
     }
-  };
+  }
 
-  const baseCurrency = profile?.base_currency ?? "INR";
+  const baseCurrency = profile?.base_currency ?? 'INR'
   const totalBalance = accounts.reduce(
     (sum, acc) =>
       sum + convertToBase(acc.balance, acc.currency, baseCurrency, fxRates),
-    0,
-  );
+    0
+  )
 
   return (
     <div className="space-y-6">
@@ -198,7 +199,7 @@ export function Accounts() {
             {formatCurrency(
               totalBalance,
               baseCurrency,
-              settings.currencyFormat,
+              settings.currencyFormat
             )}
           </div>
         </CardContent>
@@ -246,7 +247,7 @@ export function Accounts() {
                         {formatCurrency(
                           account.balance,
                           account.currency,
-                          settings.currencyFormat,
+                          settings.currencyFormat
                         )}
                       </TableCell>
                       <TableCell>
@@ -296,7 +297,7 @@ export function Accounts() {
                     {formatCurrency(
                       account.balance,
                       account.currency,
-                      settings.currencyFormat,
+                      settings.currencyFormat
                     )}
                   </div>
                 </div>
@@ -306,5 +307,5 @@ export function Accounts() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

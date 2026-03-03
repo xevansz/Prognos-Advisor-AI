@@ -1,78 +1,78 @@
-import React from "react";
-import { createBrowserRouter } from "react-router";
-import { lazy } from "react";
-import { Root } from "./pages/Root";
+import React from 'react'
+import { createBrowserRouter } from 'react-router'
+import { lazy } from 'react'
+import { Root } from './pages/Root'
 
 export const Landing = lazy(() =>
-  import("./pages/Landing").then((m) => ({ default: m.Landing })),
-);
+  import('./pages/Landing').then((m) => ({ default: m.Landing }))
+)
 export const Login = lazy(() =>
-  import("./pages/Login").then((m) => ({ default: m.Login })),
-);
+  import('./pages/Login').then((m) => ({ default: m.Login }))
+)
 export const Signup = lazy(() =>
-  import("./pages/Signup").then((m) => ({ default: m.Signup })),
-);
+  import('./pages/Signup').then((m) => ({ default: m.Signup }))
+)
 export const ForgotPassword = lazy(() =>
-  import("./pages/ForgotPassword").then((m) => ({ default: m.ForgotPassword })),
-);
+  import('./pages/ForgotPassword').then((m) => ({ default: m.ForgotPassword }))
+)
 export const Overview = lazy(() =>
-  import("./pages/Overview").then((m) => ({ default: m.Overview })),
-);
+  import('./pages/Overview').then((m) => ({ default: m.Overview }))
+)
 export const Profile = lazy(() =>
-  import("./pages/Profile").then((m) => ({ default: m.Profile })),
-);
+  import('./pages/Profile').then((m) => ({ default: m.Profile }))
+)
 export const Settings = lazy(() =>
-  import("./pages/Settings").then((m) => ({ default: m.Settings })),
-);
+  import('./pages/Settings').then((m) => ({ default: m.Settings }))
+)
 export const Accounts = lazy(() =>
-  import("./pages/Accounts").then((m) => ({ default: m.Accounts })),
-);
+  import('./pages/Accounts').then((m) => ({ default: m.Accounts }))
+)
 export const Transactions = lazy(() =>
-  import("./pages/Transactions").then((m) => ({ default: m.Transactions })),
-);
+  import('./pages/Transactions').then((m) => ({ default: m.Transactions }))
+)
 export const PrognosisAI = lazy(() =>
-  import("./pages/PrognosisAI").then((m) => ({ default: m.PrognosisAI })),
-);
+  import('./pages/PrognosisAI').then((m) => ({ default: m.PrognosisAI }))
+)
 export const NotFound = lazy(() =>
-  import("./pages/NotFound").then((m) => ({ default: m.NotFound })),
-);
+  import('./pages/NotFound').then((m) => ({ default: m.NotFound }))
+)
 export const ErrorPage = lazy(() =>
-  import("./pages/ErrorPage").then((m) => ({ default: m.ErrorPage })),
-);
+  import('./pages/ErrorPage').then((m) => ({ default: m.ErrorPage }))
+)
 
 export const router = createBrowserRouter([
   {
-    path: "/",
+    path: '/',
     Component: Landing,
     errorElement: React.createElement(ErrorPage),
   },
   {
-    path: "/login",
+    path: '/login',
     Component: Login,
     errorElement: React.createElement(ErrorPage),
   },
   {
-    path: "/signup",
+    path: '/signup',
     Component: Signup,
     errorElement: React.createElement(ErrorPage),
   },
   {
-    path: "/forgot-password",
+    path: '/forgot-password',
     Component: ForgotPassword,
-    errorElement: "Errorpage",
+    errorElement: 'Errorpage',
   },
   {
-    path: "/dashboard",
+    path: '/dashboard',
     Component: Root,
     errorElement: React.createElement(ErrorPage),
     children: [
       { index: true, Component: Overview },
-      { path: "profile", Component: Profile },
-      { path: "settings", Component: Settings },
-      { path: "accounts", Component: Accounts },
-      { path: "transactions", Component: Transactions },
-      { path: "prognosis", Component: PrognosisAI },
+      { path: 'profile', Component: Profile },
+      { path: 'settings', Component: Settings },
+      { path: 'accounts', Component: Accounts },
+      { path: 'transactions', Component: Transactions },
+      { path: 'prognosis', Component: PrognosisAI },
     ],
   },
-  { path: "*", Component: NotFound },
-]);
+  { path: '*', Component: NotFound },
+])

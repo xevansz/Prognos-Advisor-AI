@@ -1,45 +1,46 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
+import React from 'react'
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router'
+import { Button } from '../components/ui/button'
+import { Input } from '../components/ui/input'
+import { Label } from '../components/ui/label'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../components/ui/card";
-import { Wallet } from "lucide-react";
-import { useApp } from "../context/AppContext";
-import { ThemeToggle } from "../components/ThemeToggle";
+} from '../components/ui/card'
+import { Wallet } from 'lucide-react'
+import { useApp } from '../context/AppContext'
+import { ThemeToggle } from '../components/ThemeToggle'
 
 export function Login() {
-  const navigate = useNavigate();
-  const { login } = useApp();
-  const [formData, setFormData] = useState({ email: "", password: "" });
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate()
+  const { login } = useApp()
+  const [formData, setFormData] = useState({ email: '', password: '' })
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+    e.preventDefault()
+    setError('')
     if (!formData.email || !formData.password) {
-      setError("Please enter your email and password.");
-      return;
+      setError('Please enter your email and password.')
+      return
     }
-    setLoading(true);
+    setLoading(true)
     try {
-      await login(formData.email, formData.password);
-      navigate("/dashboard");
+      await login(formData.email, formData.password)
+      navigate('/dashboard')
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Login failed. Please try again.",
-      );
+        err instanceof Error ? err.message : 'Login failed. Please try again.'
+      )
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -115,7 +116,7 @@ export function Login() {
                 size="lg"
                 disabled={loading}
               >
-                {loading ? "Signing in…" : "Sign In"}
+                {loading ? 'Signing in…' : 'Sign In'}
               </Button>
             </form>
 
@@ -167,7 +168,7 @@ export function Login() {
             </div>
 
             <p className="mt-6 text-center text-sm text-muted-foreground">
-              Don't have an account?{" "}
+              Don&apos;t have an account?{' '}
               <Link
                 to="/signup"
                 className="text-primary font-medium hover:underline"
@@ -179,5 +180,5 @@ export function Login() {
         </Card>
       </div>
     </div>
-  );
+  )
 }

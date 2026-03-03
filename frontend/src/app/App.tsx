@@ -1,7 +1,8 @@
-import { Suspense } from "react";
-import { RouterProvider } from "react-router";
-import { router } from "./routes";
-import { AppProvider } from "./context/AppContext";
+import React from 'react'
+import { Suspense } from 'react'
+import { RouterProvider } from 'react-router'
+import { router } from './routes'
+import { AppProvider } from './context/AppContext'
 
 export default function App() {
   return (
@@ -10,5 +11,5 @@ export default function App() {
         <RouterProvider router={router} />
       </Suspense>
     </AppProvider>
-  );
+  )
 }

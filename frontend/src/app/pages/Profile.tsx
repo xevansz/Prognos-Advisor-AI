@@ -1,13 +1,8 @@
-import { Link } from "react-router";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../components/ui/card";
-import { Badge } from "../components/ui/badge";
-import { Button } from "../components/ui/button";
-import { useApp } from "../context/AppContext";
+import React from 'react'
+import { Link } from 'react-router'
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
+import { Button } from '../components/ui/button'
+import { useApp } from '../context/AppContext'
 import {
   Calendar,
   Target,
@@ -17,26 +12,26 @@ import {
   ShieldAlert,
   Settings,
   Mail,
-} from "lucide-react";
-import { getCurrencySymbol, formatCurrency } from "../constants";
+} from 'lucide-react'
+import { getCurrencySymbol, formatCurrency } from '../constants'
 
 export function Profile() {
-  const { profile, goals, userEmail } = useApp();
+  const { profile, goals, userEmail } = useApp()
 
   if (!profile) {
     return (
       <div className="text-center py-20 text-muted-foreground">
         <p className="text-sm">Loading profile…</p>
       </div>
-    );
+    )
   }
 
   const riskColor =
     {
-      aggressive: "text-destructive",
-      moderate: "text-warning",
-      conservative: "text-success",
-    }[profile.risk_appetite] ?? "";
+      aggressive: 'text-destructive',
+      moderate: 'text-warning',
+      conservative: 'text-success',
+    }[profile.risk_appetite] ?? ''
 
   return (
     <div className="space-y-6">
@@ -70,14 +65,14 @@ export function Profile() {
                 <User className="h-3 w-3" /> Display Name
               </dt>
               <dd className="text-base font-medium">
-                {profile.display_name ?? "—"}
+                {profile.display_name ?? '—'}
               </dd>
             </div>
             <div className="space-y-1">
               <dt className="text-xs text-muted-foreground uppercase tracking-wide flex items-center gap-1">
                 <Mail className="h-3 w-3" /> Email
               </dt>
-              <dd className="text-base font-medium">{userEmail ?? "—"}</dd>
+              <dd className="text-base font-medium">{userEmail ?? '—'}</dd>
             </div>
             <div className="space-y-1">
               <dt className="text-xs text-muted-foreground uppercase tracking-wide">
@@ -155,7 +150,7 @@ export function Profile() {
                         <TrendingUp className="h-3 w-3" />
                         {formatCurrency(
                           goal.target_amount,
-                          goal.target_currency,
+                          goal.target_currency
                         )}
                       </div>
                     </div>
@@ -176,5 +171,5 @@ export function Profile() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

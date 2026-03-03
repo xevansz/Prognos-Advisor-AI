@@ -29,3 +29,21 @@ repos:
         name: check added large files
         entry: check-added-large-files
         language: system
+
+      - id: frontend-eslint
+        name: frontend eslint
+        entry: bash -c "cd frontend && npm run lint:fix"
+        language: system
+        pass_filenames: false
+
+      - id: frontend-prettier
+        name: frontend prettier
+        entry: bash -c "cd frontend && npm run format"
+        language: system
+        pass_filenames: false
+
+      - id: frontend-tsc
+        name: frontend typecheck
+        entry: bash -c "cd frontend && npm run check"
+        language: system
+        pass_filenames: false

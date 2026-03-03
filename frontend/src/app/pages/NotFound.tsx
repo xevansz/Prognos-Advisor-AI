@@ -1,13 +1,14 @@
-import { Link, useNavigate } from "react-router";
-import { Button } from "../components/ui/button";
-import { Wallet, Home, ArrowLeft, User } from "lucide-react";
-import { useApp } from "../context/AppContext";
-import { ThemeToggle } from "../components/ThemeToggle";
+import React from 'react'
+import { Link, useNavigate } from 'react-router'
+import { Button } from '../components/ui/button'
+import { Wallet, Home, ArrowLeft } from 'lucide-react'
+import { useApp } from '../context/AppContext'
+import { ThemeToggle } from '../components/ThemeToggle'
 
 export function NotFound() {
-  const navigate = useNavigate();
-  const { isAuthenticated } = useApp();
-  const HomeLink = isAuthenticated ? "/dashboard" : "/";
+  const navigate = useNavigate()
+  const { isAuthenticated } = useApp()
+  const HomeLink = isAuthenticated ? '/dashboard' : '/'
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -33,7 +34,8 @@ export function NotFound() {
             </p>
             <h1 className="text-3xl font-semibold">Page not found</h1>
             <p className="text-muted-foreground">
-              The page you're looking for doesn't exist or has been moved.
+              The page you&apos;re looking for doesn&apos;t exist or has been
+              moved.
             </p>
           </div>
           <div className="flex items-center justify-center gap-3 pt-2">
@@ -57,5 +59,5 @@ export function NotFound() {
         </div>
       </div>
     </div>
-  );
+  )
 }

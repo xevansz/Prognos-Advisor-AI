@@ -1,63 +1,63 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
+import React from 'react'
+import { useState } from 'react'
+import { Link } from 'react-router'
+import { Button } from '../components/ui/button'
+import { Input } from '../components/ui/input'
+import { Label } from '../components/ui/label'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../components/ui/card";
-import { Wallet } from "lucide-react";
-import { useApp } from "../context/AppContext";
-import { ThemeToggle } from "../components/ThemeToggle";
+} from '../components/ui/card'
+import { Wallet } from 'lucide-react'
+import { useApp } from '../context/AppContext'
+import { ThemeToggle } from '../components/ThemeToggle'
 
 export function Signup() {
-  const navigate = useNavigate();
-  const { signup } = useApp();
+  const { signup } = useApp()
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [signedUp, setSignedUp] = useState(false);
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  })
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [signedUp, setSignedUp] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+    e.preventDefault()
+    setError('')
     if (!formData.name.trim()) {
-      setError("Please enter your full name.");
-      return;
+      setError('Please enter your full name.')
+      return
     }
     if (!formData.email.trim()) {
-      setError("Please enter your email.");
-      return;
+      setError('Please enter your email.')
+      return
     }
     if (formData.password.length < 8) {
-      setError("Password must be at least 8 characters.");
-      return;
+      setError('Password must be at least 8 characters.')
+      return
     }
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match.");
-      return;
+      setError('Passwords do not match.')
+      return
     }
-    setLoading(true);
+    setLoading(true)
     try {
-      await signup(formData.name, formData.email, formData.password);
-      setSignedUp(true);
+      await signup(formData.name, formData.email, formData.password)
+      setSignedUp(true)
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Signup failed. Please try again.",
-      );
+        err instanceof Error ? err.message : 'Signup failed. Please try again.'
+      )
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -97,7 +97,7 @@ export function Signup() {
                   Account created!
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Check your inbox for a confirmation email, then{" "}
+                  Check your inbox for a confirmation email, then{' '}
                   <Link
                     to="/login"
                     className="text-primary font-medium hover:underline"
@@ -172,7 +172,7 @@ export function Signup() {
                     size="lg"
                     disabled={loading}
                   >
-                    {loading ? "Creating account…" : "Create Account"}
+                    {loading ? 'Creating account…' : 'Create Account'}
                   </Button>
                 </form>
 
@@ -224,18 +224,18 @@ export function Signup() {
                 </div>
 
                 <p className="mt-6 text-center text-sm text-muted-foreground">
-                  By signing up, you agree to our{" "}
+                  By signing up, you agree to our{' '}
                   <Link to="#" className="text-primary hover:underline">
                     Terms of Service
-                  </Link>{" "}
-                  and{" "}
+                  </Link>{' '}
+                  and{' '}
                   <Link to="#" className="text-primary hover:underline">
                     Privacy Policy
                   </Link>
                 </p>
 
                 <p className="mt-4 text-center text-sm text-muted-foreground">
-                  Already have an account?{" "}
+                  Already have an account?{' '}
                   <Link
                     to="/login"
                     className="text-primary font-medium hover:underline"
@@ -249,5 +249,5 @@ export function Signup() {
         </Card>
       </div>
     </div>
-  );
+  )
 }

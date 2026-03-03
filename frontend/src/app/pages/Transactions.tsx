@@ -1,22 +1,23 @@
-import { useState } from "react";
+import React from 'react'
+import { useState } from 'react'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../components/ui/card";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
+} from '../components/ui/card'
+import { Button } from '../components/ui/button'
+import { Input } from '../components/ui/input'
+import { Label } from '../components/ui/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../components/ui/select";
-import { Switch } from "../components/ui/switch";
+} from '../components/ui/select'
+import { Switch } from '../components/ui/switch'
 import {
   Dialog,
   DialogContent,
@@ -25,7 +26,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "../components/ui/dialog";
+} from '../components/ui/dialog'
 import {
   Table,
   TableBody,
@@ -33,12 +34,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../components/ui/table";
-import { Textarea } from "../components/ui/textarea";
-import { Badge } from "../components/ui/badge";
-import { useApp, type TransactionType } from "../context/AppContext";
-import { CURRENCIES, formatCurrency } from "../constants";
-import { Plus, Pencil, Trash2, Filter, RepeatIcon } from "lucide-react";
+} from '../components/ui/table'
+import { Textarea } from '../components/ui/textarea'
+import { Badge } from '../components/ui/badge'
+import { useApp, type TransactionType } from '../context/AppContext'
+import { CURRENCIES, formatCurrency } from '../constants'
+import { Plus, Pencil, Trash2, Filter, RepeatIcon } from 'lucide-react'
 
 export function Transactions() {
   const {
@@ -49,64 +50,64 @@ export function Transactions() {
     deleteTransaction,
     settings,
     profile,
-  } = useApp();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  } = useApp()
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingTransaction, setEditingTransaction] = useState<string | null>(
-    null,
-  );
-  const [submitError, setSubmitError] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
+    null
+  )
+  const [submitError, setSubmitError] = useState('')
+  const [showFilters, setShowFilters] = useState(false)
   const [filters, setFilters] = useState({
-    accountId: "all",
-    type: "all",
-    recurring: "all",
-  });
+    accountId: 'all',
+    type: 'all',
+    recurring: 'all',
+  })
   const [transactionForm, setTransactionForm] = useState({
-    accountId: accounts[0]?.id || "",
-    label: "",
-    description: "",
-    date: new Date().toISOString().split("T")[0],
-    amount: "",
-    type: "debit" as TransactionType,
-    currency: profile?.base_currency ?? "INR",
+    accountId: accounts[0]?.id || '',
+    label: '',
+    description: '',
+    date: new Date().toISOString().split('T')[0],
+    amount: '',
+    type: 'debit' as TransactionType,
+    currency: profile?.base_currency ?? 'INR',
     isRecurring: false,
-  });
+  })
 
   const openDialog = (transactionId?: string) => {
-    setSubmitError("");
+    setSubmitError('')
     if (transactionId) {
-      const transaction = transactions.find((t) => t.id === transactionId);
+      const transaction = transactions.find((t) => t.id === transactionId)
       if (transaction) {
         setTransactionForm({
           accountId: transaction.account_id,
           label: transaction.label,
-          description: transaction.description ?? "",
+          description: transaction.description ?? '',
           date: transaction.date,
           amount: transaction.amount.toString(),
           type: transaction.type,
           currency: transaction.currency,
           isRecurring: transaction.is_recurring,
-        });
-        setEditingTransaction(transactionId);
+        })
+        setEditingTransaction(transactionId)
       }
     } else {
       setTransactionForm({
-        accountId: accounts[0]?.id || "",
-        label: "",
-        description: "",
-        date: new Date().toISOString().split("T")[0],
-        amount: "",
-        type: "debit",
-        currency: profile?.base_currency ?? "INR",
+        accountId: accounts[0]?.id || '',
+        label: '',
+        description: '',
+        date: new Date().toISOString().split('T')[0],
+        amount: '',
+        type: 'debit',
+        currency: profile?.base_currency ?? 'INR',
         isRecurring: false,
-      });
-      setEditingTransaction(null);
+      })
+      setEditingTransaction(null)
     }
-    setIsDialogOpen(true);
-  };
+    setIsDialogOpen(true)
+  }
 
   const handleSubmit = async () => {
-    setSubmitError("");
+    setSubmitError('')
     try {
       if (editingTransaction) {
         await updateTransaction(editingTransaction, {
@@ -116,7 +117,7 @@ export function Transactions() {
           date: transactionForm.date,
           amount: parseFloat(transactionForm.amount),
           type: transactionForm.type,
-        });
+        })
       } else {
         await addTransaction({
           account_id: transactionForm.accountId,
@@ -127,30 +128,30 @@ export function Transactions() {
           type: transactionForm.type,
           currency: transactionForm.currency,
           is_recurring: transactionForm.isRecurring,
-        });
+        })
       }
-      setIsDialogOpen(false);
+      setIsDialogOpen(false)
     } catch (err) {
       setSubmitError(
-        err instanceof Error ? err.message : "Failed to save transaction.",
-      );
+        err instanceof Error ? err.message : 'Failed to save transaction.'
+      )
     }
-  };
+  }
 
   const filteredTransactions = transactions.filter((transaction) => {
     if (
-      filters.accountId !== "all" &&
+      filters.accountId !== 'all' &&
       transaction.account_id !== filters.accountId
     )
-      return false;
-    if (filters.type !== "all" && transaction.type !== filters.type)
-      return false;
-    if (filters.recurring !== "all") {
-      const isRecurring = filters.recurring === "true";
-      if (transaction.is_recurring !== isRecurring) return false;
+      return false
+    if (filters.type !== 'all' && transaction.type !== filters.type)
+      return false
+    if (filters.recurring !== 'all') {
+      const isRecurring = filters.recurring === 'true'
+      if (transaction.is_recurring !== isRecurring) return false
     }
-    return true;
-  });
+    return true
+  })
 
   return (
     <div className="space-y-6">
@@ -180,13 +181,13 @@ export function Transactions() {
               <DialogHeader>
                 <DialogTitle>
                   {editingTransaction
-                    ? "Edit Transaction"
-                    : "Create Transaction"}
+                    ? 'Edit Transaction'
+                    : 'Create Transaction'}
                 </DialogTitle>
                 <DialogDescription>
                   {editingTransaction
-                    ? "Update transaction details"
-                    : "Add a new transaction to your account"}
+                    ? 'Update transaction details'
+                    : 'Add a new transaction to your account'}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
@@ -351,7 +352,7 @@ export function Transactions() {
                   Cancel
                 </Button>
                 <Button onClick={handleSubmit}>
-                  {editingTransaction ? "Update" : "Create"}
+                  {editingTransaction ? 'Update' : 'Create'}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -461,8 +462,8 @@ export function Transactions() {
                 ) : (
                   filteredTransactions.map((transaction) => {
                     const account = accounts.find(
-                      (a) => a.id === transaction.account_id,
-                    );
+                      (a) => a.id === transaction.account_id
+                    )
                     return (
                       <TableRow key={transaction.id}>
                         <TableCell className="font-medium">
@@ -484,35 +485,35 @@ export function Transactions() {
                             )}
                           </div>
                         </TableCell>
-                        <TableCell>{account?.name || "Unknown"}</TableCell>
+                        <TableCell>{account?.name || 'Unknown'}</TableCell>
                         <TableCell>
                           <Badge
                             variant={
-                              transaction.type === "credit"
-                                ? "default"
-                                : "secondary"
+                              transaction.type === 'credit'
+                                ? 'default'
+                                : 'secondary'
                             }
                             className={
-                              transaction.type === "credit"
-                                ? "bg-[hsl(var(--success))]"
-                                : ""
+                              transaction.type === 'credit'
+                                ? 'bg-[hsl(var(--success))]'
+                                : ''
                             }
                           >
-                            {transaction.type === "credit" ? "Credit" : "Debit"}
+                            {transaction.type === 'credit' ? 'Credit' : 'Debit'}
                           </Badge>
                         </TableCell>
                         <TableCell
                           className={`text-right font-mono font-semibold whitespace-nowrap ${
-                            transaction.type === "credit"
-                              ? "text-[hsl(var(--success))]"
-                              : "text-[hsl(var(--destructive))]"
+                            transaction.type === 'credit'
+                              ? 'text-[hsl(var(--success))]'
+                              : 'text-[hsl(var(--destructive))]'
                           }`}
                         >
-                          {transaction.type === "credit" ? "+" : "-"}
+                          {transaction.type === 'credit' ? '+' : '-'}
                           {formatCurrency(
                             transaction.amount,
                             transaction.currency,
-                            settings.currencyFormat,
+                            settings.currencyFormat
                           )}
                         </TableCell>
                         <TableCell>
@@ -534,7 +535,7 @@ export function Transactions() {
                           </div>
                         </TableCell>
                       </TableRow>
-                    );
+                    )
                   })
                 )}
               </TableBody>
@@ -543,5 +544,5 @@ export function Transactions() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

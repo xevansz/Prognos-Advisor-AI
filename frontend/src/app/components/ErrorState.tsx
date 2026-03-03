@@ -1,13 +1,17 @@
-import { AlertCircle } from 'lucide-react';
-import { Button } from './ui/button';
-import { Card, CardContent } from './ui/card';
+import React from 'react'
+import { AlertCircle } from 'lucide-react'
+import { Button } from './ui/button'
+import { Card, CardContent } from './ui/card'
 
 interface ErrorStateProps {
-  message?: string;
-  onRetry?: () => void;
+  message?: string
+  onRetry?: () => void
 }
 
-export function ErrorState({ message = 'Something went wrong', onRetry }: ErrorStateProps) {
+export function ErrorState({
+  message = 'Something went wrong',
+  onRetry,
+}: ErrorStateProps) {
   return (
     <Card className="border-destructive/50">
       <CardContent className="flex flex-col items-center justify-center py-12 text-center">
@@ -23,5 +27,5 @@ export function ErrorState({ message = 'Something went wrong', onRetry }: ErrorS
         )}
       </CardContent>
     </Card>
-  );
+  )
 }

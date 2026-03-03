@@ -1,110 +1,110 @@
-import { Link } from "react-router";
-import { ReactNode } from "react";
-import { Button } from "../components/ui/button";
-import { ThemeToggle } from "../components/ThemeToggle";
+import React from 'react'
+import { Link } from 'react-router'
+import { ReactNode } from 'react'
+import { Button } from '../components/ui/button'
+import { ThemeToggle } from '../components/ThemeToggle'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../components/ui/card";
+} from '../components/ui/card'
 import {
   Wallet,
   TrendingUp,
   PieChart,
-  Target,
   Shield,
   ArrowRight,
   ClipboardList,
   BarChart2,
   BrainCircuit,
-} from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+} from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 
 // Scroll-triggered fade-in hook
 function useFadeIn(): [React.RefObject<HTMLDivElement | null>, boolean] {
-  const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
+  const ref = useRef<HTMLDivElement>(null)
+  const [visible, setVisible] = useState(false)
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) setVisible(true);
+        if (entry.isIntersecting) setVisible(true)
       },
-      { threshold: 0.15 },
-    );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, []);
-  return [ref, visible];
+      { threshold: 0.15 }
+    )
+    if (ref.current) observer.observe(ref.current)
+    return () => observer.disconnect()
+  }, [])
+  return [ref, visible]
 }
 
 function FadeIn({
   children,
   delay = 0,
-  className = "",
+  className = '',
 }: {
-  children: ReactNode;
-  delay?: number;
-  className?: string;
+  children: ReactNode
+  delay?: number
+  className?: string
 }) {
-  const [ref, visible] = useFadeIn();
+  const [ref, visible] = useFadeIn()
   return (
     <div
       ref={ref}
       className={className}
       style={{
         opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(28px)",
+        transform: visible ? 'translateY(0)' : 'translateY(28px)',
         transition: `opacity 0.65s ease ${delay}ms, transform 0.65s ease ${delay}ms`,
       }}
     >
       {children}
     </div>
-  );
+  )
 }
 
 export function Landing() {
   // To detect dark theme
   const [isDark, setIsDark] = useState(
-    document.documentElement.classList.contains("dark"),
-  );
+    document.documentElement.classList.contains('dark')
+  )
 
   useEffect(() => {
     const observer = new MutationObserver(() => {
-      setIsDark(document.documentElement.classList.contains("dark"));
-    });
-    observer.observe(document.documentElement, { attributeFilter: ["class"] });
-    return () => observer.disconnect();
-  }, []);
+      setIsDark(document.documentElement.classList.contains('dark'))
+    })
+    observer.observe(document.documentElement, { attributeFilter: ['class'] })
+    return () => observer.disconnect()
+  }, [])
   const steps = [
     {
       icon: ClipboardList,
-      step: "01",
-      title: "Add your accounts",
+      step: '01',
+      title: 'Add your accounts',
       description:
-        "Connect your bank accounts, savings, and investments in one place.",
-      badge: "Secure & encrypted",
+        'Connect your bank accounts, savings, and investments in one place.',
+      badge: 'Secure & encrypted',
       badgeIcon: Shield,
     },
     {
       icon: BarChart2,
-      step: "02",
-      title: "Track transactions",
-      description: "Log income and expenses. Set budgets and financial goals.",
-      badge: "Beautiful analytics",
+      step: '02',
+      title: 'Track transactions',
+      description: 'Log income and expenses. Set budgets and financial goals.',
+      badge: 'Beautiful analytics',
       badgeIcon: PieChart,
     },
     {
       icon: BrainCircuit,
-      step: "03",
-      title: "Get AI insights",
+      step: '03',
+      title: 'Get AI insights',
       description:
-        "Prognosis AI analyses your data and recommends your next move.",
-      badge: "Personalized for you",
+        'Prognosis AI analyses your data and recommends your next move.',
+      badge: 'Personalized for you',
       badgeIcon: TrendingUp,
     },
-  ];
+  ]
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
@@ -138,14 +138,14 @@ export function Landing() {
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              "radial-gradient(ellipse 80% 60% at 50% -10%, hsl(var(--primary) / 0.12) 0%, transparent 70%)",
+              'radial-gradient(ellipse 80% 60% at 50% -10%, hsl(var(--primary) / 0.12) 0%, transparent 70%)',
           }}
         />
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              "radial-gradient(ellipse 40% 40% at 80% 60%, hsl(var(--chart-2) / 0.07) 0%, transparent 60%)",
+              'radial-gradient(ellipse 40% 40% at 80% 60%, hsl(var(--chart-2) / 0.07) 0%, transparent 60%)',
           }}
         />
 
@@ -154,17 +154,17 @@ export function Landing() {
             <div
               style={{
                 opacity: 1,
-                animation: "heroFadeUp 0.8s ease both",
+                animation: 'heroFadeUp 0.8s ease both',
               }}
             >
               <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[1.1]">
-                Your finances,{" "}
+                Your finances,{' '}
                 <span className="bg-gradient-to-r from-primary to-chart-2 bg-clip-text text-transparent">
                   finally clear.
                 </span>
               </h1>
             </div>
-            <div style={{ animation: "heroFadeUp 0.8s ease 0.15s both" }}>
+            <div style={{ animation: 'heroFadeUp 0.8s ease 0.15s both' }}>
               <p className="text-lg text-muted-foreground">
                 Prognosis AI combines smart tracking, goal planning, and
                 AI-powered insights — so you always know where you stand.
@@ -172,7 +172,7 @@ export function Landing() {
             </div>
             <div
               className="flex items-center justify-center gap-3 pt-2"
-              style={{ animation: "heroFadeUp 0.8s ease 0.3s both" }}
+              style={{ animation: 'heroFadeUp 0.8s ease 0.3s both' }}
             >
               <Button size="lg" asChild>
                 <Link to="/signup">
@@ -189,16 +189,16 @@ export function Landing() {
           {/* Dashboard screenshot */}
           <div
             className="mt-16 relative mx-auto max-w-5xl"
-            style={{ animation: "heroFadeUp 1s ease 0.45s both" }}
+            style={{ animation: 'heroFadeUp 1s ease 0.45s both' }}
           >
             {/* Glow behind screenshot */}
             <div
               className="absolute inset-0 rounded-2xl pointer-events-none"
               style={{
                 background:
-                  "radial-gradient(ellipse 60% 40% at 50% 100%, hsl(var(--primary) / 0.2) 0%, transparent 70%)",
-                filter: "blur(24px)",
-                transform: "translateY(8px)",
+                  'radial-gradient(ellipse 60% 40% at 50% 100%, hsl(var(--primary) / 0.2) 0%, transparent 70%)',
+                filter: 'blur(24px)',
+                transform: 'translateY(8px)',
               }}
             />
             {/* Browser chrome frame */}
@@ -213,7 +213,7 @@ export function Landing() {
                 </div>
               </div>
               <img
-                src={isDark ? "/dashboard.png" : "/dashboard-light.png"}
+                src={isDark ? '/dashboard.png' : '/dashboard-light.png'}
                 alt="Prognosis AI Dashboard"
                 className="w-full block"
               />
@@ -240,8 +240,8 @@ export function Landing() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             {steps.map((s, i) => {
-              const Icon = s.icon;
-              const BadgeIcon = s.badgeIcon;
+              const Icon = s.icon
+              const BadgeIcon = s.badgeIcon
               return (
                 <FadeIn key={s.step} delay={i * 120}>
                   <Card className="h-full shadow-sm hover:shadow-md transition-all hover:-translate-y-1 border-border/60 bg-card/60">
@@ -267,7 +267,7 @@ export function Landing() {
                     </CardContent>
                   </Card>
                 </FadeIn>
-              );
+              )
             })}
           </div>
         </div>
@@ -283,7 +283,7 @@ export function Landing() {
                   AI-Powered
                 </p>
                 <h2 className="text-3xl md:text-4xl font-bold leading-tight">
-                  Your personal{" "}
+                  Your personal{' '}
                   <span className="bg-gradient-to-r from-primary to-chart-2 bg-clip-text text-transparent">
                     financial advisor
                   </span>
@@ -295,10 +295,10 @@ export function Landing() {
                 </p>
                 <ul className="space-y-3">
                   {[
-                    "Net worth tracking across all accounts",
-                    "Goal progress with timeline projections",
-                    "Spending pattern analysis & alerts",
-                    "Personalized investment recommendations",
+                    'Net worth tracking across all accounts',
+                    'Goal progress with timeline projections',
+                    'Spending pattern analysis & alerts',
+                    'Personalized investment recommendations',
                   ].map((item) => (
                     <li
                       key={item}
@@ -323,8 +323,8 @@ export function Landing() {
                   className="absolute inset-0 rounded-2xl pointer-events-none"
                   style={{
                     background:
-                      "radial-gradient(ellipse 60% 60% at 50% 50%, hsl(var(--chart-2) / 0.15) 0%, transparent 70%)",
-                    filter: "blur(20px)",
+                      'radial-gradient(ellipse 60% 60% at 50% 50%, hsl(var(--chart-2) / 0.15) 0%, transparent 70%)',
+                    filter: 'blur(20px)',
                   }}
                 />
                 <div className="relative rounded-2xl border border-border/60 bg-card/80 shadow-2xl overflow-hidden">
@@ -337,7 +337,7 @@ export function Landing() {
                     </div>
                   </div>
                   <img
-                    src={isDark ? "/aireport.png" : "/aireport-light.png"}
+                    src={isDark ? '/aireport.png' : '/aireport-light.png'}
                     alt="Prognosis AI Report"
                     className="w-full block"
                   />
@@ -354,7 +354,7 @@ export function Landing() {
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              "radial-gradient(ellipse 60% 80% at 50% 50%, hsl(var(--primary) / 0.08) 0%, transparent 70%)",
+              'radial-gradient(ellipse 60% 80% at 50% 50%, hsl(var(--primary) / 0.08) 0%, transparent 70%)',
           }}
         />
         <FadeIn>
@@ -399,5 +399,5 @@ export function Landing() {
         }
       `}</style>
     </div>
-  );
+  )
 }

@@ -1,143 +1,144 @@
-import { useState } from "react";
-import { Link } from "react-router";
-import { supabase } from "../../lib/supabase";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
+import React from 'react'
+import { useState } from 'react'
+import { Link } from 'react-router'
+import { supabase } from '../../lib/supabase'
+import { Button } from '../components/ui/button'
+import { Input } from '../components/ui/input'
+import { Label } from '../components/ui/label'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../components/ui/card";
-import { Wallet, ArrowLeft, Mail, KeyRound, CheckCircle } from "lucide-react";
-import { ThemeToggle } from "../components/ThemeToggle";
+} from '../components/ui/card'
+import { Wallet, Mail, KeyRound, CheckCircle } from 'lucide-react'
+import { ThemeToggle } from '../components/ThemeToggle'
 
-type Step = "email" | "otp" | "reset" | "done";
+type Step = 'email' | 'otp' | 'reset' | 'done'
 
 export function ForgotPassword() {
-  const [step, setStep] = useState<Step>("email");
-  const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [step, setStep] = useState<Step>('email')
+  const [email, setEmail] = useState('')
+  const [otp, setOtp] = useState(['', '', '', '', '', ''])
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+    e.preventDefault()
+    setError('')
     if (!email) {
-      setError("Please enter your email address.");
-      return;
+      setError('Please enter your email address.')
+      return
     }
-    setIsLoading(true);
+    setIsLoading(true)
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: { shouldCreateUser: false },
-      });
-      if (error) throw error;
-      setStep("otp");
+      })
+      if (error) throw error
+      setStep('otp')
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to send code.");
+      setError(err instanceof Error ? err.message : 'Failed to send code.')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleOtpChange = (index: number, value: string) => {
-    if (!/^\d*$/.test(value)) return;
-    const next = [...otp];
-    next[index] = value.slice(-1);
-    setOtp(next);
+    if (!/^\d*$/.test(value)) return
+    const next = [...otp]
+    next[index] = value.slice(-1)
+    setOtp(next)
     if (value && index < 5) {
-      const nextInput = document.getElementById(`otp-${index + 1}`);
-      nextInput?.focus();
+      const nextInput = document.getElementById(`otp-${index + 1}`)
+      nextInput?.focus()
     }
-  };
+  }
 
   const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      const prevInput = document.getElementById(`otp-${index - 1}`);
-      prevInput?.focus();
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      const prevInput = document.getElementById(`otp-${index - 1}`)
+      prevInput?.focus()
     }
-  };
+  }
 
   const handleOtpSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    const code = otp.join("");
+    e.preventDefault()
+    setError('')
+    const code = otp.join('')
     if (code.length !== 6) {
-      setError("Please enter the complete 6-digit code.");
-      return;
+      setError('Please enter the complete 6-digit code.')
+      return
     }
-    setIsLoading(true);
+    setIsLoading(true)
     try {
       const { error } = await supabase.auth.verifyOtp({
         email,
         token: code,
-        type: "email",
-      });
-      if (error) throw error;
-      setStep("reset");
+        type: 'email',
+      })
+      if (error) throw error
+      setStep('reset')
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Invalid or expired code.");
+      setError(err instanceof Error ? err.message : 'Invalid or expired code.')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleResendOtp = async () => {
-    setError("");
-    setOtp(["", "", "", "", "", ""]);
-    setIsLoading(true);
+    setError('')
+    setOtp(['', '', '', '', '', ''])
+    setIsLoading(true)
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: { shouldCreateUser: false },
-      });
-      if (error) throw error;
-      document.getElementById("otp-0")?.focus();
+      })
+      if (error) throw error
+      document.getElementById('otp-0')?.focus()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to resend code.");
+      setError(err instanceof Error ? err.message : 'Failed to resend code.')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleResetSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+    e.preventDefault()
+    setError('')
     if (!newPassword) {
-      setError("Please enter a new password.");
-      return;
+      setError('Please enter a new password.')
+      return
     }
     if (newPassword.length < 8) {
-      setError("Password must be at least 8 characters.");
-      return;
+      setError('Password must be at least 8 characters.')
+      return
     }
     if (newPassword !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
+      setError('Passwords do not match.')
+      return
     }
-    setIsLoading(true);
+    setIsLoading(true)
     try {
       const { error } = await supabase.auth.updateUser({
         password: newPassword,
-      });
-      if (error) throw error;
-      await supabase.auth.signOut();
-      setStep("done");
+      })
+      if (error) throw error
+      await supabase.auth.signOut()
+      setStep('done')
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Failed to update password.",
-      );
+        err instanceof Error ? err.message : 'Failed to update password.'
+      )
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -163,7 +164,7 @@ export function ForgotPassword() {
       <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
         <Card className="w-full max-w-md shadow-lg">
           {/* Step 1: Email */}
-          {step === "email" && (
+          {step === 'email' && (
             <>
               <CardHeader className="space-y-1 text-center">
                 <div className="flex justify-center mb-2">
@@ -173,8 +174,8 @@ export function ForgotPassword() {
                 </div>
                 <CardTitle className="text-2xl">Forgot Password</CardTitle>
                 <CardDescription>
-                  Enter your email and we'll send you a 6-digit verification
-                  code
+                  Enter your email and we&apos;ll send you a 6-digit
+                  verification code
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -197,10 +198,10 @@ export function ForgotPassword() {
                     size="lg"
                     disabled={isLoading}
                   >
-                    {isLoading ? "Sending..." : "Send Verification Code"}
+                    {isLoading ? 'Sending...' : 'Send Verification Code'}
                   </Button>
                   <p className="text-center text-sm text-muted-foreground">
-                    Remember your password?{" "}
+                    Remember your password?{' '}
                     <Link
                       to="/login"
                       className="text-primary font-medium hover:underline"
@@ -214,7 +215,7 @@ export function ForgotPassword() {
           )}
 
           {/* Step 2: OTP */}
-          {step === "otp" && (
+          {step === 'otp' && (
             <>
               <CardHeader className="space-y-1 text-center">
                 <div className="flex justify-center mb-2">
@@ -224,7 +225,7 @@ export function ForgotPassword() {
                 </div>
                 <CardTitle className="text-2xl">Check Your Email</CardTitle>
                 <CardDescription>
-                  We sent a 6-digit code to{" "}
+                  We sent a 6-digit code to{' '}
                   <span className="font-medium text-foreground">{email}</span>
                 </CardDescription>
               </CardHeader>
@@ -264,11 +265,11 @@ export function ForgotPassword() {
                     size="lg"
                     disabled={isLoading}
                   >
-                    {isLoading ? "Verifying..." : "Verify Code"}
+                    {isLoading ? 'Verifying...' : 'Verify Code'}
                   </Button>
                   <div className="text-center space-y-2">
                     <p className="text-sm text-muted-foreground">
-                      Didn't receive the code?
+                      Didn&apos;t receive the code?
                     </p>
                     <Button
                       type="button"
@@ -284,8 +285,8 @@ export function ForgotPassword() {
                     <button
                       type="button"
                       onClick={() => {
-                        setStep("email");
-                        setError("");
+                        setStep('email')
+                        setError('')
                       }}
                       className="text-primary hover:underline"
                     >
@@ -298,7 +299,7 @@ export function ForgotPassword() {
           )}
 
           {/* Step 3: New Password */}
-          {step === "reset" && (
+          {step === 'reset' && (
             <>
               <CardHeader className="space-y-1 text-center">
                 <div className="flex justify-center mb-2">
@@ -342,7 +343,7 @@ export function ForgotPassword() {
                     size="lg"
                     disabled={isLoading}
                   >
-                    {isLoading ? "Updating..." : "Update Password"}
+                    {isLoading ? 'Updating...' : 'Update Password'}
                   </Button>
                 </form>
               </CardContent>
@@ -350,7 +351,7 @@ export function ForgotPassword() {
           )}
 
           {/* Step 4: Done */}
-          {step === "done" && (
+          {step === 'done' && (
             <>
               <CardHeader className="space-y-1 text-center">
                 <div className="flex justify-center mb-2">
@@ -374,5 +375,5 @@ export function ForgotPassword() {
         </Card>
       </div>
     </div>
-  );
+  )
 }

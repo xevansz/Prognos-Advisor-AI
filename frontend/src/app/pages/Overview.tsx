@@ -1,15 +1,16 @@
-import { useState, useEffect } from "react";
+import React from 'react'
+import { useState, useEffect } from 'react'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../components/ui/card";
-import { useApp, convertToBase } from "../context/AppContext";
-import { LoadingSkeleton } from "../components/LoadingSkeleton";
-import { formatCurrency } from "../constants";
-import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
+} from '../components/ui/card'
+import { useApp, convertToBase } from '../context/AppContext'
+import { LoadingSkeleton } from '../components/LoadingSkeleton'
+import { formatCurrency } from '../constants'
+import { TrendingUp, TrendingDown, Wallet } from 'lucide-react'
 import {
   LineChart,
   Line,
@@ -19,7 +20,7 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-} from "recharts";
+} from 'recharts'
 import {
   ChartContainer,
   ChartTooltip,
@@ -27,76 +28,76 @@ import {
   ChartLegend,
   ChartLegendContent,
   type ChartConfig,
-} from "../components/ui/chart";
+} from '../components/ui/chart'
 
 export function Overview() {
-  const { accounts, transactions, profile, settings, fxRates } = useApp();
-  const [loading, setLoading] = useState(true);
+  const { accounts, transactions, profile, settings, fxRates } = useApp()
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 400);
-    return () => clearTimeout(timer);
-  }, []);
+    const timer = setTimeout(() => setLoading(false), 400)
+    return () => clearTimeout(timer)
+  }, [])
 
   if (loading) {
-    return <LoadingSkeleton />;
+    return <LoadingSkeleton />
   }
 
-  const baseCurrency = profile?.base_currency ?? "INR";
+  const baseCurrency = profile?.base_currency ?? 'INR'
 
   const netWorth = accounts.reduce(
     (sum, acc) =>
       sum + convertToBase(acc.balance, acc.currency, baseCurrency, fxRates),
-    0,
-  );
+    0
+  )
 
   // Compute real monthly income vs spending for last 7 months
-  const now = new Date();
+  const now = new Date()
   const monthlyData = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(now.getFullYear(), now.getMonth() - (6 - i), 1);
-    const label = d.toLocaleString("default", { month: "short" });
-    const yr = d.getFullYear();
-    const mo = d.getMonth();
-    let income = 0;
-    let spending = 0;
+    const d = new Date(now.getFullYear(), now.getMonth() - (6 - i), 1)
+    const label = d.toLocaleString('default', { month: 'short' })
+    const yr = d.getFullYear()
+    const mo = d.getMonth()
+    let income = 0
+    let spending = 0
     transactions.forEach((t) => {
-      const td = new Date(t.date);
+      const td = new Date(t.date)
       if (td.getFullYear() === yr && td.getMonth() === mo) {
         const converted = convertToBase(
           t.amount,
           t.currency,
           baseCurrency,
-          fxRates,
-        );
-        if (t.type === "credit") income += converted;
-        else spending += converted;
+          fxRates
+        )
+        if (t.type === 'credit') income += converted
+        else spending += converted
       }
-    });
-    return { month: label, income, spending };
-  });
+    })
+    return { month: label, income, spending }
+  })
 
   // Calculate asset distribution (values converted to base currency)
   const assetData = accounts.map((acc) => ({
     name: acc.name,
     value: convertToBase(acc.balance, acc.currency, baseCurrency, fxRates),
-  }));
+  }))
 
   const COLORS = [
-    "var(--chart-1)",
-    "var(--chart-2)",
-    "var(--chart-3)",
-    "var(--chart-4)",
-    "var(--chart-5)",
-  ];
+    'var(--chart-1)',
+    'var(--chart-2)',
+    'var(--chart-3)',
+    'var(--chart-4)',
+    'var(--chart-5)',
+  ]
 
   const lineChartConfig: ChartConfig = {
-    income: { label: "Income", color: "var(--chart-2)" },
-    spending: { label: "Spending", color: "var(--chart-3)" },
-  };
+    income: { label: 'Income', color: 'var(--chart-2)' },
+    spending: { label: 'Spending', color: 'var(--chart-3)' },
+  }
 
   const assetChartConfig: ChartConfig = Object.fromEntries(
-    assetData.map((d) => [d.name, { label: d.name }]),
-  );
+    assetData.map((d) => [d.name, { label: d.name }])
+  )
 
   const renderPieLabel = ({
     cx,
@@ -106,68 +107,68 @@ export function Overview() {
     name,
     percent,
   }: {
-    cx: number;
-    cy: number;
-    midAngle: number;
-    outerRadius: number;
-    name: string;
-    percent: number;
+    cx: number
+    cy: number
+    midAngle: number
+    outerRadius: number
+    name: string
+    percent: number
   }) => {
-    const RADIAN = Math.PI / 180;
-    const radius = outerRadius + 24;
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+    const RADIAN = Math.PI / 180
+    const radius = outerRadius + 24
+    const x = cx + radius * Math.cos(-midAngle * RADIAN)
+    const y = cy + radius * Math.sin(-midAngle * RADIAN)
     return (
       <text
         x={x}
         y={y}
         fill="var(--foreground)"
-        textAnchor={x > cx ? "start" : "end"}
+        textAnchor={x > cx ? 'start' : 'end'}
         dominantBaseline="central"
         fontSize={11}
       >
         {name}: {(percent * 100).toFixed(0)}%
       </text>
-    );
-  };
+    )
+  }
 
   // Current month totals in base currency
-  const curMonth = now.getMonth();
-  const curYear = now.getFullYear();
+  const curMonth = now.getMonth()
+  const curYear = now.getFullYear()
   const totalIncome = transactions
     .filter((t) => {
-      const d = new Date(t.date);
+      const d = new Date(t.date)
       return (
-        t.type === "credit" &&
+        t.type === 'credit' &&
         d.getMonth() === curMonth &&
         d.getFullYear() === curYear
-      );
+      )
     })
     .reduce(
       (sum, t) =>
         sum + convertToBase(t.amount, t.currency, baseCurrency, fxRates),
-      0,
-    );
+      0
+    )
 
   const totalExpenses = transactions
     .filter((t) => {
-      const d = new Date(t.date);
+      const d = new Date(t.date)
       return (
-        t.type === "debit" &&
+        t.type === 'debit' &&
         d.getMonth() === curMonth &&
         d.getFullYear() === curYear
-      );
+      )
     })
     .reduce(
       (sum, t) =>
         sum + convertToBase(t.amount, t.currency, baseCurrency, fxRates),
-      0,
-    );
+      0
+    )
 
   const savingsRate =
     totalIncome > 0
       ? (((totalIncome - totalExpenses) / totalIncome) * 100).toFixed(1)
-      : 0;
+      : 0
 
   return (
     <div className="space-y-6">
@@ -200,7 +201,7 @@ export function Overview() {
               {formatCurrency(
                 totalIncome,
                 baseCurrency,
-                settings.currencyFormat,
+                settings.currencyFormat
               )}
             </div>
             <p className="text-xs text-muted-foreground mt-1">This month</p>
@@ -219,7 +220,7 @@ export function Overview() {
               {formatCurrency(
                 totalExpenses,
                 baseCurrency,
-                settings.currencyFormat,
+                settings.currencyFormat
               )}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
@@ -282,7 +283,7 @@ export function Overview() {
                   cx="50%"
                   cy="50%"
                   label={renderPieLabel}
-                  labelLine={{ stroke: "var(--muted-foreground)" }}
+                  labelLine={{ stroke: 'var(--muted-foreground)' }}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
@@ -300,16 +301,16 @@ export function Overview() {
                       nameKey="name"
                       formatter={(value) => {
                         const num =
-                          typeof value === "number"
+                          typeof value === 'number'
                             ? value
                             : Array.isArray(value)
                               ? parseFloat(String(value[0])) || 0
-                              : parseFloat(String(value)) || 0;
+                              : parseFloat(String(value)) || 0
                         return formatCurrency(
                           num,
                           baseCurrency,
-                          settings.currencyFormat,
-                        );
+                          settings.currencyFormat
+                        )
                       }}
                     />
                   }
@@ -332,7 +333,7 @@ export function Overview() {
             {[...transactions]
               .sort(
                 (a, b) =>
-                  new Date(b.date).getTime() - new Date(a.date).getTime(),
+                  new Date(b.date).getTime() - new Date(a.date).getTime()
               )
               .slice(0, 5)
               .map((transaction) => (
@@ -348,16 +349,16 @@ export function Overview() {
                   </div>
                   <div
                     className={`text-sm font-medium ${
-                      transaction.type === "credit"
-                        ? "text-[var(--success)]"
-                        : "text-[var(--destructive)]"
+                      transaction.type === 'credit'
+                        ? 'text-[var(--success)]'
+                        : 'text-[var(--destructive)]'
                     }`}
                   >
-                    {transaction.type === "credit" ? "+" : "-"}{" "}
+                    {transaction.type === 'credit' ? '+' : '-'}{' '}
                     {formatCurrency(
                       transaction.amount,
                       transaction.currency,
-                      settings.currencyFormat,
+                      settings.currencyFormat
                     )}
                   </div>
                 </div>
@@ -366,5 +367,5 @@ export function Overview() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

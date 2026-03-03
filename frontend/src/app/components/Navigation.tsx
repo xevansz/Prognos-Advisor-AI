@@ -1,19 +1,20 @@
-import { NavLink, Link } from "react-router";
-import { Wallet, Menu, X, Brain } from "lucide-react";
-import { useState } from "react";
-import { Button } from "./ui/button";
-import { ThemeToggle } from "./ThemeToggle";
+import React from 'react'
+import { NavLink } from 'react-router'
+import { Wallet, Menu, X, Brain } from 'lucide-react'
+import { useState } from 'react'
+import { Button } from './ui/button'
+import { ThemeToggle } from './ThemeToggle'
 
 const pageNavItems = [
-  { path: "/dashboard", label: "Overview" },
-  { path: "/dashboard/accounts", label: "Accounts" },
-  { path: "/dashboard/transactions", label: "Transactions" },
-  { path: "/dashboard/profile", label: "Profile" },
-  { path: "/dashboard/settings", label: "Settings" },
-];
+  { path: '/dashboard', label: 'Overview' },
+  { path: '/dashboard/accounts', label: 'Accounts' },
+  { path: '/dashboard/transactions', label: 'Transactions' },
+  { path: '/dashboard/profile', label: 'Profile' },
+  { path: '/dashboard/settings', label: 'Settings' },
+]
 
 export function Navigation() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
@@ -34,12 +35,12 @@ export function Navigation() {
                 <NavLink
                   key={item.path}
                   to={item.path}
-                  end={item.path === "/dashboard"}
+                  end={item.path === '/dashboard'}
                   className={({ isActive }) =>
                     `px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                       isActive
-                        ? "bg-accent text-accent-foreground"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                        ? 'bg-accent text-accent-foreground'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
                     }`
                   }
                 >
@@ -57,8 +58,8 @@ export function Navigation() {
               className={({ isActive }) =>
                 `hidden md:flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
                 }`
               }
             >
@@ -89,13 +90,13 @@ export function Navigation() {
               <NavLink
                 key={item.path}
                 to={item.path}
-                end={item.path === "/dashboard"}
+                end={item.path === '/dashboard'}
                 onClick={() => setMobileMenuOpen(false)}
                 className={({ isActive }) =>
                   `block px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive
-                      ? "bg-accent text-accent-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                      ? 'bg-accent text-accent-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
                   }`
                 }
               >
@@ -109,8 +110,8 @@ export function Navigation() {
               className={({ isActive }) =>
                 `flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
                 }`
               }
             >
@@ -126,5 +127,5 @@ export function Navigation() {
         )}
       </div>
     </nav>
-  );
+  )
 }

@@ -34,7 +34,7 @@ async def get_current_user(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"Could not decode access token: {str(e)}",
-        )
+        ) from e
 
     user_id = payload.get("sub") or payload.get("user_id")
     if not user_id:

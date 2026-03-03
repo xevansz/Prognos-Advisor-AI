@@ -1,6 +1,5 @@
 from typing import Annotated
 
-from core.database import get_db
 from fastapi import Depends, FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,6 +11,7 @@ from api.prognosis import router as prognosis_router
 from api.transactions import router as transactions_router
 from core.config import settings
 from core.logging import setup_logging
+from db import get_db
 from integrations.fx_client import get_cached_rates
 
 setup_logging()

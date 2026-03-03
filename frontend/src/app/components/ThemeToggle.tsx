@@ -1,9 +1,10 @@
-import { Moon, Sun } from "lucide-react";
-import { Button } from "./ui/button";
-import { useApp } from "../context/AppContext";
+import React from 'react'
+import { Moon, Sun } from 'lucide-react'
+import { Button } from './ui/button'
+import { useApp } from '../context/AppContext'
 
 export function ThemeToggle() {
-  const { theme, toggleTheme } = useApp();
+  const { theme, toggleTheme } = useApp()
 
   return (
     <Button
@@ -12,11 +13,11 @@ export function ThemeToggle() {
       onClick={toggleTheme}
       aria-label="Toggle theme"
     >
-      {theme === "dark" ? (
+      {theme === 'dark' ? (
         <Sun className="h-4 w-4" />
       ) : (
         <Moon className="h-4 w-4" />
       )}
     </Button>
-  );
+  )
 }
