@@ -68,3 +68,7 @@ def _generate_mock_report(input_data: dict) -> dict:
         "Consult with a qualified financial advisor before making investment decisions.",
         "markdown_body": None,
     }
+
+
+if __name__ == "__main__":
+    print(repr(settings.llm_api_key))
