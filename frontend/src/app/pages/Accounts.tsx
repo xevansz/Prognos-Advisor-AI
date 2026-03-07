@@ -39,8 +39,7 @@ import { CURRENCIES, formatCurrency } from '../constants'
 import { Plus, Trash2 } from 'lucide-react'
 
 export function Accounts() {
-  const { accounts, addAccount, deleteAccount, settings, profile, fxRates } =
-    useApp()
+  const { accounts, addAccount, deleteAccount, profile, fxRates } = useApp()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [accountForm, setAccountForm] = useState({
@@ -197,11 +196,7 @@ export function Accounts() {
         </CardHeader>
         <CardContent>
           <div className="text-3xl font-bold">
-            {formatCurrency(
-              totalBalance,
-              baseCurrency,
-              settings.currencyFormat
-            )}
+            {formatCurrency(totalBalance, baseCurrency)}
           </div>
         </CardContent>
       </Card>
@@ -245,11 +240,7 @@ export function Accounts() {
                       <TableCell>{account.type}</TableCell>
                       <TableCell>{account.currency}</TableCell>
                       <TableCell className="text-right font-mono">
-                        {formatCurrency(
-                          account.balance,
-                          account.currency,
-                          settings.currencyFormat
-                        )}
+                        {formatCurrency(account.balance, account.currency)}
                       </TableCell>
                       <TableCell>
                         <Button
@@ -295,11 +286,7 @@ export function Accounts() {
                     </Button>
                   </div>
                   <div className="text-xl font-bold font-mono">
-                    {formatCurrency(
-                      account.balance,
-                      account.currency,
-                      settings.currencyFormat
-                    )}
+                    {formatCurrency(account.balance, account.currency)}
                   </div>
                 </div>
               ))

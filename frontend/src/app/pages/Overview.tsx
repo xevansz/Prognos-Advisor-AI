@@ -31,7 +31,7 @@ import {
 } from '../components/ui/chart'
 
 export function Overview() {
-  const { accounts, transactions, profile, settings, fxRates } = useApp()
+  const { accounts, transactions, profile, fxRates } = useApp()
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -181,7 +181,7 @@ export function Overview() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl sm:text-3xl font-bold">
-              {formatCurrency(netWorth, baseCurrency, settings.currencyFormat)}
+              {formatCurrency(netWorth, baseCurrency)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               +12.5% from last month
@@ -198,11 +198,7 @@ export function Overview() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl sm:text-3xl font-bold text-[var(--success)]">
-              {formatCurrency(
-                totalIncome,
-                baseCurrency,
-                settings.currencyFormat
-              )}
+              {formatCurrency(totalIncome, baseCurrency)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">This month</p>
           </CardContent>
@@ -217,11 +213,7 @@ export function Overview() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl sm:text-3xl font-bold text-[var(--destructive)]">
-              {formatCurrency(
-                totalExpenses,
-                baseCurrency,
-                settings.currencyFormat
-              )}
+              {formatCurrency(totalExpenses, baseCurrency)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               Savings rate: {savingsRate}%
@@ -306,11 +298,7 @@ export function Overview() {
                             : Array.isArray(value)
                               ? parseFloat(String(value[0])) || 0
                               : parseFloat(String(value)) || 0
-                        return formatCurrency(
-                          num,
-                          baseCurrency,
-                          settings.currencyFormat
-                        )
+                        return formatCurrency(num, baseCurrency)
                       }}
                     />
                   }
@@ -355,11 +343,7 @@ export function Overview() {
                     }`}
                   >
                     {transaction.type === 'credit' ? '+' : '-'}{' '}
-                    {formatCurrency(
-                      transaction.amount,
-                      transaction.currency,
-                      settings.currencyFormat
-                    )}
+                    {formatCurrency(transaction.amount, transaction.currency)}
                   </div>
                 </div>
               ))}

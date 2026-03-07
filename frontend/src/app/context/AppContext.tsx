@@ -50,7 +50,6 @@ export function convertToBase(
 }
 
 interface AppSettings {
-  currencyFormat: 'symbol' | 'code'
   notifications: boolean
 }
 
@@ -232,11 +231,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [accounts, setAccounts] = useState<AccountOut[]>([])
   const [accountsLoading, setAccountsLoading] = useState(false)
 
+  const coerceAccount = (acc: AccountOut): AccountOut => ({
+    ...acc,
+    balance: Number(acc.balance),
+  })
+
   const fetchAccounts = useCallback(async () => {
     setAccountsLoading(true)
     try {
       const data = await accountsApi.list()
-      setAccounts(data)
+      setAccounts(data.map(coerceAccount))
     } catch {
       setAccounts([])
     } finally {
@@ -246,7 +250,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const addAccount = async (account: AccountCreate) => {
     const created = await accountsApi.create(account)
-    setAccounts((prev) => [...prev, created])
+    setAccounts((prev) => [...prev, coerceAccount(created)])
   }
 
   const deleteAccount = async (id: string) => {
@@ -258,11 +262,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [transactions, setTransactions] = useState<TransactionOut[]>([])
   const [transactionsLoading, setTransactionsLoading] = useState(false)
 
+  const coerceTransaction = (t: TransactionOut): TransactionOut => ({
+    ...t,
+    amount: Number(t.amount),
+  })
+
   const fetchTransactions = useCallback(async () => {
     setTransactionsLoading(true)
     try {
       const data = await transactionsApi.list()
-      setTransactions(data)
+      setTransactions(data.map(coerceTransaction))
     } catch {
       setTransactions([])
     } finally {
@@ -272,7 +281,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const addTransaction = async (transaction: TransactionCreate) => {
     const created = await transactionsApi.create(transaction)
-    setTransactions((prev) => [created, ...prev])
+    setTransactions((prev) => [coerceTransaction(created), ...prev])
   }
 
   const updateTransaction = async (
@@ -280,7 +289,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     transaction: TransactionUpdate
   ) => {
     const updated = await transactionsApi.update(id, transaction)
-    setTransactions((prev) => prev.map((t) => (t.id === id ? updated : t)))
+    setTransactions((prev) =>
+      prev.map((t) => (t.id === id ? coerceTransaction(updated) : t))
+    )
   }
 
   const deleteTransaction = async (id: string) => {
@@ -326,7 +337,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   // ── Settings ───────────────────────────────────────────────────────────────
   const [settings, setSettings] = useState<AppSettings>({
-    currencyFormat: 'symbol',
     notifications: true,
   })
 

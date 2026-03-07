@@ -43,27 +43,13 @@ export function getCurrencySymbol(code: string): string {
   return CURRENCIES.find((c) => c.code === code)?.symbol ?? code
 }
 
-export function formatCurrency(
-  amount: number,
-  currencyCode: string,
-  format: 'symbol' | 'code' = 'symbol'
-): string {
+export function formatCurrency(amount: number, currencyCode: string): string {
   const code = (currencyCode || '').toUpperCase()
 
   const locale = code === 'INR' ? 'en-IN' : undefined
 
   const number = Number(amount)
   const safe = Number.isFinite(number) ? number : 0
-
-  if (format === 'code') {
-    return new Intl.NumberFormat(locale, {
-      style: 'currency',
-      currency: code,
-      currencyDisplay: 'code',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(safe)
-  }
 
   return new Intl.NumberFormat(locale, {
     style: 'currency',

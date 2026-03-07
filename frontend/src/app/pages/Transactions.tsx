@@ -48,7 +48,6 @@ export function Transactions() {
     addTransaction,
     updateTransaction,
     deleteTransaction,
-    settings,
     profile,
   } = useApp()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -513,8 +512,7 @@ export function Transactions() {
                           {transaction.type === 'credit' ? '+' : '-'}
                           {formatCurrency(
                             transaction.amount,
-                            transaction.currency,
-                            settings.currencyFormat
+                            transaction.currency
                           )}
                         </TableCell>
                         <TableCell>

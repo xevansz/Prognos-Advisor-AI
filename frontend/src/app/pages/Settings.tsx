@@ -578,8 +578,7 @@ export function Settings() {
                           <div className="text-sm text-muted-foreground">
                             {formatCurrency(
                               goal.target_amount,
-                              goal.target_currency,
-                              settings.currencyFormat
+                              goal.target_currency
                             )}{' '}
                             by {new Date(goal.target_date).toLocaleDateString()}{' '}
                             ·{' '}
@@ -645,29 +644,6 @@ export function Settings() {
                       </>
                     )}
                   </Button>
-                </div>
-
-                <div className="flex items-center justify-between py-4">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="currency-format">Currency Format</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Display currency as symbol or code
-                    </p>
-                  </div>
-                  <Select
-                    value={settings.currencyFormat}
-                    onValueChange={(v: 'symbol' | 'code') =>
-                      handleSettingsChange('currencyFormat', v)
-                    }
-                  >
-                    <SelectTrigger id="currency-format" className="w-32">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="symbol">Symbol</SelectItem>
-                      <SelectItem value="code">Code</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
 
                 <div className="flex items-center justify-between py-4">
