@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 from fastapi import HTTPException, status
@@ -29,7 +29,7 @@ async def check_rate_limit(db: AsyncSession, user_id: str) -> tuple[bool, int]:
     if not settings.prognosis_rate_limit_enabled:
         return False, 0
 
-    today = datetime.utcnow().date()
+    today = datetime.now(UTC).date()
 
     stmt = select(PrognosisUsage).where(
         PrognosisUsage.user_id == user_id,
@@ -48,7 +48,7 @@ async def increment_usage(db: AsyncSession, user_id: str) -> None:
     """
     Increment the prognosis usage count for today.
     """
-    today = datetime.utcnow().date()
+    today = datetime.now(UTC).date()
 
     stmt = select(PrognosisUsage).where(
         PrognosisUsage.user_id == user_id,
@@ -117,7 +117,7 @@ async def generate_prognosis(db: AsyncSession, user_id: str) -> dict:
     result = await db.execute(stmt)
     accounts = list(result.scalars().all())
 
-    cutoff_date = datetime.utcnow().date() - timedelta(days=60)
+    cutoff_date = datetime.now(UTC).date() - timedelta(days=60)
     stmt = select(Transaction).where(
         Transaction.user_id == user_id,
         Transaction.date >= cutoff_date,
@@ -153,7 +153,7 @@ async def generate_prognosis(db: AsyncSession, user_id: str) -> dict:
     # Calculate monthly income and savings first
     monthly_debits = Decimal("0")
     monthly_credits = Decimal("0")
-    last_30_days = datetime.utcnow().date() - timedelta(days=30)
+    last_30_days = datetime.now(UTC).date() - timedelta(days=30)
 
     for tx in transactions:
         if tx.date >= last_30_days:
@@ -203,7 +203,7 @@ async def generate_prognosis(db: AsyncSession, user_id: str) -> dict:
         nearest_goal_months = min(
             max(
                 1,
-                (g.target_date.year - datetime.utcnow().year) * 12 + (g.target_date.month - datetime.utcnow().month),
+                (g.target_date.year - datetime.now(UTC).year) * 12 + (g.target_date.month - datetime.now(UTC).month),
             )
             for g in goals
         )
@@ -246,19 +246,19 @@ async def generate_prognosis(db: AsyncSession, user_id: str) -> dict:
         "accounts_count": len(accounts),
         "transactions_count": len(transactions),
         "goals_count": len(goals),
-        "generated_at": datetime.utcnow().isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
     }
 
     if previous_report:
         previous_report.report_json = report_json
         previous_report.inputs_snapshot = inputs_snapshot
-        previous_report.generated_at = datetime.utcnow()
+        previous_report.generated_at = datetime.now(UTC)
     else:
         new_report = PrognosisReport(
             user_id=user_id,
             report_json=report_json,
             inputs_snapshot=inputs_snapshot,
-            generated_at=datetime.utcnow(),
+            generated_at=datetime.now(UTC),
         )
         db.add(new_report)
 
@@ -267,6 +267,6 @@ async def generate_prognosis(db: AsyncSession, user_id: str) -> dict:
 
     return {
         "report_json": report_json,
-        "generated_at": datetime.utcnow(),
+        "generated_at": datetime.now(UTC),
         "rate_limited": False,
     }

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 import httpx
@@ -38,7 +38,7 @@ async def get_cached_rates(db: AsyncSession, base_currency: str = "USD") -> dict
     result = await db.execute(stmt)
     cached = result.scalar_one_or_none()
 
-    now = datetime.utcnow()
+    now = datetime.now(UTC)
     if cached and (now - cached.fetched_at) < timedelta(days=3):
         return cached.rates
 

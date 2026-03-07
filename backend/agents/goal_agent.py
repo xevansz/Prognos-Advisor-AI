@@ -1,5 +1,5 @@
 import random
-from datetime import datetime
+from datetime import UTC, datetime
 from decimal import Decimal
 
 from core.logging import get_logger
@@ -43,7 +43,7 @@ def evaluate_goals(
 
         months_remaining = max(
             1,
-            (target_date.year - datetime.utcnow().year) * 12 + (target_date.month - datetime.utcnow().month),
+            (target_date.year - datetime.now(UTC).year) * 12 + (target_date.month - datetime.now(UTC).month),
         )
 
         # Calculate Future Value using compound interest formula

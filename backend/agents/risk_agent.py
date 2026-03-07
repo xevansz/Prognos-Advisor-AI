@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 from core.logging import get_logger
@@ -38,7 +38,7 @@ def compute_risk_metrics(
             "risk_label": "Low",
         }
 
-    cutoff_date = datetime.utcnow().date() - timedelta(days=60)
+    cutoff_date = datetime.now(UTC).date() - timedelta(days=60)
     recent_transactions = [tx for tx in transactions if tx.get("date") and tx["date"] >= cutoff_date]
 
     total_debits = Decimal("0")
@@ -51,7 +51,7 @@ def compute_risk_metrics(
         elif tx.get("type") == "credit":
             total_credits += amount
 
-    days_in_period = min(60, (datetime.utcnow().date() - cutoff_date).days)
+    days_in_period = min(60, (datetime.now(UTC).date() - cutoff_date).days)
     if days_in_period == 0:
         days_in_period = 30
 
