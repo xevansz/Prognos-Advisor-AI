@@ -166,7 +166,8 @@ export function Accounts() {
                 <Label htmlFor="initialBalance">Initial Balance</Label>
                 <Input
                   id="initialBalance"
-                  type="number"
+                  inputMode="decimal"
+                  type="text"
                   step="0.01"
                   value={accountForm.balance}
                   onChange={(e) =>

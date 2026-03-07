@@ -16,12 +16,18 @@ import {
 import { getCurrencySymbol, formatCurrency } from '../constants'
 
 export function Profile() {
-  const { profile, goals, userEmail } = useApp()
+  const { profile, goals, userEmail, profileLoading } = useApp()
 
-  if (!profile) {
+  if (profileLoading) {
     return (
       <div className="text-center py-20 text-muted-foreground">
-        <p className="text-sm">Loading profile…</p>
+        <p className="text-sm">Profile loading...</p>
+      </div>
+    )
+  } else if (!profile) {
+    return (
+      <div className="text-center py-20 text-muted-foreground">
+        <p className="text-sm">Completet your profile</p>
       </div>
     )
   }

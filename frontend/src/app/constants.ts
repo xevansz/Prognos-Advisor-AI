@@ -48,7 +48,28 @@ export function formatCurrency(
   currencyCode: string,
   format: 'symbol' | 'code' = 'symbol'
 ): string {
-  const prefix =
-    format === 'symbol' ? getCurrencySymbol(currencyCode) : currencyCode + ' '
-  return `${prefix}${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  const code = (currencyCode || '').toUpperCase()
+
+  const locale = code === 'INR' ? 'en-IN' : undefined
+
+  const number = Number(amount)
+  const safe = Number.isFinite(number) ? number : 0
+
+  if (format === 'code') {
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: code,
+      currencyDisplay: 'code',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(safe)
+  }
+
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: code,
+    currencyDisplay: 'narrowSymbol',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(safe)
 }

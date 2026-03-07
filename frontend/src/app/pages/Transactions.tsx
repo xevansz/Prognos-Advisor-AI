@@ -262,7 +262,8 @@ export function Transactions() {
                     <Label htmlFor="amount">Amount</Label>
                     <Input
                       id="amount"
-                      type="number"
+                      inputMode="decimal"
+                      type="text"
                       step="0.01"
                       value={transactionForm.amount}
                       onChange={(e) =>

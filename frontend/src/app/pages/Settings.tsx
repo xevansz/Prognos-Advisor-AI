@@ -33,7 +33,7 @@ import {
   type RiskAppetite,
   type GoalPriority,
 } from '../context/AppContext'
-import { CURRENCIES } from '../constants'
+import { CURRENCIES, formatCurrency } from '../constants'
 import {
   Moon,
   Sun,
@@ -465,7 +465,8 @@ export function Settings() {
                             <Label htmlFor="targetAmount">Target Amount</Label>
                             <Input
                               id="targetAmount"
-                              type="number"
+                              inputMode="decimal"
+                              type="text"
                               value={goalForm.targetAmount}
                               onChange={(e) =>
                                 setGoalForm({
@@ -575,9 +576,13 @@ export function Settings() {
                         <div>
                           <div className="font-medium">{goal.name}</div>
                           <div className="text-sm text-muted-foreground">
-                            {goal.target_amount.toLocaleString()}{' '}
-                            {goal.target_currency} by{' '}
-                            {new Date(goal.target_date).toLocaleDateString()} ·{' '}
+                            {formatCurrency(
+                              goal.target_amount,
+                              goal.target_currency,
+                              settings.currencyFormat
+                            )}{' '}
+                            by {new Date(goal.target_date).toLocaleDateString()}{' '}
+                            ·{' '}
                             {goal.priority.charAt(0).toUpperCase() +
                               goal.priority.slice(1)}{' '}
                             priority
