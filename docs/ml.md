@@ -2,7 +2,7 @@
 
 ### 1. Overview
 
-The ML/agents layer for the MVP is **deterministic and rules-based**, designed to be:
+The ML/agents layer for the MVP is **deterministic with an optional RL (DQN) policy**, designed to be:
 
 - Simple and explainable.
 - Implemented as pure Python modules callable from the FastAPI backend.
@@ -13,45 +13,42 @@ Components:
 - Risk Agent (logic-based).
 - Goal Feasibility Agent (math-based).
 - Investment Agent (heuristic).
-- RL Strategy generator.
-- Narrator (LLM-based report generator).
+- Strategy Agent (heuristic fallback, **optional tinygrad DQN**).
+- Narrator (LLM-based report generator; **Gemini optional**, mock fallback).
 
 ---
 
-### 2. Shared Data Structures (Conceptual)
+### 2. Where this is implemented
 
-These are conceptual; concrete types live in backend code.
+The implementation lives in:
 
-```python
-class AccountLike(TypedDict):
-    id: str
-    type: Literal['bank', 'cash', 'holdings', 'crypto', 'other']
-    currency: str
-    balance: float  # normalized to base currency where needed
+- `backend/agents/` (agents, RL env, tinygrad DQN, state encoder)
+- `backend/services/prognosis_service.py` (orchestration + DB read/write)
+- `backend/api/prognosis.py` (endpoints)
+- `backend/integrations/llm_client.py` (Narrator LLM / fallback)
 
-class TransactionLike(TypedDict):
-    id: str
-    account_id: str
-    date: date
-    amount: float
-    type: Literal['debit', 'credit']
-    currency: str
-    label: str
-
-class GoalLike(TypedDict):
-    id: str
-    name: str
-    target_amount: float
-    target_date: date
-    priority: Literal['high', 'medium', 'low']
-```
-
-The backend is responsible for **normalizing amounts to base currency** before passing them into the agents when required.
+The authoritative orchestration flow for production is `generate_prognosis()` in `backend/services/prognosis_service.py`.
 
 ---
 
-## pipeline:
-`Data -> Agents -> State Vector -> RL policy -> Strategy -> LLM explanation`
+## Pipeline (implemented)
+
+`DB models -> Risk/Goals/Allocation -> State Vector -> Strategy (DQN or heuristic) -> Narrator -> Persist report`
+
+High-level flow:
+
+1. Read `Profile`, `Account`, last-60-days `Transaction`, and `Goal` rows for the user.
+2. Compute `monthly_income` and `monthly_savings` from last-30-days transactions.
+3. Run:
+   - `agents.risk_agent.compute_risk_metrics(...)`
+   - `agents.goal_agent.evaluate_goals(...)`
+   - `agents.investment_agent.recommend_allocation(...)` (uses macro state)
+4. Build a 5D RL state vector via `agents.state_encoder.encode_state(...)`.
+5. Pick a strategy action via `agents.strategy_agent.StrategyAgent.get_strategy(...)`:
+   - If a trained model is available, use DQN argmax.
+   - Otherwise, use the built-in heuristic policy.
+6. Call the Narrator (`integrations.llm_client.generate_prognosis_report(...)`) to produce `report_json`.
+7. Cache/update the latest report in DB (`PrognosisReport`) and apply rate limiting (`PrognosisUsage`).
 
 ### Methodologies
 tinygrad
@@ -81,15 +78,17 @@ Compute:
 - Risk Capacity Score (0–100).
 
 #### 3.2 Inputs
-- Recent transactions (last 60 days) in base currency.
-- Liquid assets (sum of balances for `bank` and `cash` accounts; optionally some `holdings` if considered liquid).
-- monthly_income
+- Recent transactions (last 60 days). In production this is passed as a list of dicts with `amount`, `type`, `date`, `currency`.
+- Liquid assets are passed as a list of dicts (bank + cash accounts) with `balance` and `currency`.
+- `base_currency` (currently not used inside the function, but passed through).
+- `monthly_income` (computed from last 30 days credits).
 
 ```python
 def compute_risk_metrics(
-    transactions: list[TransactionLike],
-    liquid_accounts: list[AccountLike],
-    lookback_days: int = 60
+    transactions: list[dict],
+    liquid_accounts: list[dict],
+    base_currency: str,
+    monthly_income: float = 0.0,
 ) -> dict:
     ...
 ```
@@ -132,6 +131,7 @@ risk_score =
   "burn_rate": 42000,
   "runway_months": 5.2,
   "stability_ratio": 1.1,
+  "savings_ratio": 0.18,
   "risk_score": 63,
   "risk_label": "Moderate"
 }
@@ -152,11 +152,10 @@ Assess for each goal whether it is:
 Based on current savings vs what would be required to hit the target by the target date.
 
 #### 4.2 Inputs
-- goal_amount
-- goal_deadline
-- current_savings
-- monthly_contribution
-- expected_return
+- `goals`: list of dicts with `id`, `name`, `target_amount`, `target_date`, `priority`
+- `monthly_savings`: computed as (last-30-days credits - last-30-days debits)
+- `current_savings`: current liquid balances sum (bank + cash)
+- `expected_return`: annual return used as the mean for simulation (default `0.07`)
 
 #### 4.3 Calculations (MVP)
 For each goal:
@@ -168,9 +167,9 @@ For each goal:
   gap = goal_amount - FV
 
 ### Probability model (demo version)
-We simulate uncertainity
+We simulate uncertainty.
 
-Run monte carlo 500 times with random returns
+Run Monte Carlo 500 times with random returns.
 
 Counts: success_rate = succesful_runs / total_runs
 
@@ -179,39 +178,40 @@ Per goal:
 
 ```json
 {
+  "goal_id": "...",
   "goal_name": "Retirement",
   "projected_value": 1_200_000,
   "success_probability": 0.72,
-  "status": "At Risk",
+  "status": "at_risk",
   "goal_pressure": 1 - success_probability
 }
 ```
 
+Additional fields returned by the implementation:
+
+- `required_monthly_savings`
+- `actual_monthly_savings`
+
 ---
 
-### 5. Macro State Classifier
+### 5. Macro State
 
 #### 5.1 Purpose
 
-Translate a small set of public indicators into a **discrete macro state** used by the Investment Agent.
+Translate public indicators into a **discrete macro state** used by the Investment Agent.
 
-#### 5.2 Inputs
+The macro state is obtained via `integrations.market_client.get_macro_state()`.
 
-- Simple indicators fetched from a public API (e.g., index level and moving average, basic rate/or yield).
+Expected macro labels in the Investment Agent:
 
-Example conceptual input:
-
-```python
-class MarketIndicators(TypedDict):
-    index_level: float
-    index_200d_ma: float
-    short_rate: float
-    inflation_rate: float
-```
+- `bull`
+- `sideways`
+- `bear`
+- `recession`
 
 ---
 
-### 5. Investment Agent (Heuristic, RL-Ready)
+### 6. Investment Agent (Heuristic)
 
 #### 5.1 Purpose
 What allocation matches this user?
@@ -238,86 +238,91 @@ Allocations sum to 1.0.
 
 #### 5.3 Inputs
 ```python
-class GoalStatusLike(TypedDict):
-    goal_id: str
-    status: Literal['on_track', 'at_risk', 'unrealistic']
-    priority_weight: float
-
 def recommend_allocation(
-    risk_score: int,             # 0–100
-    risk_appetite: Literal['conservative', 'moderate', 'aggressive'],
-    goal_time_horizon: int,
-    goals_summary: list[GoalStatusLike],
-    macro_state: str                      # 'bull', 'bear', 'recession', 'sideways'
+    risk_capacity_score: int,
+    risk_appetite: str,
+    goals_summary: list[dict],
+    macro_state: str,
+    age: int = 35,
+    goal_time_horizon: int = 10,
 ) -> dict:
     ...
 ```
 
-#### 6.7 Two-Plan Output (Capacity vs Appetite)
-If risk appetite and capacity are in conflict (e.g., appetite = aggressive, capacity bucket = low):
+#### Two-plan output (capacity vs appetite)
 
-- Compute:
-  - `recommended` plan – bias by **capacity** (more conservative).
-  - `aggressive_alternative` plan – reflect stated appetite within constraints.
+The implementation returns:
 
-If they are aligned:
-
-- `aggressive_alternative` may equal `recommended` or be omitted.
+- `recommended`: always present
+- `aggressive_alternative`: present only when `risk_appetite == "aggressive"` and risk capacity is low (`risk_capacity_score/100 < 0.5`).
 
 #### 6.8 Output
 
 ```json
 {
   "recommended": {
-  total = equity + bonds + cash
-  equity /= total
-  bonds /= total
-  cash /= total
+    "equity": 0.55,
+    "debt": 0.30,
+    "cash": 0.10,
+    "other": 0.05
   },
   "aggressive_alternative": {
-  # same as recommended
+    "equity": 0.70,
+    "debt": 0.20,
+    "cash": 0.05,
+    "other": 0.05
   }
 }
 ```
 
 ---
 
-## Strategy Agent (RL wrapper)
-what should next month
+## 7. Strategy Agent (heuristic with optional DQN)
 
-This agent consumes outputs from A/B/C
+This agent consumes outputs from:
 
-### RL (signals and outputs):
-* savings rate adjustment
-* debt payoff priority
-* emergency reserve rule
-* rebalancing frequency
+- Risk Agent output (`risk_metrics`)
+- Goal Agent output (`goal_evaluations`)
+- Investment Agent output (`allocation`)
+- Savings rate (`savings_ratio` from Risk Agent)
 
-### RL Environment:
+### Strategy outputs (implemented)
 
-state = [
-  risk_score,
-  goal_feasibility_score,
-  current_equity_ratio,
-  monthly_savings_rate,
-  runway_months
-]
+The agent outputs one of the following discrete actions (see `agents/strategy_agent.py`):
 
-### Actions:
-0 = keep strategy
-1 = increase savings by 5%
-2 = reduce savings by 5%
-3 = shift 10% to equity
-4 = shift 10% to bonds
+- `keep_strategy`
+- `increase_savings` (`delta: +5`)
+- `reduce_savings` (`delta: -5`)
+- `shift_to_equity` (`allocation_shift: {equity:+10, debt:-10}`)
+- `shift_to_bonds` (`allocation_shift: {equity:-10, debt:+10}`)
 
-### Reward
+### State vector (authoritative)
+
+The RL state vector is produced by `agents.state_encoder.encode_state(...)` and is always:
+
+`[risk, goal_feasibility, equity_ratio, monthly_savings_rate, runway]`
+
+Where:
+
+- `risk`: `risk_score / 100` clamped to `[0,1]`
+- `goal_feasibility`: average of `success_probability` across goals, clamped to `[0,1]`
+- `equity_ratio`: `allocation.recommended.equity`, clamped to `[0,1]`
+- `monthly_savings_rate`: currently `savings_ratio` from risk metrics, clamped to `[0,1]`
+- `runway`: `min(runway_months/12, 1.0)`
+
+### Actions (DQN)
+
+Discrete action space (0..4) aligned to the action mapping above.
+
+### Reward (training env)
 reward =
     0.01 * net_worth_change
   - 2 if runway < 3 else 0
   + 5 if goal_on_track else -3
 
 Each episode: 5 - 10 simulated years
-Train episodes: 1000
+
+Default training episodes: `1000` (see `agents/train_rl.py`).
 
 ### Inputs:
 ```
@@ -328,7 +333,7 @@ runway
 savings_rate
 ```
 
-### Output
+### Output (API-facing)
 ```json
 {
   "action": "increase_savings",
@@ -339,6 +344,8 @@ savings_rate
   }
 }
 ```
+
+Note: the implementation currently shifts between `equity` and `debt` (not `cash`) for the allocation shift actions.
 ### Formalize
 ```python
 env.step(action):
@@ -371,10 +378,11 @@ class NarratorInput(TypedDict):
     risk: dict     # output from Risk Agent
     goals: list[dict]  # outputs from Goal Feasibility Agent
     allocation: dict   # outputs from Investment Agent
+    strategy: dict
     previous_report: Optional[dict]
 ```
 
-Backend builds this from DB models and agent outputs.
+Backend builds this from DB models and agent outputs, plus the strategy output.
 
 #### 6.3 Output Schema
 
@@ -417,10 +425,17 @@ def generate_prognosis_report(input_data: NarratorInput) -> NarratorOutput:
     ...
 ```
 
+Implementation notes:
+
+- The integration is in `backend/integrations/llm_client.py`.
+- If `settings.llm_provider == "gemini"` and `settings.llm_api_key` is present, it uses `google.genai` and parses `response.text` as JSON.
+- Otherwise it returns a deterministic mock report for MVP.
+
 ---
 
 ## Pipeline execution flow
-```
+
+```json
 raw_user_data
    ↓
 RiskAgent
@@ -436,6 +451,11 @@ Narrator LLM
 Dashboard
 ```
 
+Production endpoints:
+
+- `POST /api/prognosis/refresh` generates and caches a new report (with rate limit + fallback to cached report).
+- `GET /api/prognosis/current` returns the last cached report.
+
 ---
 
 ### 7. Testing and Validation
@@ -447,5 +467,10 @@ Dashboard
 - LLM contracts:
   - JSON schema validation of Narrator output.
   - Guardrails for common failure modes (e.g., missing keys, non-JSON responses).
+
+RL-specific checks (optional):
+
+- State vector length is always 5 and ordering never changes.
+- Action mapping remains stable between training and inference.
 
 This spec is sufficient to implement all ML/agent components for the MVP without prior chat context.

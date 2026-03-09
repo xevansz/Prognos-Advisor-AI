@@ -5,6 +5,11 @@
 
 #TODO
 
+## Testing
+* Unit testing
+* Integration testing
+* Manual user testing
+
 **DISCLAIMER and LICENSE:**
 * *Artificial Intelligence models can make mistakes.*
 
