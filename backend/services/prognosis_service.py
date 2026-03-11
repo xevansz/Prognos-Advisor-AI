@@ -219,7 +219,7 @@ async def generate_prognosis(db: AsyncSession, user_id: str) -> dict:
     )
 
     # Run strategy agent (RL or heuristic fallback)
-    strategy_agent = StrategyAgent()
+    strategy_agent = StrategyAgent(model_path=settings.model_path)
     savings_rate = risk_metrics.get("savings_ratio", 0.0)
     strategy = strategy_agent.get_strategy(risk_metrics, goal_evaluations, allocation, savings_rate)
 

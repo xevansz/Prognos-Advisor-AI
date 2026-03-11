@@ -16,7 +16,7 @@ At 1000 episodes, if performance fluctuates.
 * Normalize rewards
 """
 
-MODEL_SAVE_PATH = "backend/agents/models/dqn_weights.npz"
+MODEL_SAVE_PATH = "agents/models/dqn_weights.npz"
 
 
 def random_initail_state():

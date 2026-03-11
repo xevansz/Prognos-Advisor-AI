@@ -34,6 +34,8 @@ class Settings(BaseSettings):
     llm_api_key: str | None = None
     llm_model: str = "gemini-1.5-flash"
 
+    model_path: str | None = str(BASE_DIR / "agents/models/dqn_weights.npz")
+
     model_config = {
         "env_file": BASE_DIR / ".env",
         "env_prefix": "PROGNOSIS_",
@@ -47,3 +49,6 @@ def get_settings() -> Settings:
 
 
 settings = get_settings()
+
+if __name__ == "__main__":
+    print(BASE_DIR)
