@@ -23,14 +23,18 @@ Throughout the product, Prognosis AI is positioned as an **educational and plann
 
 The system follows a modern 3-tier architecture with additional external services:
 
-1. **Presentation Layer:** Svelte frontend with interactive dashboards.
+1. **Presentation Layer:** React (Vite) frontend with interactive dashboards.
 2. **Application Layer:** FastAPI backend orchestrating the Multi-Agent logic and integrations.
-3. **Data Layer:** Supabase for ACID-compliant transaction management.
+3. **Data Layer:** PostgreSQL (Supabase recommended) for ACID-compliant transaction management.
 4. **External Services (Phase 1 and beyond):**
    - Supabase Auth (email/password auth + JWT).
    - FX rate API for currency conversion (cached for multiple days).
    - Public market indicators API(s) to derive a simple “macro state”.
    - LLM provider (e.g., Google Gemini Flash / xAI) for the Narrator agent.
+
+### NOTE (Implementation Alignment)
+
+The current MVP implementation differs from the originally proposed stack in a few areas. This PRD retains the full product scope, but the overlapping architecture/stack details below reflect what is currently implemented in the repository.
 
 ## 3. Functional Requirements
 
@@ -207,8 +211,10 @@ The engine consists of three primary agents and a Narrator (LLM).
 ### 4.2 Security & Privacy
 
 - **Authentication:**
-  - User authentication shall be handled via **Supabase Auth** (email + password for MVP).
-  - Authenticated requests to the backend shall use JWT verification.
+  - The MVP uses **Supabase-issued JWTs** to identify the user.
+  - The backend extracts the `user_id` from the JWT subject (`sub`) to scope all queries.
+  - **Current MVP behavior:** decodes token claims without signature verification.
+  - **Production requirement:** verify JWT signatures using Supabase JWKS (and validate issuer/audience).
 - **Data Isolation:**
   - All database queries must be scoped to the authenticated `user_id` to prevent data leakage between users.
 - **Data Minimization:**
@@ -231,11 +237,13 @@ The engine consists of three primary agents and a Narrator (LLM).
 
 | Component           | Technology                         | Reasoning                                                   |
 | :---               | :---                               | :---                                                       |
-| **Frontend**       | Svelte / SvelteKit + charting lib  | Lightweight, fast, good for interactive dashboards.        |
+| **Frontend**       | React + Vite + TypeScript          | Interactive dashboards with a fast dev/build toolchain.    |
+| **UI/Charts**      | MUI + Radix UI + Recharts          | Component primitives + financial visualization.            |
 | **Backend**        | Python (FastAPI)                   | High-performance async APIs and ML/AI integrations.        |
-| **Database**       | Supabase                         | Relational integrity for financial ledgers.                |
-| **Auth**           | Supabase Auth + JWT                | Secure, managed auth integrated with Postgres.             |
-| **LLM**            | Google Gemini Flash / xAI model    | Cost-effective, large context window for history analysis. |
+| **Database**       | PostgreSQL (Supabase recommended)  | Relational integrity for financial ledgers.                |
+| **ORM/Migrations** | SQLAlchemy (async) + Alembic        | Async data access + schema migrations.                     |
+| **Auth**           | Supabase Auth (JWT)                | Managed auth; backend scopes data by JWT subject.          |
+| **LLM**            | Google Gemini (via `google-genai`) | Narrator agent; mock fallback when API key not set.        |
 | **RL (future)**    | Custom / Stable-Baselines3         | For asset allocation policy learning.                      |
 | **FX Data**        | Free public FX API                 | Multi-currency conversions to base currency.               |
 | **Market Data**    | Public indicators API(s)           | Simple macro regime classification for Investment Agent.   |
@@ -248,102 +256,3 @@ Prognosis AI is **not** a licensed financial advisor or broker. It is a **softwa
 
 - The system provides **educational insights and planning suggestions**, not individualized financial advice.
 - The application never recommends specific securities, products, or transactions (e.g., “buy/sell this stock”); it only suggests **asset-class level strategies**.
-
-**Disclaimer:**
-
-- *Artificial Intelligence models can make mistakes.*
-- Any financial suggestions or insights provided by the application or its AI advisors are purely **informational and non-binding**.
-- All decisions made based on such information are entirely at the user’s own discretion, and the suggestions provided cannot be relied upon as legal, financial, or professional counsel, nor can they be challenged in a court of law.
-- The author(s) of the application make no representations, warranties, or guarantees of any kind, express or implied, including but not limited to warranties of accuracy, reliability, merchantability, or fitness for a particular purpose, and shall not be held liable for any loss, damage, or liability arising from the use of the application.
-
-Please also refer to the project’s LICENSE file for the full open-source license terms: [LICENSE](./LICENSE)
-
-# Prognosis AI
-
-**A Multi-Agent System for Personalized Financial Planning & Robo-Advisory**
-
-**Version:** 1.0 | **Date:** January 2026 | **Domain:** FinTech / Artificial Intelligence
-
-## 1. Introduction
-
-### 1.1 Purpose
-The purpose of this document is to define the functional and non-functional requirements for Prognosis AI, a web-based financial advisory application. Unlike traditional robo-advisors that rely on static algorithms, Prognosis AI utilizes a Multi-Agent System (MAS) combined with Large Language Models (LLMs) to provide hyper-personalized, context-aware financial guidance.
-
-### 1.2 Scope
-The application serves as a non-custodial financial tracker and advisor. It allows users to manually log assets and transactions to maintain data privacy. The core innovation lies in the "Prognosis Engine," where distinct AI agents (Risk, Goal, Investment) and LLM analyze user data to generate a cohesive financial health report and asset allocation strategy.
-
-## 2. System Architecture
-
-The system follows a modern 3-tier architecture:
-1. **Presentation Layer:** Svelte frontend with interactive dashboards.
-2. **Application Layer:** FastAPI backend orchestrating the Multi-Agent Logic.
-3. **Data Layer:** Supabase database for ACID-compliant transaction management.
-
-## 3. Functional Requirements
-
-### 3.1 Financial Management ((The Ledger) Frontend)
-
-* **3.1.1 Account Management:**
-    * The system shall allow users to create manual accounts categorized by type: Bank, Cash, Holdings (Stocks/Mutual Funds), Crypto, Other.
-    * The system shall maintain a current balance for each account.
-* **3.1.2 Transaction Logging:**
-    * The system shall record Credits (Income) and Debits (Expenses).
-    * Users must specify:Name(ex: salary, groceries etc), Date, Amount, Category(Debit or credit), Source Account, Description.
-    * **Automated Updates:** Upon logging a transaction, the system must automatically update the linked Account balance in the database (Atomic Transaction).
-* **3.1.3 Portfolio Overview:**
-    * The system shall display a visual dashboard including:
-        * Total Net Worth card.
-        * Monthly Spending vs Income chart.
-        * Asset distribution pie chart (e.g., 40% Bank, 60% Holdings (money in different accounts)).
-
-### 3.2 User Profile & Goals
-
-* **3.2.1 Goal Definition:**
-    * Users shall define financial goals with parameters: Goal Name, Target Amount, Target Time (Amount of time they have to earn it. ex: days/months/years), Priority (High/Med/Low).
-* **3.2.2 Profile Settings:**
-    * Users shall input demographic data (Age, Gender) and subjective Risk Appetite (Conservative, Moderate, Aggressive) to calibrate the AI agents.
-
-### 3.3 The Prognosis Engine (AI Core): *Important*
-The "Prognosis Report" page is the central feature. It is on-demand, triggered only when the user clicks the "Refresh Prognosis" button. We use three AI-agents and an LLM here.
-
-* **3.3.1 The Risk Agent (Logic-Based):**
-    * Input: Last 30-60 days of transaction history + Total Liquid Assets.
-    * Function: Calculates "Burn Rate" (Avg. Monthly Spend) and "Runway" (Months until insolvency).
-    * Output: Risk Capacity Score (0-100).
-* **3.3.2 The Goal Feasibility Agent (Math-Based):**
-    * Input: User Goals + Current Monthly Savings.
-    * Function: Uses Time Value of Money (TVM) formulas to calculate probability of success.
-    * Output: Status flag (On Track, At Risk, Unrealistic).
-* **3.3.3 The Investment Agent (RL):**
-    * Input: User Risk Score + Current Market State (Macro-trends).
-    * Function: Determines the optimal Asset Allocation mix.
-    * Constraint: The agent shall not recommend specific tickers (e.g., "Buy AAPL") but rather asset classes (e.g., "Increase Equity exposure to 60%, Reduce Cash").
-* **3.3.4 The Narrator (LLM - Gemini Flash):**
-    * Input: Structured JSON outputs from Agents A, B, and C.
-    * Function: Synthesizes technical data into a human-readable "Prognosis Report."
-    * Output: A structured textual report explaining why the goal is at risk and justifying the recommended asset allocation.
-
-* *Expected Outcome: An AI-powered robo-advisory system that uses agent-based reasoning and reinforcement learning to generate, explain and continuously adapt personalized financial plans based on user goals and market conditions. Visual Dashboards in Web Application.*
-
-## 4. Non-Functional Requirements
-
-### 4.1 Performance
-* **On-Demand Processing:** The Prognosis Report generation shall not exceed 10 seconds.
-* **Caching:** The system shall store the last generated report in the database to allow instant page loads on subsequent visits until a "Refresh" is triggered.
-
-### 4.2 Security
-* **Authentication:** Access shall be secured via JWT (JSON Web Tokens).
-* **Data Isolation:** All database queries must be scoped to the authenticated `user_id` to prevent data leakage between users.
-
-### 4.3 Scalability
-* The database schema shall be designed with proper indexing on `transaction_date` and `user_id` to handle 10,000+ transaction rows per user without latency.
-
-## 5. Technology Stack
-
-| Component | Technology | Reasoning |
-| :--- | :--- | :--- |
-| **Frontend** | Svelte.js + (Something to display charts) | Responsive UI and financial visualization. |
-| **Backend** | Python (FastAPI) | High-performance async support for ML inference. |
-| **Database** | PostgreSQL | Relational integrity for financial ledgers. |
-| **LLM** | Google Gemini Flash | Cost-effective, large context window for history analysis. |
-| **RL Model** | Custom / Stable-Baselines3 | For Asset Allocation optimization logic. |

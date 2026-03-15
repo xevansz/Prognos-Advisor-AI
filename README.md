@@ -1,11 +1,10 @@
 # Prognosis AI
-**A Multi-Agent System for Personalized Financial Planning & Robo-Advisory**
+A Multi-Agent System for Personalized Financial Planning & Robo-Advisory
 
 ## Instructions to run
 
-#TODO
-
-## Testing
+## TODO
+### Testing
 * Unit testing
 * Integration testing
 * Manual user testing
@@ -19,15 +18,14 @@
 
 * The author(s) of the application make no representations, warranties, or guarantees of any kind, express or implied, including but not limited to warranties of accuracy, reliability, merchantability, or fitness for a particular purpose, and shall not be held liable for any loss, damage, or liability arising from the use of the application.
 
->    7. Disclaimer of Warranty. Unless required by applicable law or
-      agreed to in writing, Licensor provides the Work (and each
-      Contributor provides its Contributions) on an "AS IS" BASIS,
-      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-      implied, including, without limitation, any warranties or conditions
-      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
-      PARTICULAR PURPOSE. You are solely responsible for determining the
-      appropriateness of using or redistributing the Work and assume any
-      risks associated with Your exercise of permissions under this License.
+>7. Disclaimer of Warranty. Unless required by applicable law or
+    agreed to in writing, Licensor provides the Work (and each
+    Contributor provides its Contributions) on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+    implied, including, without limitation, any warranties or conditions
+    of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+    PARTICULAR PURPOSE. You are solely responsible for determining the
+    appropriateness of using or redistributing the Work and assume any
+    risks associated with Your exercise of permissions under this License.
 
-
-* Please check the licensing information provided here: [LICENSE](./LICENSE)
+* Please also refer to the project’s LICENSE file for the full open-source license terms: [LICENSE](./LICENSE)
