@@ -179,7 +179,7 @@ def train(episodes=1000, batch_size=32, seed=None):
         np.random.seed(seed)
 
     # Create output directories
-    models_dir = Path("backend/agents/models")
+    models_dir = Path("agents/models")
     models_dir.mkdir(parents=True, exist_ok=True)
 
     Tensor.training = True
