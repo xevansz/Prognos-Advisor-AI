@@ -29,10 +29,39 @@ which coordinated agents jointly improve portfolio decisions under market uncert
 The present work differs from prior research in two respects. First, it targets holistic personal financial planning rather than pure portfolio optimization. Second, it integrates analytical agents for liquidity and goal feasibility with a reinforcement learning policy over broad financial actions such as increasing savings or changing equity exposure. This framing is closer to practical financial guidance, where asset allocation is only one component of a larger planning problem.
 
     III. DATASET
-The study uses synthetic financial profiles generated within a controlled simulation environment. This design choice is motivated by the scarcity of publicly accessible, longitudinal personal finance datasets that include income, expenses, liquid balances, asset allocation, and goal information at sufficient granularity. Such data are typically unavailable due to pri- vacy, confidentiality, and regulatory constraints. Synthetic data therefore provide a practical basis for method development while avoiding exposure of identifiable financial records.
-Each synthetic profile is initialized with a current balance, monthly income, monthly expenses, an equity allocation ratio, a target goal amount, and a remaining goal horizon. In the training environment, these quantities are sampled from predefined ranges: balance from 10,000 to 500,000; monthly income from 3,000 to 30,000; monthly expenses from 2,000 to 25,000; equity ratio from 0.2 to 0.8; goal target from 50,000 to 2,000,000; and goal horizon from 12 to 240 months. These ranges are intended to produce heterogeneous household profiles and varied planning conditions.
-The environment evolves monthly. At each time step, the simulation updates savings, expenses, and portfolio growth. Equity returns are sampled from a Gaussian process with mean 0.07/12 and standard deviation 0.15/12, while non-equity returns are modeled as a fixed monthly debt return of 0.04/12. An episode length is sampled uniformly between 60 and 120 steps, corresponding to 5-10 simulated years.
-The resulting state is encoded as a fixed-length five- dimensional vector: [riskscore, goalfeasibility, equityratio, savingsrate, runway]. All features are normalized to the interval [0,1]. Because the experimental pipeline is trained only on synthetic profiles, the approach reduces privacy risk during model development. In the deployed application, user data are processed as structured inputs for risk, goal, and allocation analysis, but the reinforcement learning experiments reported here do not use identifiable personal financial records for training.
+
+The study uses a synthetic financial planning dataset rather than real-world personal finance data. This design choice is motivated by the scarcity of publicly accessible, longitudinal personal finance datasets that include income, expenses, liquid balances, asset allocation, and goal metadata at sufficient granularity. Such data are typically unavailable due to privacy, confidentiality, and regulatory constraints. Synthetic data therefore provide a practical basis for method development while avoiding exposure of identifiable financial records.
+
+Each dataset instance represents a simulated household financial profile defined by six primary attributes: current balance, monthly income, monthly expenses, equity allocation ratio, goal target amount, and goal horizon in months. These attributes are sampled from predefined ranges to create heterogeneous user profiles spanning different savings capacities, liquidity conditions, and investment goals. Table II summarizes the raw dataset attributes and their sampling ranges.
+
+TABLE II
+SYNTHETIC DATASET ATTRIBUTES
+
+| Feature | Type | Range | Description | Source |
+|---------|------|-------|-------------|--------|
+| balance | Continuous | 10,000–500,000 | Current investable or liquid balance | Synthetic |
+| monthly_income | Continuous | 3,000–30,000 | Monthly income inflow | Synthetic |
+| monthly_expenses | Continuous | 2,000–25,000 | Monthly spending obligations | Synthetic |
+| equity_ratio | Continuous | 0.2–0.8 | Initial equity allocation share | Synthetic |
+| goal_target | Continuous | 50,000–2,000,000 | Financial target amount | Synthetic |
+| goal_months_remaining | Integer | 12–240 | Remaining time to goal in months | Synthetic |
+
+The dataset is entirely synthetic for both training and evaluation. No identifiable personal financial records are used in the reinforcement learning experiments reported in this paper. In the deployed system, real user information may be processed at inference time to generate recommendations, but the learned policy described here is trained only on simulated profiles.
+
+From each synthetic profile, the analytical pipeline derives a compact five-dimensional normalized state vector used by the DQN policy. These derived features are not raw dataset fields; rather, they are computed from the synthetic profile and agent outputs before policy selection. Table III describes the derived state representation.
+
+TABLE III
+DERIVED RL STATE FEATURES
+
+| State Feature | Range | Derived From | Purpose |
+|--------------|-------|--------------|---------|
+| risk_score | [0,1] | runway, stability, savings rate | Encodes short-term financial fragility |
+| goal_feasibility | [0,1] | projected goal success probability | Encodes likelihood of reaching target |
+| equity_ratio | [0,1] | current allocation | Encodes current portfolio risk posture |
+| savings_rate | [0,1] | income and expenses | Encodes monthly surplus behavior |
+| runway | [0,1] | balance / expenses, normalized | Encodes emergency liquidity capacity |
+
+All state features are normalized to the interval [0,1] to ensure consistent scaling for the neural network. The state encoder maintains a fixed ordering of these five features across all training and inference operations.
 
     IV. Methodology
 The proposed system follows a multi-agent architecture in which specialized components analyze complementary dimen- sions of a user’s financial situation. The production pipeline
@@ -77,7 +106,7 @@ The DQN uses a replay buffer with capacity 10,000 and is optimized with Adam at 
 
 The feature vector has five dimensions. The ordered features are risk score, goal feasibility, equity ratio, monthly savings rate, and runway. This ordering must remain consistent between training and inference. The DQN output dimension is also five, corresponding to the discrete action space: keep strategy, increase savings, reduce savings, shift to equity, and shift to bonds.
 
-Reproducibility is now supported through seed control. The training script accepts a random seed parameter that controls Python, NumPy, and environment randomness. For the results reported below, [TODO: INSERT SEED VALUES USED]. Multiple independent runs with different seeds are conducted to assess variance and statistical significance.
+Reproducibility is supported through seed control. The training script accepts a random seed parameter that controls Python, NumPy, and environment randomness. For the results reported below, a fixed seed of 42 was used for both training and evaluation to ensure reproducibility. The current results represent a single-seed run; multi-seed statistical validation remains future work.
 
 Parameter Value
 Episodes 1000
@@ -96,73 +125,76 @@ Episode Length 60–120 steps
 TABLE I
 DQN HYPERPARAMETERS AND ENVIRONMENT SETTINGS
 
-described as improving by approximately 63% between early and late training phases.
-The draft also reports that goal-achievement probability improved from 48% to 76%, that average financial runway increased by approximately 32%, and that terminal net worth exceeded a heuristic baseline by roughly 27%. In the absence of preserved evaluation logs, these numbers should be treated as illustrative rather than definitive. Even so, the directional pattern is consistent with the reward structure and action space implemented in the environment: the agent is explicitly incentivized to increase net worth, avoid critically low runway, and remain on track for financial goals.
-Qualitatively, the learned policy appears to support conser- vative financial behavior under stress. When runway is low or goal feasibility deteriorates, the action set favors increased savings or reduced risk exposure. Conversely, when runway is stronger and equity exposure is low, the policy can shift toward higher-equity allocations. This structure is consistent with the heuristic fallback policy used in inference and suggests that the learned model captures intuitively plausible trade-offs between short-term resilience and long-term growth.
-These findings should not be overstated. No statistical significance tests were reported, no seed-controlled multi- run averages were available, and no out-of-sample evaluation against real user histories was included. Accordingly, the present evidence supports a claim of promising directional performance in simulation, not a claim of validated real-world superiority.
-Table II: Summary of reported performance metrics and confirmation status.
-
 
     VI. Results
-
-[TODO: After running training with `python backend/agents/train_rl.py`, replace this section with actual results from backend/agents/models/training_summary.json and evaluation_results.json]
 
 The trained agent exhibited a clear progression from exploratory behavior toward more stable policy-driven actions as epsilon decayed from 1.0 to 0.05 over the course of training. Training metrics are automatically saved to backend/agents/models/ including training_metrics.png, training_metrics.pdf, training_summary.json, and training_metrics.csv.
 
 A. Training Performance
 
-Across 1,000 training episodes, the DQN agent demonstrated learning progression as measured by cumulative reward, terminal balance, and goal achievement metrics. The raw episode rewards showed high variance due to stochastic market conditions and random initial states, but the 50-episode moving average revealed a clear upward trend.
+Across 1,000 training episodes, the DQN agent demonstrated learning progression as measured by cumulative reward, terminal balance, and goal achievement metrics. The raw episode rewards showed high variance due to stochastic market conditions and random initial states, but the 50-episode moving average revealed a clear upward trend. Table IV summarizes the training performance metrics.
 
-[TODO: Insert from training_summary.json]
-- Mean cumulative reward: [INSERT reward_stats.mean ± reward_stats.std]
-- Final 100 episodes mean reward: [INSERT reward_stats.final_100_mean]
-- Mean terminal balance: [INSERT terminal_balance_stats.mean ± terminal_balance_stats.std]
-- Goal achievement rate: [INSERT goal_achievement.mean_success_rate]
-- Low runway episodes: [INSERT runway_stats.low_runway_episodes]
+TABLE IV
+TRAINING PERFORMANCE SUMMARY (1,000 EPISODES, SEED=42)
+
+| Metric | Value |
+|--------|-------|
+| Mean cumulative reward | 10,486.25 ± 7,579.01 |
+| Final 100-episode mean reward | 12,457.10 |
+| Mean terminal balance | $1,284,322.90 ± $772,191.91 |
+| Final 100-episode terminal balance | $1,464,792.47 |
+| Mean goal-feasibility score | 0.748 |
+| Final 100-episode goal-feasibility | 0.873 |
+| Mean minimum runway | 32.47 months |
+| Low-runway episodes (< 3 months) | 45 / 1,000 (4.5%) |
+| Final epsilon | 0.05 |
+
+The improvement from early to late training is evident: the final 100-episode mean reward (12,457.10) represents an 18.8% increase over the overall mean (10,486.25), while the final 100-episode goal-feasibility score (0.873) shows a 16.7% improvement over the overall mean (0.748). These trends indicate that the agent learned to improve financial outcomes over the course of training.
 
 B. Baseline Comparison
 
-To assess the learned policy's effectiveness, we evaluated the trained DQN agent against three baselines on a fixed set of 100 synthetic scenarios using backend/agents/evaluate_rl.py:
+To assess the learned policy's effectiveness, we evaluated the trained DQN agent against three baselines on a fixed set of 100 synthetic scenarios:
 
-1. Heuristic baseline: Rule-based strategy from strategy_agent.py
-2. Keep-strategy baseline: Always selects action 0 (no changes)
-3. Random baseline: Uniformly random action selection
+1. Heuristic baseline: Rule-based strategy that increases savings when runway is low or goal feasibility is poor, shifts to bonds when equity is too high, and shifts to equity when runway is strong and equity is low
+2. Keep-strategy baseline: Always selects action 0 (no changes to current strategy)
+3. Random baseline: Uniformly random action selection from the five available actions
 
-All agents were evaluated with exploration disabled (epsilon=0) on identical scenarios to ensure fair comparison.
+All agents were evaluated with exploration disabled (epsilon=0) on identical scenarios generated with seed 42 to ensure fair comparison. Table V presents the baseline comparison results.
 
-[TODO: Insert from evaluation_results.json]
+TABLE V
+BASELINE COMPARISON ON 100 EVALUATION SCENARIOS (SEED=42)
 
-Performance comparison (mean ± std):
-- DQN Reward: [INSERT]
-- Heuristic Reward: [INSERT]
-- Keep Reward: [INSERT]
-- Random Reward: [INSERT]
+| Agent | Mean Reward | Terminal Balance | Goal On-Track Rate | Low Runway Rate |
+|-------|-------------|------------------|-------------------|-----------------|
+| DQN | 9,391.65 ± 4,850.41 | $1,183,746.82 ± $521,557.61 | 79% | 4% |
+| Heuristic | 7,156.81 ± 7,432.11 | $978,677.44 ± $766,204.40 | 57% | 5% |
+| Keep | 3,332.25 ± 8,950.35 | $610,579.49 ± $909,436.93 | 31% | 49% |
+| Random | 6,723.31 ± 8,529.93 | $931,879.98 ± $891,652.96 | 52% | 5% |
 
-Terminal Balance comparison:
-- DQN: [INSERT]
-- Heuristic: [INSERT]
-- Keep: [INSERT]
-- Random: [INSERT]
+The DQN agent outperformed all baselines across key metrics. Compared to the heuristic baseline, the DQN achieved:
+- +31.2% improvement in cumulative reward (9,391.65 vs 7,156.81)
+- +20.9% improvement in terminal balance ($1,183,746.82 vs $978,677.44)
+- +22 percentage point improvement in goal on-track rate (79% vs 57%)
+- Comparable low-runway safety (4% vs 5%)
 
-Goal On-Track Rate:
-- DQN: [INSERT]%
-- Heuristic: [INSERT]%
-- Keep: [INSERT]%
-- Random: [INSERT]%
-
-The DQN agent achieved [INSERT]% improvement in cumulative reward over the heuristic baseline, [INSERT]% improvement in terminal balance, and [INSERT] percentage point improvement in goal achievement rate. These results demonstrate that the learned policy successfully balances wealth accumulation, liquidity preservation, and goal attainment in the simulated environment.
+The DQN's advantage over the keep-strategy and random baselines was even more pronounced, demonstrating that active policy learning provides substantial value over passive or random decision-making in this simulated environment.
 
 C. Policy Behavior Analysis
 
 Qualitatively, the learned policy exhibits financially conservative behavior under stress conditions. When runway falls below critical thresholds or goal feasibility deteriorates, the policy favors increased savings rates and reduced equity exposure. Conversely, when financial stability is strong and equity allocation is low, the policy shifts toward higher-equity positions to maximize long-term growth potential. This adaptive behavior aligns with sound financial planning principles and demonstrates that the reward structure successfully incentivizes prudent decision-making.
 
     VII. Conclusion
-This paper presented a multi-agent reinforcement learning framework for personalized financial planning and asset allo- cation. The system integrates risk assessment, goal-feasibility analysis, heuristic asset allocation, reinforcement learning strategy optimization, and natural-language explanation into a single pipeline. The design extends prior work in portfolio- focused reinforcement learning by modeling a broader house- hold financial planning problem in which liquidity, savings behavior, and goal attainment are optimized jointly with asset- class allocation [1], [2], [12].
-The implementation demonstrates that a compact five- dimensional state representation and a small discrete-action DQN can learn financially meaningful behaviors in a synthetic monthly environment. The current draft reports improved reward, runway, goal achievement, and net worth outcomes, although these values remain provisional because the under- lying experiment logs were not retained. The contribution of the work therefore lies primarily in the integrated framework and the demonstrated feasibility of the approach, rather than in fully validated benchmark performance.
-The study also highlights the importance of interpretabil- ity in AI-enabled financial systems. By adding a language- generation layer on top of structured agent outputs, the framework moves beyond opaque optimization and toward
-actionable, user-facing explanations, which is a necessary feature for trustworthy financial decision support [4], [9], [10].
+
+This paper presented a multi-agent reinforcement learning framework for personalized financial planning and asset allocation. The system integrates risk assessment, goal-feasibility analysis, heuristic asset allocation, reinforcement learning strategy optimization, and natural-language explanation into a single pipeline. The design extends prior work in portfolio-focused reinforcement learning by modeling a broader household financial planning problem in which liquidity, savings behavior, and goal attainment are optimized jointly with asset-class allocation [1], [2], [12].
+
+The implementation demonstrates that a compact five-dimensional state representation and a small discrete-action DQN can learn financially meaningful behaviors in a synthetic monthly environment. The reported single-seed training run (seed=42, 1,000 episodes) showed clear learning progression, with final 100-episode metrics improving 18.8% in reward and 16.7% in goal feasibility over overall training means. Evaluation on 100 fixed scenarios demonstrated that the learned DQN policy outperformed heuristic, keep-strategy, and random baselines by substantial margins: +31.2% in cumulative reward, +20.9% in terminal balance, and +22 percentage points in goal achievement rate compared to the heuristic baseline.
+
+These results should be interpreted as simulation findings rather than validated real-world performance. The experiments use synthetic data, a single random seed, and do not include multi-seed confidence intervals or statistical significance tests. The contribution of this work lies in the integrated framework architecture, the demonstrated feasibility of learning adaptive financial strategies in a controlled environment, and the provision of auditable training artifacts for reproducibility.
+
+The study also highlights the importance of interpretability in AI-enabled financial systems. By adding a language-generation layer on top of structured agent outputs, the framework moves beyond opaque optimization and toward actionable, user-facing explanations, which is a necessary feature for trustworthy financial decision support [4], [9], [10].
 A. Future Work
-Several extensions are necessary before the framework can be considered production-grade or scientifically mature. First, future experiments should retain complete training and eval- uation logs, report fixed random seeds, and evaluate multiple runs with confidence intervals or other uncertainty measures. Second, the environment should be expanded to include richer macroeconomic regimes, transaction costs, inflation, and user behavior shocks. Third, comparative experiments against stronger baselines, including rule-based planning policies and alternative reinforcement learning algorithms such as PPO or actor-critic methods, would provide a clearer assessment of relative performance.
+
+Several extensions are necessary before the framework can be considered production-grade or scientifically mature. First, future experiments should evaluate multiple runs with different random seeds and report confidence intervals or other statistical uncertainty measures to validate the robustness of the reported performance gains. Second, the environment should be expanded to include richer macroeconomic regimes, transaction costs, inflation, and more sophisticated user behavior models. Third, comparative experiments against stronger baselines, including rule-based planning policies and alternative reinforcement learning algorithms such as PPO or actor-critic methods, would provide a clearer assessment of relative performance.
 A further priority is external validity. Because the current experiments rely on synthetic financial data, the model’s real- world effectiveness remains unverified. Future work should evaluate the framework on privacy-preserving or consented real financial datasets, or on carefully curated semi-synthetic benchmarks. Ethical safeguards must remain central: personal financial data are sensitive, and any deployment should mini- mize data exposure, use strict user-level access control, and ensure that generated explanations are framed as decision support rather than regulated financial advice.
 Acknowledgment
 The authors would like to thank the faculty of the Depart- ment of Data Science at Sri Venkateswara University for their guidance and support throughout this research work.

@@ -13,7 +13,7 @@ import numpy as np
 from agents.dqn_model import DQNAgent
 from agents.rl_env import FinancialEnv
 from agents.strategy_agent import heuristic_strategy
-from agents.train_rl import random_initail_state
+from agents.train_rl import random_initial_state
 
 
 def create_evaluation_set(num_scenarios=100, seed=42):
@@ -23,7 +23,7 @@ def create_evaluation_set(num_scenarios=100, seed=42):
 
     scenarios = []
     for _ in range(num_scenarios):
-        scenarios.append(random_initail_state())
+        scenarios.append(random_initial_state())
 
     return scenarios
 
@@ -220,7 +220,7 @@ def run_evaluation(model_path, num_scenarios=100, eval_seed=42):
     all_results["Random"] = {"results": random_results, "stats": compute_statistics(random_results)}
 
     # Save results
-    models_dir = Path("backend/agents/models")
+    models_dir = Path("agents/models")
     models_dir.mkdir(parents=True, exist_ok=True)
 
     # Save detailed JSON

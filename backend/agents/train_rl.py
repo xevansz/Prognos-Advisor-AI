@@ -23,7 +23,7 @@ At 1000 episodes, if performance fluctuates.
 MODEL_SAVE_PATH = "agents/models/dqn_weights.npz"
 
 
-def random_initail_state():
+def random_initial_state():
     return {
         "balance": random.uniform(10_000, 500_000),
         "monthly_income": random.uniform(3_000, 30_000),
@@ -212,7 +212,7 @@ def train(episodes=1000, batch_size=32, seed=None):
     print(f"Configuration: {config}")
 
     for episode in range(episodes):
-        env = FinancialEnv(random_initail_state())
+        env = FinancialEnv(random_initial_state())
         state = env.reset()
         total_reward = 0
         episode_length = 0
@@ -283,4 +283,5 @@ def train(episodes=1000, batch_size=32, seed=None):
 
 
 if __name__ == "__main__":
-    train()
+    # Use a fixed seed for reproducibility in paper-reported runs
+    train(seed=42)
