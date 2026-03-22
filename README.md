@@ -1,5 +1,7 @@
-# Prognosis AI
-A Multi-Agent System for Personalized Financial Planning & Robo-Advisory
+<div align="center">
+    <h1>【 Prognosis AI for Finance 】</h1>
+</div>
+A Multi-Agent architecture for Personalized Financial Planning 
 
 ## Instructions to run
 

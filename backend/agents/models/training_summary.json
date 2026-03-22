@@ -1,0 +1,36 @@
+{
+  "config": {
+    "episodes": 1000,
+    "batch_size": 32,
+    "gamma": 0.99,
+    "learning_rate": 0.001,
+    "epsilon_start": 1.0,
+    "epsilon_min": 0.05,
+    "epsilon_decay": 0.995,
+    "replay_buffer_size": 10000,
+    "seed": null
+  },
+  "timestamp": "2026-03-19T15:42:33.706532",
+  "total_episodes": 1000,
+  "final_epsilon": 0.05,
+  "reward_stats": {
+    "mean": 10486.248844328135,
+    "std": 7579.010274366843,
+    "min": -862.1672384268718,
+    "max": 64568.68616529036,
+    "final_100_mean": 12457.10253598152
+  },
+  "terminal_balance_stats": {
+    "mean": 1284322.8955128002,
+    "std": 772191.9064111172,
+    "final_100_mean": 1464792.468180933
+  },
+  "goal_achievement": {
+    "mean_success_rate": 0.7480298012008789,
+    "final_100_mean": 0.8731886234524224
+  },
+  "runway_stats": {
+    "mean_min_runway": 32.46561495443943,
+    "low_runway_episodes": 45
+  }
+}

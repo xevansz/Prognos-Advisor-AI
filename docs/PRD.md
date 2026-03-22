@@ -1,6 +1,6 @@
 # Prognosis AI
 
-**A Multi-Agent System for Personalized Financial Planning & Robo-Advisory**
+A Multi-Agent System for Personalized Financial Planning & Robo-Advisory
 
 **Version:** 1.1 | **Date:** February 2026 | **Domain:** FinTech / Artificial Intelligence
 
@@ -174,11 +174,15 @@ The engine consists of three primary agents and a Narrator (LLM).
     - Possibly others (e.g., Gold, Crypto) as needed.
   - Respect constraints:
     - Never recommend specific tickers or products.
-    - If user’s appetite is Aggressive but capacity is low, produce **two plans**:
+    - If user's appetite is Aggressive but capacity is low, produce **two plans**:
       - A recommended (safer) plan aligned with capacity.
-      - An alternative plan aligned with the user’s stated higher risk, clearly labeled as such.
-- **Future RL Integration:**
-  - The investment agent’s interface (`state` → `allocation`) is designed so that an RL policy (e.g., via Stable-Baselines3) can replace the heuristic without changing external APIs.
+      - An alternative plan aligned with the user's stated higher risk, clearly labeled as such.
+- **RL Integration (Implemented):**
+  - A DQN-based strategy agent is now implemented and can replace the heuristic policy.
+  - The RL agent operates over a 5-dimensional state space and 5-action discrete action space.
+  - Training environment includes realistic market regimes, income/expense shocks, and paper-faithful goal feasibility calculations.
+  - Comprehensive evaluation pipeline with baseline comparisons is available.
+  - See `docs/ml.md` for detailed RL specifications and recent improvements.
 
 #### 3.3.4 Narrator (LLM)
 
