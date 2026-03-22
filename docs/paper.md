@@ -1,9 +1,9 @@
 A Multi-Agent Reinforcement Learning Framework for Personalized Financial Planning and Asset Allocation
 
-Abstract—Personal financial planning is a sequential decision problem shaped by income variability, expenditure patterns, risk capacity, market uncertainty, and long-horizon goals. Conven- tional personal finance tools are typically rule-based and provide limited adaptation to changing user circumstances. This paper presents a multi-agent framework for personalized financial planning and asset allocation that combines structured finan- cial analysis with reinforcement learning and natural-language explanation. The system decomposes the task into specialized agents for risk assessment, goal-feasibility evaluation, investment allocation, and strategy optimization, with a final language layer that translates quantitative outputs into user-facing explanations. A Deep Q-Network (DQN) is trained in a synthetic financial sim- ulation environment in which each episode spans 60-120 monthly steps, corresponding to approximately 5-10 simulated years. The state representation is five-dimensional and encodes normalized risk score, goal feasibility, equity allocation, savings rate, and financial runway. In the current draft, archived experiment logs were not available; therefore, reported performance values are retained as provisional estimates: average cumulative reward improved by approximately 63%, goal-achievement probability increased from 48% to 76% , financial runway improved by about 32%, and terminal net worth exceeded a heuristic baseline by roughly 27% . These directional results suggest that the proposed framework can learn financially conservative and goal- aware strategies in a controlled environment. The study is based on synthetic data, which reduces privacy risk but limits external validity. Overall, the framework provides a promising foundation for AI-assisted financial decision support and explainable robo- advisory systems [1]–[4].
+Abstract—Personal financial planning is a sequential decision problem shaped by income variability, expenditure patterns, risk capacity, market uncertainty, and long-horizon goals. Conven- tional personal finance tools are typically rule-based and provide limited adaptation to changing user circumstances. This paper presents a multi-agent framework for personalized financial planning and asset allocation that combines structured finan- cial analysis with reinforcement learning and natural-language explanation. The system decomposes the task into specialized agents for risk assessment, goal-feasibility evaluation, investment allocation, and strategy optimization, with a final language layer that translates quantitative outputs into user-facing explanations. A Deep Q-Network (DQN) is trained in a synthetic financial sim- ulation environment in which each episode spans 60-120 monthly steps, corresponding to approximately 5-10 simulated years. The state representation is five-dimensional and encodes normalized risk score, goal feasibility, equity allocation, savings rate, and financial runway. In the reported single-seed experiments, the final 100-episode mean reward improved by 18.8% over the overall training mean, the final 100-episode goal-feasibility score improved by 16.7%, and evaluation on 100 fixed scenarios showed that the learned policy outperformed a heuristic baseline by 31.2% in cumulative reward, 20.9% in terminal balance, and 22 percentage points in goal on-track rate while maintaining comparable low-runway safety. These results suggest that the proposed framework can learn financially conservative and goal- aware strategies in a controlled environment. The study is based on synthetic data, which reduces privacy risk but limits external validity. Overall, the framework provides a promising foundation for AI-assisted financial decision support and explainable robo- advisory systems [1]–[4].
 Index Terms—Multi-Agent Reinforcement Learning, Personal Financial Planning, Asset Allocation, Explainable AI
 
-    I. Introduction
+I. Introduction
 Financial planning is central to long-term household sta- bility and to goals such as retirement, education funding, and emergency preparedness. Although digital platforms now allow users to track balances, transactions, and investments with increasing granularity, many personal finance applications remain descriptive rather than prescriptive. They summarize spending and balances, but they do not learn adaptive strategies that respond to evolving financial conditions.
 Traditional advisory and planning systems commonly rely on fixed heuristics, static risk questionnaires, or deterministic
 rules. Such methods are transparent, but they are limited in environments where user cash flow, market returns, and goal feasibility evolve over time. Reinforcement learning offers a natural alternative because it models planning as sequential decision making under uncertainty [2], [5]. In finance, rein- forcement learning has been applied successfully to portfolio allocation, asset trading, and adaptive investment policies, especially when decisions must balance short-term shocks against long-term outcomes [1], [6], [7].
@@ -122,10 +122,6 @@ State Dimension & 5
 Action Space 5 actions
 Episode Length 60–120 steps
 
-TABLE I
-DQN HYPERPARAMETERS AND ENVIRONMENT SETTINGS
-
-
     VI. Results
 
 The trained agent exhibited a clear progression from exploratory behavior toward more stable policy-driven actions as epsilon decayed from 1.0 to 0.05 over the course of training. Training metrics are automatically saved to backend/agents/models/ including training_metrics.png, training_metrics.pdf, training_summary.json, and training_metrics.csv.
@@ -224,14 +220,14 @@ REPORTED PERFORMANCE METRICS AND CONFIRMATION STATUS
 
 | Metric | Original Draft Value | Implementation Status | Source for Verification |
 |--------|---------------------|----------------------|------------------------|
-| Reward improvement (early→late) | ~63% | Trackable | training_summary.json: reward_stats.final_100_mean vs initial episodes |
-| Goal achievement improvement | 48% → 76% | Trackable | training_summary.json: goal_achievement.mean_success_rate |
-| Average runway increase | ~32% | Trackable | training_summary.json: runway_stats.mean_min_runway |
-| Terminal net worth vs baseline | +27% over heuristic | Verifiable | evaluation_results.json: DQN vs Heuristic terminal_balance comparison |
+| Reward improvement (overall mean → final 100 mean) | 18.8% | Verified | Table IV: 12,457.10 vs 10,486.25 |
+| Goal-feasibility improvement (overall mean → final 100 mean) | 16.7% | Verified | Table IV: 0.873 vs 0.748 |
+| Low-runway episodes | 45 / 1,000 (4.5%) | Verified | Table IV: runway safety summary |
+| Terminal balance vs heuristic baseline | +20.9% over heuristic | Verified | Table V: $1,183,746.82 vs $978,677.44 |
 | Peak cumulative reward | >29,000 | Trackable | training_summary.json: reward_stats.max |
-| Low runway episodes | Not reported | Now tracked | training_summary.json: runway_stats.low_runway_episodes |
-| DQN vs Random baseline | Not reported | Now available | evaluation_results.json: DQN vs Random comparison |
-| DQN vs Keep-strategy | Not reported | Now available | evaluation_results.json: DQN vs Keep comparison |
+| DQN vs heuristic reward | +31.2% | Verified | Table V: 9,391.65 vs 7,156.81 |
+| DQN vs Random baseline | +39.7% reward | Verified | Table V: 9,391.65 vs 6,723.31 |
+| DQN vs Keep-strategy | +181.8% reward | Verified | Table V: 9,391.65 vs 3,332.25 |
 | Statistical significance | Not tested | Pending multi-seed runs | Run train_rl.py with different seeds |
 | Confidence intervals | Not reported | Pending multi-seed runs | Aggregate results from multiple training runs |
 
