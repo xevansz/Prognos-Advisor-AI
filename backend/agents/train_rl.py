@@ -171,8 +171,10 @@ def save_metrics_summary(metrics, save_dir, config):
     print(f"  Low Runway Episodes: {summary['runway_stats']['low_runway_episodes']}")
 
 
-def train(episodes=1000, batch_size=32, seed=None):
+def train(episodes=3000, batch_size=32, seed=None):
     """Train DQN agent with comprehensive metrics tracking"""
+    from agents.evaluate_rl import run_evaluation
+
     # Set random seed for reproducibility
     if seed is not None:
         random.seed(seed)
@@ -218,16 +220,23 @@ def train(episodes=1000, batch_size=32, seed=None):
         episode_length = 0
         min_runway = float("inf")
 
+        step = 0  # step counter
+        warmup_steps = 1000  # warmup steps
+
         while True:
             action = agent.select_action(state)
             next_state, reward, done = env.step(action)
 
             agent.replay_buffer.push(state, action, reward, next_state, done)
-            agent.train_step(batch_size=batch_size)
+
+            # train with delay + warmup
+            if len(agent.replay_buffer) > warmup_steps and step % 4 == 0:
+                agent.train_step(batch_size=batch_size)
 
             state = next_state
             total_reward += reward
             episode_length += 1
+            step += 1
 
             # Track minimum runway during episode
             current_runway = env.balance / env.monthly_expenses if env.monthly_expenses > 0 else 0
@@ -258,7 +267,7 @@ def train(episodes=1000, batch_size=32, seed=None):
 
         agent.decay_epsilon()
 
-        if episode % 10 == 0:
+        if episode % 50 == 0:
             agent.update_target()
 
         if episode % 100 == 0:
@@ -267,6 +276,13 @@ def train(episodes=1000, batch_size=32, seed=None):
                 f"Episode {episode:4d} | Reward: {total_reward:8.2f} | "
                 f"Avg(100): {recent_reward:8.2f} | Epsilon: {agent.epsilon:.4f}"
             )
+
+        if episode % 300 == 0 and episode > 0:
+            checkpoint_path = f"agents/models/checkpoint_{episode}.npz"
+            agent.save(checkpoint_path)
+
+            print(f"\nRunning evaluation at episode {episode}...")
+            run_evaluation(checkpoint_path, num_scenarios=100)
 
     metrics["final_epsilon"] = agent.epsilon
 
@@ -283,5 +299,4 @@ def train(episodes=1000, batch_size=32, seed=None):
 
 
 if __name__ == "__main__":
-    # Use a fixed seed for reproducibility in paper-reported runs
     train(seed=42)

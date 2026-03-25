@@ -102,6 +102,12 @@ class DQNAgent:
         # backprop
         self.optimizer.zero_grad()
         loss.backward()
+
+        # TO PREVENT EXPLODING Q VALUES
+        for param in get_parameters(self.network):
+            if param.grad is not None:
+                param.grad = param.grad.clip(-1, 1)
+
         self.optimizer.step()
 
     # Target Network update
@@ -109,8 +115,11 @@ class DQNAgent:
         state_dict = get_state_dict(self.network)
         load_state_dict(self.target_network, state_dict)
 
-    def decay_epsilon(self):
-        self.epsilon = max(self.epsilon_min, self.epsilon * self.epsilon_decay)
+    def decay_epsilon(self, step=False):
+        if step:
+            self.epsilon = max(self.epsilon_min, self.epsilon * 0.9999)
+        else:
+            self.epsilon = max(self.epsilon_min, self.epsilon * self.epsilon_decay)
 
     # save and load
     def save(self, path="dqn_model.npz"):
