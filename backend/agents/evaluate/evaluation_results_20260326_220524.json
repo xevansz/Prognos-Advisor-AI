@@ -1,0 +1,94 @@
+{
+  "num_scenarios": 100,
+  "eval_seed": 42,
+  "agents": {
+    "DQN": {
+      "reward": {
+        "mean": 12186.90717604896,
+        "std": 6540.016735338482,
+        "median": 11220.944453921902
+      },
+      "terminal_balance": {
+        "mean": 1459256.509496588,
+        "std": 680638.056655686,
+        "median": 1347429.843502806
+      },
+      "goal_success": {
+        "mean": 0.8248830572140143,
+        "std": 0.305994965955484,
+        "on_track_rate": 0.87
+      },
+      "runway": {
+        "mean_min": 45.86619425371284,
+        "low_runway_episodes": 4,
+        "low_runway_rate": 0.04
+      }
+    },
+    "Heuristic": {
+      "reward": {
+        "mean": 7156.806445020472,
+        "std": 7432.111185404875,
+        "median": 4677.185301382478
+      },
+      "terminal_balance": {
+        "mean": 978677.4363937395,
+        "std": 766204.4003694201,
+        "median": 695718.424611533
+      },
+      "goal_success": {
+        "mean": 0.6648346206751268,
+        "std": 0.3438152850578318,
+        "on_track_rate": 0.57
+      },
+      "runway": {
+        "mean_min": 40.03288650644726,
+        "low_runway_episodes": 5,
+        "low_runway_rate": 0.05
+      }
+    },
+    "Keep": {
+      "reward": {
+        "mean": 3332.2470149644637,
+        "std": 8950.350262703176,
+        "median": -533.5229902898202
+      },
+      "terminal_balance": {
+        "mean": 610579.4933881386,
+        "std": 909436.9252592353,
+        "median": 60554.70482421096
+      },
+      "goal_success": {
+        "mean": 0.37223116798262246,
+        "std": 0.40422125368059103,
+        "on_track_rate": 0.31
+      },
+      "runway": {
+        "mean_min": 26.60234862197993,
+        "low_runway_episodes": 49,
+        "low_runway_rate": 0.49
+      }
+    },
+    "Random": {
+      "reward": {
+        "mean": 6723.311863156264,
+        "std": 8529.934022629093,
+        "median": 3164.6508324885012
+      },
+      "terminal_balance": {
+        "mean": 931879.9782073185,
+        "std": 891652.9604503508,
+        "median": 579204.5479363285
+      },
+      "goal_success": {
+        "mean": 0.5715952812513345,
+        "std": 0.40265954420618116,
+        "on_track_rate": 0.52
+      },
+      "runway": {
+        "mean_min": 33.4516727386656,
+        "low_runway_episodes": 5,
+        "low_runway_rate": 0.05
+      }
+    }
+  }
+}

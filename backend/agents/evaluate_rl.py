@@ -281,5 +281,11 @@ def run_evaluation(model_path, num_scenarios=100, eval_seed=42):
 
 
 if __name__ == "__main__":
-    model_path = "agents/models/dqn_weights.npz"
-    run_evaluation(model_path, num_scenarios=100)
+    model_path = Path("agents/models")
+
+    for step in range(600, 3000, 300):
+        path = model_path / f"checkpoint_{step}.npz"
+        run_evaluation(path, num_scenarios=100)
+
+    # model_path = "agents/models/dqn_weights.npz"
+    # run_evaluation(model_path, num_scenarios=100)

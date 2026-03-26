@@ -10,16 +10,6 @@ from tinygrad import Tensor
 from agents.dqn_model import DQNAgent
 from agents.rl_env import FinancialEnv
 
-"""
-At 1000 episodes, if performance fluctuates.
-
-* If learning is unstable:
-* Increase episodes to 3000
-* Lower learning rate
-* Increase replay buffer to 50k
-* Normalize rewards
-"""
-
 MODEL_SAVE_PATH = "agents/models/dqn_weights.npz"
 
 
@@ -173,7 +163,7 @@ def save_metrics_summary(metrics, save_dir, config):
 
 def train(episodes=3000, batch_size=32, seed=None):
     """Train DQN agent with comprehensive metrics tracking"""
-    from agents.evaluate_rl import run_evaluation
+    # from agents.evaluate_rl import run_evaluation
 
     # Set random seed for reproducibility
     if seed is not None:
@@ -282,7 +272,7 @@ def train(episodes=3000, batch_size=32, seed=None):
             agent.save(checkpoint_path)
 
             print(f"\nRunning evaluation at episode {episode}...")
-            run_evaluation(checkpoint_path, num_scenarios=100)
+            # run_evaluation(checkpoint_path, num_scenarios=100)
 
     metrics["final_epsilon"] = agent.epsilon
 
