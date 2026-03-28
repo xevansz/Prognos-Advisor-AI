@@ -320,9 +320,67 @@ reward =
   - 2 if runway < 3 else 0
   + 5 if goal_on_track else -3
 
-Each episode: 5 - 10 simulated years
+Each episode: 5 - 10 simulated years (60-120 months)
 
 Default training episodes: `1000` (see `agents/train_rl.py`).
+
+### Recent RL Improvements (March 2026)
+
+The RL training environment and evaluation pipeline have been significantly enhanced:
+
+**1. Fixed Analytics Alignment**
+- Fixed `risk_score` calculation in `risk_agent.py` to properly scale to [0, 100] range
+- Aligned RL environment goal feasibility with paper-faithful future value calculations using compound interest formulas
+- RL environment now uses the same risk calculation semantics as production `risk_agent.py`
+
+**2. Market Regime Modeling**
+The environment now includes dynamic market regimes that transition stochastically:
+- **Normal**: 7% annual equity returns, 15% volatility, 4% debt returns
+- **Bull**: 12% annual equity returns, 12% volatility, 3.5% debt returns  
+- **Bear**: -5% annual equity returns, 20% volatility, 4.5% debt returns
+- **Recession**: -15% annual equity returns, 25% volatility, 3% debt returns
+
+Regimes transition every 12-36 months with weighted probabilities based on current state.
+
+**3. Income/Expense Shocks**
+The environment applies realistic financial variability:
+- 5% monthly probability of shocks
+- Income boost: 10-30% temporary increase
+- Income loss: 20-40% temporary decrease
+- Expense spike: 20-50% temporary increase
+
+**4. Comprehensive Metrics Tracking**
+Training now automatically saves:
+- Episode rewards (raw and 50-episode moving average)
+- Episode lengths
+- Terminal balances
+- Goal achievement rates
+- Minimum runway per episode
+- Epsilon decay history
+- High-DPI plots (PNG and PDF) for paper figures
+- JSON summary with statistics
+- CSV file with detailed per-episode metrics
+
+Output files in `backend/agents/models/`:
+- `training_metrics.png` / `training_metrics.pdf`
+- `training_summary.json`
+- `training_metrics.csv`
+
+**5. Evaluation Pipeline**
+New evaluation script `agents/evaluate_rl.py` provides:
+- Fixed evaluation set (100 scenarios by default)
+- Baseline comparisons:
+  - Heuristic strategy (from `strategy_agent.py`)
+  - Keep-strategy baseline (always action 0)
+  - Random baseline
+- Statistical reporting (mean ± std)
+- Comparison plots saved as PNG/PDF
+- Evaluation results in `evaluation_results.json`
+
+**6. Reproducibility**
+- Training accepts `seed` parameter for reproducible experiments
+- Multi-seed runs supported for statistical significance testing
+- Configuration metadata saved with all results
 
 ### Inputs:
 ```

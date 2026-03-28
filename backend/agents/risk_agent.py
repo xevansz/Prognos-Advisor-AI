@@ -90,7 +90,7 @@ def compute_risk_metrics(
     runway_normalized = normalize(min(runway_months, 12.0), 0.0, 12.0)
     stability_normalized = normalize(stability_ratio, 0.5, 2.0)
 
-    risk_score = int(40 * runway_normalized * 100 + 30 * stability_normalized * 100 + 30 * savings_ratio * 100)
+    risk_score = int(40 * runway_normalized + 30 * stability_normalized + 30 * savings_ratio)
     risk_score = max(0, min(100, risk_score))
 
     # Determine risk label
