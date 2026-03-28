@@ -1,6 +1,6 @@
 A Multi-Agent Reinforcement Learning Framework for Personalized Financial Planning and Asset Allocation
 
-Abstract—Personal financial planning is a sequential decision problem shaped by income variability, expenditure patterns, risk capacity, market uncertainty, and long-horizon goals. Conven- tional personal finance tools are typically rule-based and provide limited adaptation to changing user circumstances. This paper presents a multi-agent framework for personalized financial planning and asset allocation that combines structured finan- cial analysis with reinforcement learning and natural-language explanation. The system decomposes the task into specialized agents for risk assessment, goal-feasibility evaluation, investment allocation, and strategy optimization, with a final language layer that translates quantitative outputs into user-facing explanations. A Deep Q-Network (DQN) is trained in a synthetic financial sim- ulation environment in which each episode spans 60-120 monthly steps, corresponding to approximately 5-10 simulated years. The state representation is five-dimensional and encodes normalized risk score, goal feasibility, equity allocation, savings rate, and financial runway. In the reported single-seed experiments, the final 100-episode mean reward improved by 18.8% over the overall training mean, the final 100-episode goal-feasibility score improved by 16.7%, and evaluation on 100 fixed scenarios showed that the learned policy outperformed a heuristic baseline by 31.2% in cumulative reward, 20.9% in terminal balance, and 22 percentage points in goal on-track rate while maintaining comparable low-runway safety. These results suggest that the proposed framework can learn financially conservative and goal- aware strategies in a controlled environment. The study is based on synthetic data, which reduces privacy risk but limits external validity. Overall, the framework provides a promising foundation for AI-assisted financial decision support and explainable robo- advisory systems [1]–[4].
+Abstract—Personal financial planning is a sequential decision problem shaped by income variability, expenditure patterns, risk capacity, market uncertainty, and long-horizon goals. Conven- tional personal finance tools are typically rule-based and provide limited adaptation to changing user circumstances. This paper presents a multi-agent framework for personalized financial planning and asset allocation that combines structured finan- cial analysis with reinforcement learning and natural-language explanation. The system decomposes the task into specialized agents for risk assessment, goal-feasibility evaluation, investment allocation, and strategy optimization, with a final language layer that translates quantitative outputs into user-facing explanations. A Deep Q-Network (DQN) is trained in a synthetic financial sim- ulation environment in which each episode spans 60-120 monthly steps, corresponding to approximately 5-10 simulated years. The state representation is five-dimensional and encodes normalized risk score, goal feasibility, equity allocation, savings rate, and financial runway. In the reported single-seed experiments, the final 100-episode mean reward improved by 13.1% over the overall training mean, the final 100-episode goal-feasibility score improved by 1.1%, and evaluation on 100 fixed scenarios showed that the learned policy outperformed a heuristic baseline by 70.3% in cumulative reward, 49.1% in terminal balance, and 30 percentage points in goal on-track rate while maintaining comparable low-runway safety. These results suggest that the proposed framework can learn financially conservative and goal- aware strategies in a controlled environment. The study is based on synthetic data, which reduces privacy risk but limits external validity. Overall, the framework provides a promising foundation for AI-assisted financial decision support and explainable robo- advisory systems [1]–[4].
 Index Terms—Multi-Agent Reinforcement Learning, Personal Financial Planning, Asset Allocation, Explainable AI
 
 I. Introduction
@@ -38,7 +38,7 @@ TABLE II
 SYNTHETIC DATASET ATTRIBUTES
 
 | Feature | Type | Range | Description | Source |
-|---------|------|-------|-------------|--------|
+| ------- | ------ | ------ | -------- | -------- |
 | balance | Continuous | 10,000–500,000 | Current investable or liquid balance | Synthetic |
 | monthly_income | Continuous | 3,000–30,000 | Monthly income inflow | Synthetic |
 | monthly_expenses | Continuous | 2,000–25,000 | Monthly spending obligations | Synthetic |
@@ -54,7 +54,7 @@ TABLE III
 DERIVED RL STATE FEATURES
 
 | State Feature | Range | Derived From | Purpose |
-|--------------|-------|--------------|---------|
+| -------------- | ------ | ------------- | --------- |
 | risk_score | [0,1] | runway, stability, savings rate | Encodes short-term financial fragility |
 | goal_feasibility | [0,1] | projected goal success probability | Encodes likelihood of reaching target |
 | equity_ratio | [0,1] | current allocation | Encodes current portfolio risk posture |
@@ -63,31 +63,30 @@ DERIVED RL STATE FEATURES
 
 All state features are normalized to the interval [0,1] to ensure consistent scaling for the neural network. The state encoder maintains a fixed ordering of these five features across all training and inference operations.
 
-    IV. Methodology
+IV. Methodology
 The proposed system follows a multi-agent architecture in which specialized components analyze complementary dimen- sions of a user’s financial situation. The production pipeline
 retrieves profile, account, transaction, and goal data; computes structured financial metrics; constructs a normalized state vec- tor; selects a strategy action; and generates a natural-language report. The core analytical components are summarized below.
 
-
 Fig. 1. End-to-end system architecture linking structured user data, analytical agents, DQN strategy selection, and language-based reporting.
 
-    A. Risk Agent
+A. Risk Agent
 The Risk Agent estimates cash-flow fragility and liquidity capacity from recent transactions and liquid account balances. In the deployed pipeline, burn rate is computed from recent debit transactions, monthly income is computed from recent credits, and runway is defined as liquid assets divided by monthly burn rate. A normalized risk score is then computed as a weighted combination of runway, stability ratio, and sav- ings ratio: riskscore = 40*normalize(runway) + 30*normal- ize(stability) + 30*savingsratio, with normalization bounds of 0-12 months for runway and 0.5-2.0 for the stability ratio. The implementation clamps the final score to the range 0-100.
-    B. Goal Feasibility Agent
+B. Goal Feasibility Agent
 The Goal Feasibility Agent estimates whether financial goals are achievable under current savings behavior. For each goal, the system first computes a deterministic future value using current savings, monthly contributions, and an expected annual return of 7%. It then performs 500 Monte Carlo simulations using returns sampled from a Gaussian distribution centered at the expected annual return with standard deviation
 0.15. The estimated success probability is the fraction of simulated trajectories that reach or exceed the target amount by the target date. Goals are labeled ontrack when success probability is at least 0.75, atrisk when it is between 0.40 and 0.75, and unrealistic otherwise.
-    C. Investment Allocation Agent
+C. Investment Allocation Agent
 The Investment Allocation Agent recommends a broad asset-class allocation across equity, debt, cash, and other as- sets. The allocation is heuristic rather than learned. It combines an age-based baseline equity rule, time-horizon adjustments, average goal pressure, a user risk-appetite modifier, capacity constraints derived from risk score, and a macro-state adjust- ment. The output always includes a recommended allocation and may include a more aggressive alternative when there is a mismatch between low risk capacity and high stated risk appetite.
-    D. Strategy Agent
+D. Strategy Agent
 The Strategy Agent operates over a discrete action space of size five: keepstrategy, increasesavings, reducesavings, shifttoequity, and shifttobonds.
 The input state is the five-dimensional vector produced by the state encoder. The learning model is a DQN with two hidden fully connected layers of sizes 64 and 32, each followed by ReLU activation, and an output layer over the five actions. The network therefore maps a 5-dimensional normalized financial state to five Q-values.
 The reward function in the training environment is
-rt = 0.01∆W − 2 I(R < 3) + 5 I(G) − 3 I(¬G)	(1)
+rt = 0.01∆W − 2 I(R < 3) + 5 I(G) − 3 I(¬G) (1)
 where rt denotes the reward at time step t, ∆W represents the change in net worth during the current step, R denotes the financial runway measured in months, and G is a binary indicator representing whether the financial goal is projected to be on track. The indicator function I(·) evaluates to 1 when the condition inside the parentheses is true and 0 otherwise. The term −2 I(R < 3) penalizes states with critically low runway, while +5 I(G) rewards trajectories where goals re- main achievable and −3 I(¬G) penalizes states where goals are projected to fail.
 This formulation Eq. 1 encourages wealth growth while penalizing short runway and rewarding projected goal attain- ability. Each environment step corresponds to one simulated month.
-    E. Explanation layer
+E. Explanation layer
 The final component is a language-generation module that converts structured outputs into a human-readable report. In the current implementation, the system can use either an external large language model or a deterministic mock fall- back. The explanation layer is not part of the reinforcement learning optimization itself; rather, it improves interpretability by translating quantitative agent outputs into plain-language summaries. This design is aligned with literature on explain- able financial AI and robo-advising [4], [9], [10].
 
-    V. Experimental Setup
+V. Experimental Setup
 
 NOTE: The implementation has been significantly improved since the initial draft. Key enhancements include:
 - Fixed risk_score calculation to properly scale to [0, 100] range
@@ -98,18 +97,18 @@ NOTE: The implementation has been significantly improved since the initial draft
 - Created evaluation pipeline with heuristic, keep-strategy, and random baselines
 - Enabled seed-controlled reproducibility for multi-run experiments
 
-Training is conducted for 1,000 episodes in a synthetic financial environment. At the beginning of each episode, a new financial profile is sampled randomly from the initialization ranges described above. The episode length is randomized between 60 and 120 monthly steps. Thus, the agent is trained on heterogeneous long-horizon trajectories rather than on a single deterministic scenario.
+Training is conducted for 3,000 episodes in a synthetic financial environment. At the beginning of each episode, a new financial profile is sampled randomly from the initialization ranges described above. The episode length is randomized between 60 and 120 monthly steps. Thus, the agent is trained on heterogeneous long-horizon trajectories rather than on a single deterministic scenario.
 
 The environment now includes dynamic market regimes that transition stochastically between normal, bull, bear, and recession states. Each regime has distinct return distributions: normal markets exhibit 7% annual equity returns with 15% volatility; bull markets show 12% returns with reduced 12% volatility; bear markets experience -5% returns with elevated 20% volatility; and recession conditions produce -15% returns with 25% volatility. Debt returns vary by regime from 3% to 4.5% annually. Additionally, the environment applies income and expense shocks with 5% monthly probability to simulate real-world financial variability.
 
-The DQN uses a replay buffer with capacity 10,000 and is optimized with Adam at a learning rate of 0.001. The discount factor is gamma = 0.99. Mini-batch size is 32. Exploration follows an epsilon-greedy schedule with initial epsilon 1.0, minimum epsilon 0.05, and multiplicative decay factor 0.995 applied after each episode. The target network is updated every 10 episodes.
+The DQN uses a replay buffer with capacity 10,000 and is optimized with Adam at a learning rate of 0.001. The discount factor is gamma = 0.99. Mini-batch size is 32. Exploration follows an epsilon-greedy schedule with initial epsilon 1.0, minimum epsilon 0.05, and multiplicative decay factor 0.995 applied after each episode. The target network is updated every 50 episodes.
 
 The feature vector has five dimensions. The ordered features are risk score, goal feasibility, equity ratio, monthly savings rate, and runway. This ordering must remain consistent between training and inference. The DQN output dimension is also five, corresponding to the discrete action space: keep strategy, increase savings, reduce savings, shift to equity, and shift to bonds.
 
 Reproducibility is supported through seed control. The training script accepts a random seed parameter that controls Python, NumPy, and environment randomness. For the results reported below, a fixed seed of 42 was used for both training and evaluation to ensure reproducibility. The current results represent a single-seed run; multi-seed statistical validation remains future work.
 
 Parameter Value
-Episodes 1000
+Episodes 3000
 Replay Buffer Size 10,000
 Batch Size 32
 Learning Rate 0.001
@@ -117,7 +116,7 @@ Discount Factor gamma 0.99
 Initial epsilon 1.0 \\
 Minimum epsilon 0.05 \\
 epsilon Decay 0.995
-Target Network Update Every 10 episodes
+Target Network Update Every 50 episodes
 State Dimension & 5
 Action Space 5 actions
 Episode Length 60–120 steps
@@ -128,24 +127,24 @@ The trained agent exhibited a clear progression from exploratory behavior toward
 
 A. Training Performance
 
-Across 1,000 training episodes, the DQN agent demonstrated learning progression as measured by cumulative reward, terminal balance, and goal achievement metrics. The raw episode rewards showed high variance due to stochastic market conditions and random initial states, but the 50-episode moving average revealed a clear upward trend. Table IV summarizes the training performance metrics.
+Across 3,000 training episodes, the DQN agent demonstrated learning progression as measured by cumulative reward, terminal balance, and goal achievement metrics. The raw episode rewards showed high variance due to stochastic market conditions and random initial states, but the 50-episode moving average revealed a clear upward trend. Table IV summarizes the training performance metrics.
 
 TABLE IV
-TRAINING PERFORMANCE SUMMARY (1,000 EPISODES, SEED=42)
+TRAINING PERFORMANCE SUMMARY (3,000 EPISODES, SEED=42)
 
 | Metric | Value |
-|--------|-------|
-| Mean cumulative reward | 10,486.25 ± 7,579.01 |
-| Final 100-episode mean reward | 12,457.10 |
-| Mean terminal balance | $1,284,322.90 ± $772,191.91 |
-| Final 100-episode terminal balance | $1,464,792.47 |
-| Mean goal-feasibility score | 0.748 |
-| Final 100-episode goal-feasibility | 0.873 |
-| Mean minimum runway | 32.47 months |
-| Low-runway episodes (< 3 months) | 45 / 1,000 (4.5%) |
+| -------- | ------- |
+| Mean cumulative reward | 10,935.52 ± 9,016.12 |
+| Final 100-episode mean reward | 12,370.65 |
+| Mean terminal balance | $1,330,012.86 ± $906,494.85 |
+| Final 100-episode terminal balance | $1,456,924.95 |
+| Mean goal-feasibility score | 0.732 |
+| Final 100-episode goal-feasibility | 0.740 |
+| Mean minimum runway | 34.09 months |  
+| Low-runway episodes (< 3 months) | 207 / 3,000 (6.9%) |
 | Final epsilon | 0.05 |
 
-The improvement from early to late training is evident: the final 100-episode mean reward (12,457.10) represents an 18.8% increase over the overall mean (10,486.25), while the final 100-episode goal-feasibility score (0.873) shows a 16.7% improvement over the overall mean (0.748). These trends indicate that the agent learned to improve financial outcomes over the course of training.
+The improvement from early to late training is evident: the final 100-episode mean reward (12,370.65) represents a 13.1% increase over the overall mean (10,935.52), while the final 100-episode goal-feasibility score (0.740) shows a 1.1% improvement over the overall mean (0.732). These trends indicate that the agent learned to improve financial outcomes over the course of training.
 
 B. Baseline Comparison
 
@@ -161,16 +160,16 @@ TABLE V
 BASELINE COMPARISON ON 100 EVALUATION SCENARIOS (SEED=42)
 
 | Agent | Mean Reward | Terminal Balance | Goal On-Track Rate | Low Runway Rate |
-|-------|-------------|------------------|-------------------|-----------------|
-| DQN | 9,391.65 ± 4,850.41 | $1,183,746.82 ± $521,557.61 | 79% | 4% |
+| ------- | ------------- | ------------------ | ------------------- | ----------------- |
+| DQN | 12,186.91 ± 6,540.02 | $1,459,256.51 ± $680,638.06 | 87% | 4% |
 | Heuristic | 7,156.81 ± 7,432.11 | $978,677.44 ± $766,204.40 | 57% | 5% |
 | Keep | 3,332.25 ± 8,950.35 | $610,579.49 ± $909,436.93 | 31% | 49% |
 | Random | 6,723.31 ± 8,529.93 | $931,879.98 ± $891,652.96 | 52% | 5% |
 
 The DQN agent outperformed all baselines across key metrics. Compared to the heuristic baseline, the DQN achieved:
-- +31.2% improvement in cumulative reward (9,391.65 vs 7,156.81)
-- +20.9% improvement in terminal balance ($1,183,746.82 vs $978,677.44)
-- +22 percentage point improvement in goal on-track rate (79% vs 57%)
+- +70.3% improvement in cumulative reward (12,186.91 vs 7,156.81)
+- +49.1% improvement in terminal balance ($1,459,256.51 vs $978,677.44)
+- +30 percentage point improvement in goal on-track rate (87% vs 57%)
 - Comparable low-runway safety (4% vs 5%)
 
 The DQN's advantage over the keep-strategy and random baselines was even more pronounced, demonstrating that active policy learning provides substantial value over passive or random decision-making in this simulated environment.
@@ -183,7 +182,7 @@ Qualitatively, the learned policy exhibits financially conservative behavior und
 
 This paper presented a multi-agent reinforcement learning framework for personalized financial planning and asset allocation. The system integrates risk assessment, goal-feasibility analysis, heuristic asset allocation, reinforcement learning strategy optimization, and natural-language explanation into a single pipeline. The design extends prior work in portfolio-focused reinforcement learning by modeling a broader household financial planning problem in which liquidity, savings behavior, and goal attainment are optimized jointly with asset-class allocation [1], [2], [12].
 
-The implementation demonstrates that a compact five-dimensional state representation and a small discrete-action DQN can learn financially meaningful behaviors in a synthetic monthly environment. The reported single-seed training run (seed=42, 1,000 episodes) showed clear learning progression, with final 100-episode metrics improving 18.8% in reward and 16.7% in goal feasibility over overall training means. Evaluation on 100 fixed scenarios demonstrated that the learned DQN policy outperformed heuristic, keep-strategy, and random baselines by substantial margins: +31.2% in cumulative reward, +20.9% in terminal balance, and +22 percentage points in goal achievement rate compared to the heuristic baseline.
+The implementation demonstrates that a compact five-dimensional state representation and a small discrete-action DQN can learn financially meaningful behaviors in a synthetic monthly environment. The reported single-seed training run (seed=42, 3,000 episodes) showed clear learning progression, with final 100-episode metrics improving 13.1% in reward and 1.1% in goal feasibility over overall training means. Evaluation on 100 fixed scenarios demonstrated that the learned DQN policy outperformed heuristic, keep-strategy, and random baselines by substantial margins: +70.3% in cumulative reward, +49.1% in terminal balance, and +30 percentage points in goal achievement rate compared to the heuristic baseline.
 
 These results should be interpreted as simulation findings rather than validated real-world performance. The experiments use synthetic data, a single random seed, and do not include multi-seed confidence intervals or statistical significance tests. The contribution of this work lies in the integrated framework architecture, the demonstrated feasibility of learning adaptive financial strategies in a controlled environment, and the provision of auditable training artifacts for reproducibility.
 
@@ -212,22 +211,19 @@ Amundi Working Paper, 2021.
     [12] Z. Li, V. Tam, and K. L. Yeung, “Developing A Multi-Agent and Self- Adaptive Framework with Deep Reinforcement Learning for Dynamic Portfolio Risk Management,” Sep. 2024.
     [13] H. Wang and S. Yu, “Robo-Advising: Enhancing Investment with Inverse Optimization and Deep Reinforcement Learning,” May 2021.
 
-
-
-
 TABLE II
 REPORTED PERFORMANCE METRICS AND CONFIRMATION STATUS
 
 | Metric | Original Draft Value | Implementation Status | Source for Verification |
-|--------|---------------------|----------------------|------------------------|
-| Reward improvement (overall mean → final 100 mean) | 18.8% | Verified | Table IV: 12,457.10 vs 10,486.25 |
-| Goal-feasibility improvement (overall mean → final 100 mean) | 16.7% | Verified | Table IV: 0.873 vs 0.748 |
-| Low-runway episodes | 45 / 1,000 (4.5%) | Verified | Table IV: runway safety summary |
-| Terminal balance vs heuristic baseline | +20.9% over heuristic | Verified | Table V: $1,183,746.82 vs $978,677.44 |
+| -------- | --------------------- | ---------------------- | ------------------------ |
+| Reward improvement (overall mean → final 100 mean) | 13.1% | Verified | Table IV: 12,370.65 vs 10,935.52 |
+| Goal-feasibility improvement (overall mean → final 100 mean) | 1.1% | Verified | Table IV: 0.740 vs 0.732 |
+| Low-runway episodes | 207 / 3,000 (6.9%) | Verified | Table IV: runway safety summary |
+| Terminal balance vs heuristic baseline | +49.1% over heuristic | Verified | Table V: $1,459,256.51 vs $978,677.44 |
 | Peak cumulative reward | >29,000 | Trackable | training_summary.json: reward_stats.max |
-| DQN vs heuristic reward | +31.2% | Verified | Table V: 9,391.65 vs 7,156.81 |
-| DQN vs Random baseline | +39.7% reward | Verified | Table V: 9,391.65 vs 6,723.31 |
-| DQN vs Keep-strategy | +181.8% reward | Verified | Table V: 9,391.65 vs 3,332.25 |
+| DQN vs heuristic reward | +70.3% | Verified | Table V: 12,186.91 vs 7,156.81 |
+| DQN vs Random baseline | +81.3% reward | Verified | Table V: 12,186.91 vs 6,723.31 |
+| DQN vs Keep-strategy | +265.7% reward | Verified | Table V: 12,186.91 vs 3,332.25 |
 | Statistical significance | Not tested | Pending multi-seed runs | Run train_rl.py with different seeds |
 | Confidence intervals | Not reported | Pending multi-seed runs | Aggregate results from multiple training runs |
 
