@@ -6,11 +6,14 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 from tinygrad import Tensor
+from tinygrad.device import Device
 
 from agents.dqn_model import DQNAgent
 from agents.rl_env import FinancialEnv
 
 MODEL_SAVE_PATH = "agents/models/dqn_weights.npz"
+
+Device.DEFAULT = "CUDA"
 
 
 def random_initial_state():

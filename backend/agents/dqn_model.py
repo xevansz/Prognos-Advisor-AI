@@ -3,7 +3,10 @@ from collections import deque
 
 import numpy as np
 from tinygrad import Tensor, nn
+from tinygrad.device import Device
 from tinygrad.nn.state import get_parameters, get_state_dict, load_state_dict
+
+Device.DEFAULT = "CUDA"
 
 
 class QNetwork:
