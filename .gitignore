@@ -1,3 +1,5 @@
+# Large files
+backend/agents/models/training_metrics.png
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
