@@ -17,6 +17,7 @@ class Settings(BaseSettings):
 
     database_url: str
 
+    supabase_jwt_secret: str | None = None
     supabase_jwt_audience: str | None = None
     supabase_jwt_issuer: str | None = None
     supabase_jwks_url: str | None = None
