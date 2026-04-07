@@ -4,7 +4,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models import Account
+from models import Account, Transaction
 from schemas.account import AccountCreate, AccountUpdate
 
 
@@ -77,7 +77,21 @@ async def update_account(db: AsyncSession, account_id: str, user_id: str, payloa
 async def delete_account(db: AsyncSession, account_id: str, user_id: str) -> None:
     """
     Delete an account.
+
+    Prevents deletion if the account has associated transactions to maintain data integrity.
     """
     account = await get_account(db, account_id, user_id)
+
+    # Check if account has any transactions
+    stmt = select(Transaction).where(Transaction.account_id == account_id).limit(1)
+    result = await db.execute(stmt)
+    has_transactions = result.scalar_one_or_none() is not None
+
+    if has_transactions:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot delete account with existing transactions. Please delete all transactions first.",
+        )
+
     await db.delete(account)
     await db.commit()
