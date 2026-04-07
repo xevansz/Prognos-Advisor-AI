@@ -63,14 +63,25 @@ async def convert_currency(
 ) -> Decimal:
     """
     Convert amount from one currency to another using cached rates.
+    Returns original amount if conversion fails.
     """
     if from_currency == to_currency:
         return amount
 
-    rates = await get_cached_rates(db, from_currency)
+    try:
+        rates = await get_cached_rates(db, from_currency)
 
-    if to_currency not in rates:
-        raise ValueError(f"Currency {to_currency} not found in rates")
+        if not rates:
+            logger.warning(f"No FX rates available for {from_currency}, returning original amount")
+            return amount
 
-    rate = Decimal(str(rates[to_currency]))
-    return amount * rate
+        if to_currency not in rates:
+            logger.warning(f"Currency {to_currency} not found in rates for {from_currency}, returning original amount")
+            return amount
+
+        rate = Decimal(str(rates[to_currency]))
+        return amount * rate
+    except Exception as e:
+        logger.error(f"Failed to convert currency from {from_currency} to {to_currency}: {e}")
+        # Return original amount as fallback
+        return amount
