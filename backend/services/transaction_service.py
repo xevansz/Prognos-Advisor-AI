@@ -130,10 +130,12 @@ async def update_transaction(
 ) -> Transaction:
     """
     Update a transaction and adjust account balances accordingly.
+    Uses row-level locking to prevent race conditions.
     """
     transaction = await get_transaction(db, transaction_id, user_id)
 
-    stmt = select(Account).where(Account.id == transaction.account_id, Account.user_id == user_id)
+    # Lock the account row to prevent concurrent balance updates
+    stmt = select(Account).where(Account.id == transaction.account_id, Account.user_id == user_id).with_for_update()
     result = await db.execute(stmt)
     old_account = result.scalar_one_or_none()
 
@@ -157,7 +159,8 @@ async def update_transaction(
         transaction.type = payload.type
 
     if payload.account_id is not None and payload.account_id != transaction.account_id:
-        stmt = select(Account).where(Account.id == payload.account_id, Account.user_id == user_id)
+        # Lock the new account row as well
+        stmt = select(Account).where(Account.id == payload.account_id, Account.user_id == user_id).with_for_update()
         result = await db.execute(stmt)
         new_account = result.scalar_one_or_none()
 
