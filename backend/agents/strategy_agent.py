@@ -6,7 +6,11 @@ from tinygrad.device import Device
 from .dqn_model import DQNAgent
 from .state_encoder import encode_state
 
-Device.DEFAULT = "CUDA"
+# Try to use CUDA if available, fallback to CPU
+try:
+    Device.DEFAULT = "CUDA"
+except Exception:
+    Device.DEFAULT = "CPU"
 
 ACTION_MAP = {
     0: {"action": "keep_strategy", "delta": 0, "allocation_shift": {}},
