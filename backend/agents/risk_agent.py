@@ -63,7 +63,8 @@ def compute_risk_metrics(
     if burn_rate > 0:
         runway_months = float(total_liquid / Decimal(str(burn_rate)))
     else:
-        runway_months = float("inf") if total_liquid > 0 else 0.0
+        # Cap at 999 months instead of infinity to prevent JSON serialization issues
+        runway_months = 999.9 if total_liquid > 0 else 0.0
 
     # Calculate stability ratio: income / expenses
     if burn_rate > 0:
