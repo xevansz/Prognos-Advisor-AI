@@ -2,7 +2,7 @@ from datetime import date as date_type
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from models.enums import GoalPriority
 
@@ -13,6 +13,14 @@ class GoalBase(BaseModel):
     target_currency: str = Field(min_length=3, max_length=3)
     target_date: date_type
     priority: GoalPriority
+
+    @field_validator("target_date")
+    @classmethod
+    def validate_target_date(cls, v: date_type) -> date_type:
+        today = date_type.today()
+        if v <= today:
+            raise ValueError("Target date must be in the future")
+        return v
 
 
 class GoalCreate(GoalBase):

@@ -218,8 +218,20 @@ export function Settings() {
       setGoalError('Enter a valid target amount.')
       return
     }
+    if (parseFloat(goalForm.targetAmount) <= 0) {
+      setGoalError('Target amount must be greater than zero.')
+      return
+    }
     if (!goalForm.targetDate) {
       setGoalError('Target date is required.')
+      return
+    }
+    // Validate target date is in the future
+    const targetDate = new Date(goalForm.targetDate)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    if (targetDate <= today) {
+      setGoalError('Target date must be in the future.')
       return
     }
     setGoalSaving(true)
@@ -797,8 +809,11 @@ export function Settings() {
             <Button
               variant="destructive"
               onClick={async () => {
-                await logout()
-                navigate('/')
+                // TODO: Implement actual account deletion via API
+                // For now, just logout as a safety measure
+                alert(
+                  'Account deletion is not yet implemented. Please contact support to delete your account and data.'
+                )
                 setIsDeleteDialogOpen(false)
               }}
             >
