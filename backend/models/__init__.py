@@ -1,7 +1,10 @@
 from models.account import Account
+from models.audit_log import AuditLog
 from models.base import Base
 from models.enums import (
     AccountType,
+    AuditAction,
+    AuditResourceType,
     GoalPriority,
     GoalStatus,
     RecurrenceFrequency,
@@ -27,10 +30,13 @@ __all__ = [
     "FXRate",
     "PrognosisReport",
     "PrognosisUsage",
+    "AuditLog",
     "AccountType",
     "TransactionType",
     "RecurrenceFrequency",
     "GoalPriority",
     "GoalStatus",
     "RiskAppetite",
+    "AuditAction",
+    "AuditResourceType",
 ]

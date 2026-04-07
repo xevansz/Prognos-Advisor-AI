@@ -4,8 +4,9 @@ from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models import Account, Transaction
+from models import Account, AuditAction, AuditResourceType, Transaction
 from schemas.account import AccountCreate, AccountUpdate
+from services.audit_service import log_audit
 
 
 async def list_accounts(db: AsyncSession, user_id: str) -> list[Account]:
@@ -49,6 +50,19 @@ async def create_account(db: AsyncSession, user_id: str, payload: AccountCreate)
     )
 
     db.add(account)
+    await log_audit(
+        db,
+        user_id=user_id,
+        action=AuditAction.CREATE,
+        resource_type=AuditResourceType.ACCOUNT,
+        resource_id=str(account.id),
+        details={
+            "name": account.name,
+            "type": account.type,
+            "currency": account.currency,
+            "balance": str(account.balance),
+        },
+    )
     await db.commit()
     await db.refresh(account)
 
@@ -61,12 +75,27 @@ async def update_account(db: AsyncSession, account_id: str, user_id: str, payloa
     """
     account = await get_account(db, account_id, user_id)
 
+    # Track changes for audit
+    changes = {}
     if payload.name is not None:
+        changes["name"] = {"old": account.name, "new": payload.name}
         account.name = payload.name
     if payload.type is not None:
+        changes["type"] = {"old": account.type, "new": payload.type}
         account.type = payload.type
     if payload.currency is not None:
+        changes["currency"] = {"old": account.currency, "new": payload.currency.upper()}
         account.currency = payload.currency.upper()
+
+    if changes:
+        await log_audit(
+            db,
+            user_id=user_id,
+            action=AuditAction.UPDATE,
+            resource_type=AuditResourceType.ACCOUNT,
+            resource_id=account_id,
+            details=changes,
+        )
 
     await db.commit()
     await db.refresh(account)
@@ -93,5 +122,13 @@ async def delete_account(db: AsyncSession, account_id: str, user_id: str) -> Non
             detail="Cannot delete account with existing transactions. Please delete all transactions first.",
         )
 
+    await log_audit(
+        db,
+        user_id=user_id,
+        action=AuditAction.DELETE,
+        resource_type=AuditResourceType.ACCOUNT,
+        resource_id=account_id,
+        details={"name": account.name, "type": account.type, "balance": str(account.balance)},
+    )
     await db.delete(account)
     await db.commit()

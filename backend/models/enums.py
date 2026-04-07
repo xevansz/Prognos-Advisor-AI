@@ -34,3 +34,16 @@ class GoalStatus(StrEnum):
     ON_TRACK = "on_track"
     AT_RISK = "at_risk"
     UNREALISTIC = "unrealistic"
+
+
+class AuditAction(StrEnum):
+    CREATE = "create"
+    UPDATE = "update"
+    DELETE = "delete"
+
+
+class AuditResourceType(StrEnum):
+    ACCOUNT = "account"
+    TRANSACTION = "transaction"
+    GOAL = "goal"
+    PROFILE = "profile"

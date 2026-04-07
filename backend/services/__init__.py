@@ -4,6 +4,7 @@ from services import (
     profile_service,
     prognosis_service,
     transaction_service,
+    user_service,
 )
 
 __all__ = [
@@ -12,4 +13,5 @@ __all__ = [
     "transaction_service",
     "goal_service",
     "prognosis_service",
+    "user_service",
 ]
