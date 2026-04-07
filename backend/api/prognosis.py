@@ -1,14 +1,17 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request, status
 
 from api.deps import CurrentUserDep, DbDep
+from core.rate_limiter import READ_LIMIT, limiter
 from schemas.prognosis import PrognosisReportOut
 from services import prognosis_service
 
 router = APIRouter(prefix="/api/prognosis", tags=["prognosis"])
 
 
-@router.post("/refresh", response_model=PrognosisReportOut)
+@router.post("/refresh", response_model=PrognosisReportOut, status_code=status.HTTP_201_CREATED)
+@limiter.limit(READ_LIMIT)
 async def refresh_prognosis(
+    request: Request,
     db: DbDep,
     current_user: CurrentUserDep,
 ) -> PrognosisReportOut:
@@ -20,7 +23,9 @@ async def refresh_prognosis(
 
 
 @router.get("/current", response_model=PrognosisReportOut | None)
+@limiter.limit(READ_LIMIT)
 async def get_current_prognosis(
+    request: Request,
     db: DbDep,
     current_user: CurrentUserDep,
 ) -> PrognosisReportOut | None:

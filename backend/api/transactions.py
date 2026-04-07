@@ -1,8 +1,9 @@
 from datetime import date
 
-from fastapi import APIRouter, Query, status
+from fastapi import APIRouter, Query, Request, status
 
 from api.deps import CurrentUserDep, DbDep
+from core.rate_limiter import READ_LIMIT, WRITE_LIMIT, limiter
 from schemas.transaction import TransactionCreate, TransactionOut, TransactionUpdate
 from services import transaction_service
 
@@ -10,7 +11,9 @@ router = APIRouter(prefix="/api/transactions", tags=["transactions"])
 
 
 @router.get("", response_model=list[TransactionOut])
+@limiter.limit(READ_LIMIT)
 async def list_transactions(
+    request: Request,
     db: DbDep,
     current_user: CurrentUserDep,
     account_id: str | None = Query(default=None),
@@ -29,7 +32,9 @@ async def list_transactions(
 
 
 @router.post("", response_model=TransactionOut, status_code=status.HTTP_201_CREATED)
+@limiter.limit(WRITE_LIMIT)
 async def create_transaction(
+    request: Request,
     payload: TransactionCreate,
     db: DbDep,
     current_user: CurrentUserDep,
@@ -42,7 +47,9 @@ async def create_transaction(
 
 
 @router.get("/{transaction_id}", response_model=TransactionOut)
+@limiter.limit(READ_LIMIT)
 async def get_transaction(
+    request: Request,
     transaction_id: str,
     db: DbDep,
     current_user: CurrentUserDep,
@@ -55,7 +62,9 @@ async def get_transaction(
 
 
 @router.put("/{transaction_id}", response_model=TransactionOut)
+@limiter.limit(WRITE_LIMIT)
 async def update_transaction(
+    request: Request,
     transaction_id: str,
     payload: TransactionUpdate,
     db: DbDep,
@@ -69,7 +78,9 @@ async def update_transaction(
 
 
 @router.delete("/{transaction_id}", status_code=status.HTTP_204_NO_CONTENT)
+@limiter.limit(WRITE_LIMIT)
 async def delete_transaction(
+    request: Request,
     transaction_id: str,
     db: DbDep,
     current_user: CurrentUserDep,

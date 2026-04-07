@@ -1,6 +1,7 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Request, status
 
 from api.deps import CurrentUserDep, DbDep
+from core.rate_limiter import READ_LIMIT, WRITE_LIMIT, limiter
 from schemas.account import AccountCreate, AccountOut, AccountUpdate
 from services import account_service
 
@@ -8,7 +9,9 @@ router = APIRouter(prefix="/api/accounts", tags=["accounts"])
 
 
 @router.get("", response_model=list[AccountOut])
+@limiter.limit(READ_LIMIT)
 async def list_accounts(
+    request: Request,
     db: DbDep,
     current_user: CurrentUserDep,
 ) -> list[AccountOut]:
@@ -20,7 +23,9 @@ async def list_accounts(
 
 
 @router.post("", response_model=AccountOut, status_code=status.HTTP_201_CREATED)
+@limiter.limit(WRITE_LIMIT)
 async def create_account(
+    request: Request,
     payload: AccountCreate,
     db: DbDep,
     current_user: CurrentUserDep,
@@ -33,7 +38,9 @@ async def create_account(
 
 
 @router.get("/{account_id}", response_model=AccountOut)
+@limiter.limit(READ_LIMIT)
 async def get_account(
+    request: Request,
     account_id: str,
     db: DbDep,
     current_user: CurrentUserDep,
@@ -46,7 +53,9 @@ async def get_account(
 
 
 @router.put("/{account_id}", response_model=AccountOut)
+@limiter.limit(WRITE_LIMIT)
 async def update_account(
+    request: Request,
     account_id: str,
     payload: AccountUpdate,
     db: DbDep,
@@ -60,7 +69,9 @@ async def update_account(
 
 
 @router.delete("/{account_id}", status_code=status.HTTP_204_NO_CONTENT)
+@limiter.limit(WRITE_LIMIT)
 async def delete_account(
+    request: Request,
     account_id: str,
     db: DbDep,
     current_user: CurrentUserDep,
