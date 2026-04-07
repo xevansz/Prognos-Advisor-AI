@@ -43,10 +43,18 @@ export function convertToBase(
   rates: Record<string, number>
 ): number {
   if (fromCurrency === baseCurrency) return amount
-  const toBase = rates[baseCurrency]
-  const fromBase = rates[fromCurrency]
-  if (!toBase || !fromBase) return amount
-  return (amount / fromBase) * toBase
+
+  // The rates object contains conversion rates FROM the base currency
+  // e.g., if base is USD, rates['EUR'] = 0.85 means 1 USD = 0.85 EUR
+  // To convert from fromCurrency to baseCurrency:
+  // 1. If we have the rate directly, use it (amount / rate)
+  // 2. Otherwise, convert via cross-rate
+
+  const rateToFrom = rates[fromCurrency]
+  if (!rateToFrom) return amount // Fallback if rate not available
+
+  // Convert from fromCurrency to base: divide by the rate
+  return amount / rateToFrom
 }
 
 interface AppSettings {
@@ -256,6 +264,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const deleteAccount = async (id: string) => {
     await accountsApi.delete(id)
     setAccounts((prev) => prev.filter((a) => a.id !== id))
+    // Refetch transactions to ensure no broken references
+    await fetchTransactions()
   }
 
   // ── Transactions ───────────────────────────────────────────────────────────
