@@ -34,7 +34,9 @@ async def get_profile(db: AsyncSession, user_id: str) -> Profile | None:
     return result.scalar_one_or_none()
 
 
-async def upsert_profile(db: AsyncSession, user_id: str, payload: ProfileCreate | ProfileUpdate) -> Profile:
+async def upsert_profile(
+    db: AsyncSession, user_id: str, payload: ProfileCreate | ProfileUpdate, jwt_display_name: str | None = None
+) -> Profile:
     """
     Create or update a user's profile.
     """
@@ -45,10 +47,11 @@ async def upsert_profile(db: AsyncSession, user_id: str, payload: ProfileCreate 
     profile = result.scalar_one_or_none()
 
     if profile is None:
+        display_name = payload.display_name if payload.display_name else jwt_display_name
         profile = Profile(
             user_id=user.id,
             age=payload.age,
-            display_name=payload.display_name,
+            display_name=display_name,
             gender=payload.gender,
             base_currency=payload.base_currency.upper(),
             risk_appetite=payload.risk_appetite,

@@ -33,5 +33,5 @@ async def upsert_profile(
     """
     Create or update the current user's profile.
     """
-    profile = await profile_service.upsert_profile(db, current_user.user_id, payload)
+    profile = await profile_service.upsert_profile(db, current_user.user_id, payload, current_user.display_name)
     return profile

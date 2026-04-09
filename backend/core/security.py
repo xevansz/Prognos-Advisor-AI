@@ -14,8 +14,9 @@ class CurrentUser:
     For MVP we only need the Supabase `user_id` (subject) to scope all queries.
     """
 
-    def __init__(self, user_id: str):
+    def __init__(self, user_id: str, display_name: str | None = None):
         self.user_id = user_id
+        self.display_name = display_name
 
 
 async def get_current_user(
@@ -56,7 +57,10 @@ async def get_current_user(
             detail="Token missing subject",
         )
 
-    return CurrentUser(user_id=user_id)
+    user_metadata = payload.get("user_metadata", {})
+    display_name = user_metadata.get("display_name")
+
+    return CurrentUser(user_id=user_id, display_name=display_name)
 
 
 CurrentUserDep = Annotated[CurrentUser, Depends(get_current_user)]
