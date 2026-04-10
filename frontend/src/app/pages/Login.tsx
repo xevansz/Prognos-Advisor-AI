@@ -17,7 +17,7 @@ import { ThemeToggle } from '../components/ThemeToggle'
 
 export function Login() {
   const navigate = useNavigate()
-  const { login } = useApp()
+  const { login, loginWithOAuth } = useApp()
   const [formData, setFormData] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -133,7 +133,11 @@ export function Login() {
               </div>
 
               <div className="mt-6 grid grid-cols-2 gap-3">
-                <Button variant="outline" type="button">
+                <Button
+                  variant="outline"
+                  type="button"
+                  onClick={() => loginWithOAuth('google')}
+                >
                   <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
                     <path
                       fill="currentColor"
@@ -154,7 +158,11 @@ export function Login() {
                   </svg>
                   Google
                 </Button>
-                <Button variant="outline" type="button">
+                <Button
+                  variant="outline"
+                  type="button"
+                  onClick={() => loginWithOAuth('github')}
+                >
                   <svg
                     className="h-5 w-5 mr-2"
                     fill="currentColor"

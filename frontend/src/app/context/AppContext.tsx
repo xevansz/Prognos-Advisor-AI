@@ -69,6 +69,7 @@ interface AppContextType {
   authLoading: boolean
   userEmail: string | null
   login: (email: string, password: string) => Promise<void>
+  loginWithOAuth: (provider: 'google' | 'github') => Promise<void>
   signup: (name: string, email: string, password: string) => Promise<void>
   logout: () => Promise<void>
 
@@ -109,7 +110,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined)
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  // ── Theme ──────────────────────────────────────────────────────────────────
+  // Theme
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     try {
       return (
@@ -140,7 +141,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     })
   }
 
-  // ── Auth ───────────────────────────────────────────────────────────────────
+  // Auth
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [authLoading, setAuthLoading] = useState(true)
   const [userEmail, setUserEmail] = useState<string | null>(null)
@@ -183,7 +184,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut()
   }
 
-  // ── Profile ────────────────────────────────────────────────────────────────
+  // Profile
   const [profile, setProfile] = useState<ProfileOut | null>(null)
   const [profileLoading, setProfileLoading] = useState(false)
 
@@ -204,7 +205,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setProfile(updated)
   }
 
-  // ── Goals ──────────────────────────────────────────────────────────────────
+  // Goals
   const [goals, setGoals] = useState<GoalOut[]>([])
   const [goalsLoading, setGoalsLoading] = useState(false)
 
@@ -235,7 +236,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setGoals((prev) => prev.filter((g) => g.id !== id))
   }
 
-  // ── Accounts ───────────────────────────────────────────────────────────────
+  // Accounts
   const [accounts, setAccounts] = useState<AccountOut[]>([])
   const [accountsLoading, setAccountsLoading] = useState(false)
 
@@ -268,7 +269,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     await fetchTransactions()
   }
 
-  // ── Transactions ───────────────────────────────────────────────────────────
   const [transactions, setTransactions] = useState<TransactionOut[]>([])
   const [transactionsLoading, setTransactionsLoading] = useState(false)
 
@@ -309,7 +309,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setTransactions((prev) => prev.filter((t) => t.id !== id))
   }
 
-  // ── FX Rates ───────────────────────────────────────────────────────────────
+  // FX Rates
   const [fxRates, setFxRates] = useState<Record<string, number>>({})
 
   const fetchFxRates = useCallback(async (baseCurrency: string) => {
@@ -321,7 +321,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  // ── Prognosis ──────────────────────────────────────────────────────────────
+  // Prognosis
   const [prognosisReport, setPrognosisReport] =
     useState<PrognosisReport | null>(null)
   const [prognosisLoading, setPrognosisLoading] = useState(false)
@@ -345,7 +345,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  // ── Settings ───────────────────────────────────────────────────────────────
+  // Settings
   const [settings, setSettings] = useState<AppSettings>({
     notifications: true,
   })
@@ -354,7 +354,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setSettings((prev) => ({ ...prev, ...newSettings }))
   }
 
-  // ── Load data when authenticated ───────────────────────────────────────────
+  // OAuth login
+  const loginWithOAuth = async (provider: 'google' | 'github') => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/dashboard`,
+      },
+    })
+    if (error) throw new Error(error.message)
+  }
+
+  // Load data when authenticated
   useEffect(() => {
     if (!isAuthenticated) {
       setProfile(null)
@@ -395,6 +406,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         authLoading,
         userEmail,
         login,
+        loginWithOAuth,
         signup,
         logout,
         profile,

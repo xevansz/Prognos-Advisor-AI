@@ -16,7 +16,7 @@ import { useApp } from '../context/AppContext'
 import { ThemeToggle } from '../components/ThemeToggle'
 
 export function Signup() {
-  const { signup } = useApp()
+  const { signup, loginWithOAuth } = useApp()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -189,7 +189,11 @@ export function Signup() {
                   </div>
 
                   <div className="mt-6 grid grid-cols-2 gap-3">
-                    <Button variant="outline" type="button">
+                    <Button
+                      variant="outline"
+                      type="button"
+                      onClick={() => loginWithOAuth('google')}
+                    >
                       <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
                         <path
                           fill="currentColor"
@@ -210,7 +214,11 @@ export function Signup() {
                       </svg>
                       Google
                     </Button>
-                    <Button variant="outline" type="button">
+                    <Button
+                      variant="outline"
+                      type="button"
+                      onClick={() => loginWithOAuth('github')}
+                    >
                       <svg
                         className="h-5 w-5 mr-2"
                         fill="currentColor"
