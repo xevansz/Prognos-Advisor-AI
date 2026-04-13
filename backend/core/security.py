@@ -1,5 +1,7 @@
+from functools import lru_cache
 from typing import Annotated
 
+import requests
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
@@ -7,6 +9,23 @@ from jose import JWTError, jwt
 from core.config import settings
 
 security = HTTPBearer()
+
+
+# Cache for JWKS (public keys)
+@lru_cache(maxsize=1)
+def get_jwks():
+    """Fetch and cache Supabase public keys for ES256 verification."""
+    if not settings.supabase_jwks_url:
+        return None
+
+    jwks_url = settings.supabase_jwks_url
+    try:
+        response = requests.get(jwks_url, timeout=5)
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        print(f"Warning: Failed to fetch JWKS: {e}")
+        return None
 
 
 class CurrentUser:
@@ -32,8 +51,17 @@ async def get_current_user(
     token = credentials.credentials
 
     try:
-        # If JWT secret is configured, verify the signature
-        if settings.supabase_jwt_secret:
+        # First, decode header to check algorithm
+        unverified_header = jwt.get_unverified_header(token)
+        algorithm = unverified_header.get("alg")
+
+        if algorithm == "HS256":
+            # HS256 (email/password): verify with JWT secret
+            if not settings.supabase_jwt_secret:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="JWT secret not configured",
+                )
             payload = jwt.decode(
                 token,
                 settings.supabase_jwt_secret,
@@ -41,9 +69,41 @@ async def get_current_user(
                 audience=settings.supabase_jwt_audience,
                 issuer=settings.supabase_jwt_issuer,
             )
+        elif algorithm == "ES256":
+            # ES256 (OAuth): verify with public key from JWKS
+            jwks = get_jwks()
+            if not jwks:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Unable to fetch public keys for token verification",
+                )
+
+            # Find the matching key by kid
+            kid = unverified_header.get("kid")
+            public_key = None
+            for key in jwks.get("keys", []):
+                if key.get("kid") == kid:
+                    public_key = key
+                    break
+
+            if not public_key:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Public key not found for token",
+                )
+
+            payload = jwt.decode(
+                token,
+                public_key,
+                algorithms=["ES256"],
+                audience=settings.supabase_jwt_audience,
+                issuer=settings.supabase_jwt_issuer,
+            )
         else:
-            # Development fallback - ONLY FOR DEVLOPMENT
-            payload = jwt.get_unverified_claims(token)
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Unsupported token algorithm: {algorithm}",
+            )
     except JWTError as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

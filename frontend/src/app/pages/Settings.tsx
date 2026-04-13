@@ -114,6 +114,7 @@ export function Settings() {
   const [localProfile, setLocalProfile] = useState({
     displayName: profile?.display_name ?? '',
     age: profile?.age ?? 0,
+    gender: profile?.gender ?? '',
     baseCurrency: profile?.base_currency ?? 'INR',
     riskAppetite: (profile?.risk_appetite ?? 'moderate') as RiskAppetite,
   })
@@ -130,6 +131,7 @@ export function Settings() {
       setLocalProfile({
         displayName: profile.display_name ?? '',
         age: profile.age,
+        gender: profile.gender ?? '',
         baseCurrency: profile.base_currency,
         riskAppetite: profile.risk_appetite as RiskAppetite,
       })
@@ -163,6 +165,7 @@ export function Settings() {
       await saveProfile({
         display_name: localProfile.displayName || null,
         age: localProfile.age,
+        gender: localProfile.gender || 'prefer-not-to-say',
         base_currency: localProfile.baseCurrency,
         risk_appetite: localProfile.riskAppetite,
       })
@@ -365,6 +368,31 @@ export function Settings() {
                       max={120}
                     />
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="gender">Gender</Label>
+                    <Select
+                      value={localProfile.gender}
+                      onValueChange={(v) => {
+                        setProfileSuccess('')
+                        setProfileError('')
+                        setLocalProfile((p) => ({ ...p, gender: v }))
+                      }}
+                    >
+                      <SelectTrigger id="gender">
+                        <SelectValue placeholder="Select gender" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="male">Male</SelectItem>
+                        <SelectItem value="female">Female</SelectItem>
+                        <SelectItem value="non-binary">Non-binary</SelectItem>
+                        <SelectItem value="prefer-not-to-say">
+                          Prefer not to say
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="currency">Base Currency</Label>
                     <Select

@@ -96,7 +96,7 @@ export function Transactions() {
         description: '',
         date: new Date().toISOString().split('T')[0],
         amount: '',
-        type: 'debit',
+        type: 'expense',
         currency: profile?.base_currency ?? 'INR',
         isRecurring: false,
       })
@@ -489,27 +489,29 @@ export function Transactions() {
                         <TableCell>
                           <Badge
                             variant={
-                              transaction.type === 'credit'
+                              transaction.type === 'income'
                                 ? 'default'
                                 : 'secondary'
                             }
                             className={
-                              transaction.type === 'credit'
+                              transaction.type === 'income'
                                 ? 'bg-[hsl(var(--success))]'
                                 : ''
                             }
                           >
-                            {transaction.type === 'credit' ? 'Credit' : 'Debit'}
+                            {transaction.type === 'income'
+                              ? 'Income'
+                              : 'Expense'}
                           </Badge>
                         </TableCell>
                         <TableCell
                           className={`text-right font-mono font-semibold whitespace-nowrap ${
-                            transaction.type === 'credit'
+                            transaction.type === 'income'
                               ? 'text-[hsl(var(--success))]'
                               : 'text-[hsl(var(--destructive))]'
                           }`}
                         >
-                          {transaction.type === 'credit' ? '+' : '-'}
+                          {transaction.type === 'income' ? '+' : '-'}
                           {formatCurrency(
                             transaction.amount,
                             transaction.currency

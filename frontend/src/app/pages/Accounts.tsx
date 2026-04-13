@@ -62,7 +62,7 @@ export function Accounts() {
       })
       setAccountForm({
         name: '',
-        type: 'bank',
+        type: 'checking',
         currency: profile?.base_currency ?? 'INR',
         balance: '',
       })

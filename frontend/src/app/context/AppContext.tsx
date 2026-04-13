@@ -149,13 +149,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       const session = data.session
+      console.log('[Auth] Initial session check:', {
+        hasSession: !!session,
+        userId: session?.user?.id,
+        email: session?.user?.email,
+        tokenPreview: session?.access_token?.substring(0, 20) + '...',
+      })
       setIsAuthenticated(!!session)
       setUserEmail(session?.user.email ?? null)
       setAuthLoading(false)
     })
 
     const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
+        console.log('[Auth] State change:', {
+          event,
+          hasSession: !!session,
+          userId: session?.user?.id,
+          email: session?.user?.email,
+          tokenPreview: session?.access_token?.substring(0, 20) + '...',
+        })
         setIsAuthenticated(!!session)
         setUserEmail(session?.user.email ?? null)
       }

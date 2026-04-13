@@ -9,25 +9,80 @@ import {
 import { Button } from '../components/ui/button'
 import { useApp } from '../context/AppContext'
 import { Sparkles, AlertTriangle, Loader2 } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
-function renderValue(value: unknown): React.ReactNode {
+function getSectionTitle(key: string): string {
+  const titleMap: Record<string, string> = {
+    summary_bullets: 'Key Insights',
+    cashflow_section: 'Cash Flow Analysis',
+    goals_section: 'Goal Progress',
+    allocation_section: 'Investment Strategy',
+    changes_since_last: 'Changes Since Last Report',
+    markdown_body: 'Detailed Analysis',
+    disclaimer: 'Disclaimer',
+  }
+  return titleMap[key] || key.replace(/_/g, ' ')
+}
+
+function renderValue(value: unknown, sectionKey: string): React.ReactNode {
   if (value === null || value === undefined) return null
-  if (
-    typeof value === 'string' ||
-    typeof value === 'number' ||
-    typeof value === 'boolean'
-  ) {
+
+  // Render markdown for text sections
+  if (typeof value === 'string') {
+    return (
+      <div className="prose prose-sm max-w-none dark:prose-invert">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            h2: ({ children }) => (
+              <h2 className="text-xl font-semibold mt-6 mb-3">{children}</h2>
+            ),
+            h3: ({ children }) => (
+              <h3 className="text-lg font-semibold mt-4 mb-2">{children}</h3>
+            ),
+            p: ({ children }) => (
+              <p className="mb-3 leading-relaxed">{children}</p>
+            ),
+            ul: ({ children }) => (
+              <ul className="list-disc pl-5 space-y-1 mb-3">{children}</ul>
+            ),
+            ol: ({ children }) => (
+              <ol className="list-decimal pl-5 space-y-1 mb-3">{children}</ol>
+            ),
+            li: ({ children }) => (
+              <li className="leading-relaxed">{children}</li>
+            ),
+            strong: ({ children }) => (
+              <strong className="font-semibold text-foreground">
+                {children}
+              </strong>
+            ),
+            em: ({ children }) => <em className="italic">{children}</em>,
+          }}
+        >
+          {value}
+        </ReactMarkdown>
+      </div>
+    )
+  }
+
+  if (typeof value === 'number' || typeof value === 'boolean') {
     return <span>{String(value)}</span>
   }
+
   if (Array.isArray(value)) {
     return (
-      <ul className="list-disc pl-5 space-y-1">
+      <ul className="list-disc pl-5 space-y-2">
         {value.map((item, i) => (
-          <li key={i}>{renderValue(item)}</li>
+          <li key={i} className="leading-relaxed">
+            {renderValue(item, sectionKey)}
+          </li>
         ))}
       </ul>
     )
   }
+
   if (typeof value === 'object') {
     return (
       <div className="space-y-2">
@@ -36,7 +91,7 @@ function renderValue(value: unknown): React.ReactNode {
             <span className="font-medium capitalize">
               {k.replace(/_/g, ' ')}:{' '}
             </span>
-            {renderValue(v)}
+            {renderValue(v, k)}
           </div>
         ))}
       </div>
@@ -144,17 +199,25 @@ export function PrognosisAI() {
           </CardTitle>
           <CardDescription>Generated on {generatedAt}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {Object.entries(report).map(([sectionKey, sectionValue]) => (
-            <div key={sectionKey}>
-              <h3 className="mb-3 capitalize">
-                {sectionKey.replace(/_/g, ' ')}
-              </h3>
-              <div className="prose prose-sm max-w-none text-foreground">
-                {renderValue(sectionValue)}
+        <CardContent className="space-y-8">
+          {Object.entries(report)
+            .filter(([key]) => {
+              // Exclude disclaimer (shown separately) and markdown_body (contains duplicates)
+              return key !== 'disclaimer' && key !== 'markdown_body'
+            })
+            .map(([sectionKey, sectionValue]) => (
+              <div
+                key={sectionKey}
+                className="border-b border-border/50 pb-6 last:border-0 last:pb-0"
+              >
+                <h3 className="text-lg font-semibold mb-4 text-foreground">
+                  {getSectionTitle(sectionKey)}
+                </h3>
+                <div className="text-foreground/90">
+                  {renderValue(sectionValue, sectionKey)}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
         </CardContent>
       </Card>
 

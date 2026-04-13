@@ -237,6 +237,13 @@ async def generate_prognosis(db: AsyncSession, user_id: str) -> dict:
         "goals": goal_evaluations,
         "allocation": allocation,
         "strategy": strategy,
+        "accounts_summary": {
+            "num_accounts": len(accounts),
+            "num_transactions": len(transactions),
+            "total_balance": float(sum(acc.balance for acc in accounts)),
+            "monthly_income": monthly_income,
+            "monthly_expenses": float(monthly_debits),
+        },
         "previous_report": previous_report.report_json if previous_report else None,
     }
 
