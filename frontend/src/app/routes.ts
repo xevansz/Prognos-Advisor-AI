@@ -2,6 +2,7 @@ import React from 'react'
 import { createBrowserRouter } from 'react-router'
 import { lazy } from 'react'
 import { Root } from './pages/Root'
+import { ErrorPage } from './pages/ErrorPage'
 
 export const Landing = lazy(() =>
   import('./pages/Landing').then((m) => ({ default: m.Landing }))
@@ -35,9 +36,6 @@ export const PrognosisAI = lazy(() =>
 )
 export const NotFound = lazy(() =>
   import('./pages/NotFound').then((m) => ({ default: m.NotFound }))
-)
-export const ErrorPage = lazy(() =>
-  import('./pages/ErrorPage').then((m) => ({ default: m.ErrorPage }))
 )
 
 export const router = createBrowserRouter([

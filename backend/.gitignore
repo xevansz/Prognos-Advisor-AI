@@ -1,24 +1,38 @@
-# python
-.py[cod]
+# Python bytecode
 __pycache__/
-.mypy_cache/
-.pytest_cache/
-.ruff_cache/
-.pdm-python
+*.py[cod]
+
+# Virtual environment
 .venv/
+
+# Environment variables
 .env
 .envrc
 .env.*
 
-# ide
-.vscode/
-.idea/
+# Type checker / linter caches
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
 
-# Db
-.DS_Store
+# PDM
+.pdm-python
+.pdm-build/
+
+# Alembic compiled files
+alembic/__pycache__/
+alembic/*.pyc
+
+# Database files
 *.db
 *.sqlite
 
-# Alembic cache
-alembic/__pycache__/
-alembic/*.pyc
+# Large generated assets
+agents/models/training_metrics.png
+
+# OS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/

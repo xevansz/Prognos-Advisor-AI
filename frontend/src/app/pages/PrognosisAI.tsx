@@ -163,7 +163,9 @@ export function PrognosisAI() {
   }
 
   const report = prognosisReport.report_json
-  const generatedAt = new Date(prognosisReport.created_at).toLocaleDateString()
+  const generatedAt = new Date(
+    prognosisReport.generated_at
+  ).toLocaleDateString()
 
   return (
     <div className="space-y-6">
