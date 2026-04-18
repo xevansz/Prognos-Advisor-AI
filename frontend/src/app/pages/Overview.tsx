@@ -69,7 +69,7 @@ export function Overview() {
           baseCurrency,
           fxRates
         )
-        if (t.type === 'income') income += converted
+        if (t.type === 'credit') income += converted
         else spending += converted
       }
     })
@@ -139,7 +139,7 @@ export function Overview() {
     .filter((t) => {
       const d = new Date(t.date)
       return (
-        t.type === 'income' &&
+        t.type === 'credit' &&
         d.getMonth() === curMonth &&
         d.getFullYear() === curYear
       )
@@ -154,7 +154,7 @@ export function Overview() {
     .filter((t) => {
       const d = new Date(t.date)
       return (
-        t.type === 'expense' &&
+        t.type === 'debit' &&
         d.getMonth() === curMonth &&
         d.getFullYear() === curYear
       )
@@ -337,12 +337,12 @@ export function Overview() {
                   </div>
                   <div
                     className={`text-sm font-medium ${
-                      transaction.type === 'income'
+                      transaction.type === 'credit'
                         ? 'text-[var(--success)]'
                         : 'text-[var(--destructive)]'
                     }`}
                   >
-                    {transaction.type === 'income' ? '+' : '-'}{' '}
+                    {transaction.type === 'credit' ? '+' : '-'}{' '}
                     {formatCurrency(transaction.amount, transaction.currency)}
                   </div>
                 </div>

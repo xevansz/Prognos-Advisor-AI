@@ -106,8 +106,9 @@ export interface TransactionOut {
 }
 
 export const transactionsApi = {
-  list: () => request<TransactionOut[]>('GET', '/api/transactions'),
-  get: (id: string) => request<TransactionOut>('GET', `/api/transactions/${id}`),
+  list: () => request<TransactionOut[]>('GET', '/api/transactions?limit=1000'),
+  get: (id: string) =>
+    request<TransactionOut>('GET', `/api/transactions/${id}`),
   create: (payload: TransactionCreate) =>
     request<TransactionOut>('POST', '/api/transactions', payload),
   update: (id: string, payload: TransactionUpdate) =>
@@ -192,7 +193,8 @@ export interface PrognosisReport {
 }
 
 export const prognosisApi = {
-  current: () => request<PrognosisReport | null>('GET', '/api/prognosis/current'),
+  current: () =>
+    request<PrognosisReport | null>('GET', '/api/prognosis/current'),
   generate: () => request<PrognosisReport>('POST', '/api/prognosis/refresh'),
 }
 

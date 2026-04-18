@@ -96,7 +96,7 @@ export function Transactions() {
         description: '',
         date: new Date().toISOString().split('T')[0],
         amount: '',
-        type: 'expense',
+        type: 'debit' as TransactionType,
         currency: profile?.base_currency ?? 'INR',
         isRecurring: false,
       })
@@ -401,8 +401,8 @@ export function Transactions() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="Income">Income</SelectItem>
-                    <SelectItem value="Expense">Expense</SelectItem>
+                    <SelectItem value="credit">Credit (Income)</SelectItem>
+                    <SelectItem value="debit">Debit (Expense)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -489,29 +489,27 @@ export function Transactions() {
                         <TableCell>
                           <Badge
                             variant={
-                              transaction.type === 'income'
+                              transaction.type === 'credit'
                                 ? 'default'
                                 : 'secondary'
                             }
                             className={
-                              transaction.type === 'income'
+                              transaction.type === 'credit'
                                 ? 'bg-[hsl(var(--success))]'
                                 : ''
                             }
                           >
-                            {transaction.type === 'income'
-                              ? 'Income'
-                              : 'Expense'}
+                            {transaction.type === 'credit' ? 'Credit' : 'Debit'}
                           </Badge>
                         </TableCell>
                         <TableCell
                           className={`text-right font-mono font-semibold whitespace-nowrap ${
-                            transaction.type === 'income'
+                            transaction.type === 'credit'
                               ? 'text-[hsl(var(--success))]'
                               : 'text-[hsl(var(--destructive))]'
                           }`}
                         >
-                          {transaction.type === 'income' ? '+' : '-'}
+                          {transaction.type === 'credit' ? '+' : '-'}
                           {formatCurrency(
                             transaction.amount,
                             transaction.currency

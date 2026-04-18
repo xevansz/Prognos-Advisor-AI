@@ -91,6 +91,12 @@ async def create_transaction(db: AsyncSession, user_id: str, payload: Transactio
             detail="Account not found",
         )
 
+    if payload.type == TransactionType.DEBIT and account.balance < payload.amount:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Insufficient funds: account balance is too low for this debit transaction.",
+        )
+
     currency = payload.currency or account.currency
 
     transaction = Transaction(
