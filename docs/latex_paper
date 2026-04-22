@@ -1,0 +1,304 @@
+\documentclass{svproc}
+\usepackage{url}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\def\UrlFont{\rmfamily}
+
+\begin{document}
+\mainmatter 
+\title{A Hybrid Multi-Agent Framework with Reinforcement Learning for Personalized Financial Planning and Asset Allocation}
+\titlerunning{Hybrid Multi-Agent Reinforcement Learning Framework}
+
+\author{Matthew Mineeth B\inst{1} \and Anjan Babu G.\inst{2}}
+\authorrunning{Matthew Mineeth et al.}
+\tocauthor{Matthew Mineeth B, Anjan Babu G.}
+\institute{
+SVU College of CM \& CS, Sri Venkateswara University, Tirupati, India \\
+\email{minithbmatthew@gmail.com}
+\and
+Professor, Department of Computer Science, SVU College of CM \& CS, Sri Venkateswara University, Tirupati, India \\
+\email{gabsvu@gmail.com}
+}
+
+\maketitle
+
+\begin{abstract}
+Personal financial planning is a sequential decision problem shaped by income variability, expenditure patterns, liquidity constraints, and long-horizon goals. Conventional tools remain rule-based and weakly adaptive. This paper presents a hybrid multi-agent framework combining structured financial analysis, reinforcement learning for strategy selection, and natural-language explanation. The system integrates specialized agents for risk assessment, goal-feasibility evaluation, heuristic asset allocation, and DQN-based strategy selection. A compact five-dimensional state representation encodes risk score, goal feasibility, equity allocation, savings rate, and financial runway. Trained on 3,000 episodes of synthetic data (seed=42), the final 100-episode mean reward improved 13.1\% over the training mean. Evaluation on 100 fixed scenarios showed the learned policy outperformed a heuristic baseline by 70.3\% in cumulative reward, 49.1\% in terminal balance, and 30 percentage points in goal on-track rate. These findings constitute simulation-based evidence that a compact RL policy can complement rule-based financial analysis; generalization to real-world settings requires further validation.
+\keywords{Multi-Agent Systems, Reinforcement Learning, Personal Financial Planning, Asset Allocation, Explainable AI}
+\end{abstract}
+%
+\section{Introduction}
+%
+Financial planning is central to long-term household stability and to goals such as retirement, education funding, and emergency preparedness. Although digital platforms now allow users to track balances, transactions, and investments with increasing granularity, many personal finance applications remain descriptive rather than prescriptive. They summarize spending and balances, but they do not adapt strategy as financial conditions change.
+
+Traditional advisory systems rely on fixed heuristics, static risk questionnaires, or deterministic optimization rules. Such approaches are transparent but inflexible when user cash flow, market conditions, and goal feasibility evolve over time. Reinforcement learning offers a natural alternative by framing planning as sequential decision-making under uncertainty~\cite{betancourt2021drl,yang2023drl,cheng2024multiagent,li2024multiagent}. In finance, RL has been applied to portfolio allocation and risk-aware policy adaptation~\cite{lee2020maps,betancourt2021drl,yang2023drl,ma2023multiagent,cheng2024multiagent,li2024multiagent}, while interpretable variants expose the logic of learned policies~\cite{cong2021alpha,guan2021explainable}.
+
+Most prior work targets portfolio management rather than holistic personal financial planning. The latter requires simultaneous reasoning about liquidity, runway, savings behavior, and goal feasibility—together with interfaces that users can understand. Work on robo-advising and explainable AI confirms that adoption depends on transparent explanation and preference alignment~\cite{alsabah2021robo,bendavid2021xai,bianchi2021robo,litty2024xai}.
+
+This paper addresses that gap with a hybrid multi-agent framework integrating a rule-based Risk Agent, a simulation-based Goal Feasibility Agent, a heuristic Investment Allocation Agent, and a DQN-based Strategy Agent. These components produce a compact financial state representation over long-horizon simulated trajectories; a language-generation layer converts structured outputs into user-facing explanations. The contribution is architectural: RL is applied only at the strategy-selection layer of an otherwise rule-based pipeline, evaluated exclusively in a controlled synthetic environment.
+%
+\section{Literature Review}
+%
+\subsection{Overview}
+The relevant literature spans three areas: RL-based portfolio management, robo-advisory systems, and explainability in financial AI. Portfolio-oriented RL shows that sequential decision methods adapt to changing market states~\cite{lee2020maps,betancourt2021drl,yang2023drl,ma2023multiagent,cheng2024multiagent,li2024multiagent}, while robo-advisory studies emphasize suitability and user acceptance~\cite{alsabah2021robo,bendavid2021xai,bianchi2021robo,litty2024xai,wang2021robo}. Explainability research argues that learned policies must remain interpretable to practitioners and end users~\cite{bendavid2021xai,cong2021alpha,guan2021explainable,bianchi2021robo,litty2024xai}. Personal financial planning sits at the intersection: it requires sequential adaptation, yet critical state variables extend beyond market returns to household liquidity, savings behavior, and goal progress.
+
+\subsection{Research Gap}
+Traditional digital advice maps risk questionnaires to model portfolios via auditable rules~\cite{alsabah2021robo,bianchi2021robo} but does not model cash-flow shocks, emergency liquidity, or deadline-constrained goals. ML-based methods adapt from observed choices~\cite{alsabah2021robo,wang2021robo} but remain investment-centric. Deep RL achieves strong portfolio results~\cite{lee2020maps,betancourt2021drl,yang2023drl,ma2023multiagent,cheng2024multiagent,li2024multiagent} but uses predominantly market-centric state representations~\cite{cong2021alpha,guan2021explainable}.
+
+No prior work combines liquidity risk, savings behavior, and goal feasibility as explicit inputs to sequential strategy selection. The proposed framework bridges this gap: specialized analytical agents estimate these quantities, while DQN operates only at the strategy-selection layer, exposing intermediate financial metrics for auditing and explanation.
+
+\section{Dataset}
+All experiments use a synthetic financial planning dataset. Real-world longitudinal records combining income, expenses, liquid balances, asset allocation, and goal metadata are unavailable at the required granularity due to privacy and regulatory constraints; synthetic data provide a controlled basis for method development without exposing identifiable records.
+
+Each instance represents a simulated household defined by six attributes sampled from the ranges in Table~\ref{tab:dataset}.
+
+\begin{table}
+\caption{Synthetic Dataset Attributes}
+\label{tab:dataset}
+\centering
+\begin{tabular}{l l l p{5cm}}
+\hline
+Feature & Type & Range & Description \\
+\hline
+Balance & Continuous & 10,000--500,000 & Investable liquid balance \\
+Monthly Income & Continuous & 3,000--30,000 & Monthly income inflow \\
+Monthly Expenses & Continuous & 2,000--25,000 & Monthly expenses \\
+Equity Ratio & Continuous & 0.2--0.8 & Initial equity allocation \\
+Target Goal Amount & Continuous & 50,000--2,000,000 & Target financial goal \\
+Months Remaining & Integer & 12--240 & Months remaining to goal \\
+\hline
+\end{tabular}
+\end{table}
+%
+No identifiable personal financial records are used. The learned policy is trained and evaluated exclusively on simulated profiles; real-world deployment would require separate validation on live data.
+
+The analytical pipeline derives a five-dimensional normalized state vector from each profile. These features are computed from agent outputs prior to policy selection, not taken directly from the raw attributes (Table~\ref{tab:rl_features}).
+%
+\begin{table}
+\caption{Derived Reinforcement Learning State Features}
+\label{tab:rl_features}
+\centering
+\begin{tabular}{l p{4.5cm} p{5cm}}
+\hline
+State Feature & Derived From & Purpose \\
+\hline
+Risk Score & Runway, income stability, savings rate & Encodes short-term financial fragility \\
+Goal Feasibility & Projected goal success probability & Encodes likelihood of achieving financial target \\
+Equity Ratio & Current portfolio allocation & Encodes portfolio risk exposure \\
+Savings Rate & Income and expenses & Encodes monthly surplus behavior \\
+Runway & Balance-to-expense ratio (normalized) & Encodes emergency liquidity capacity \\
+\hline
+\end{tabular}
+\end{table}
+%
+All state features are normalized to $[0,1]$ for consistent neural-network scaling. The state encoder maintains a fixed feature ordering across training and inference.
+%
+\section{Methodology}
+The system follows a multi-agent architecture in which specialized components analyze complementary financial dimensions (Fig.~\ref{fig:flowchart}). The pipeline constructs a normalized state vector from profile, account, transaction, and goal data; selects a strategy action via DQN; and generates a natural-language report.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.1\textwidth]{Flowchart.png}
+\caption{System architecture: structured user data feeds analytical agents, whose outputs form a normalized state vector for DQN strategy selection and language-based reporting.}
+\label{fig:flowchart}
+\end{figure}
+
+\subsection{Risk Agent}
+The Risk Agent estimates cash-flow fragility and liquidity capacity from recent transactions and liquid account balances. Burn rate is computed from recent debit transactions, monthly income from recent credits, and runway is defined as the ratio of liquid assets to monthly burn rate.
+
+A normalized risk score is computed as a weighted combination of runway, stability ratio, and savings ratio:
+\begin{equation}
+\text{RiskScore} = 40 \cdot \text{norm}(\text{runway}) + 30 \cdot \text{norm}(\text{stability}) + 30 \cdot \text{savings\_ratio}
+\end{equation}
+Normalization bounds are set to $[0,12]$ months for runway and $[0.5, 2.0]$ for the stability ratio. The final score is clamped to the range $[0,100]$.
+
+\subsection{Goal Feasibility Agent}
+The Goal Feasibility Agent estimates whether financial goals are achievable under current savings behavior. A deterministic future value is first computed using current savings, monthly contributions, and an expected annual return of $7\%$.
+
+Subsequently, $500$ Monte Carlo simulations are performed, where returns are sampled from a Gaussian distribution:
+\begin{equation}
+r \sim \mathcal{N}(0.07, 0.15^2)
+\end{equation}
+
+The success probability is defined as:
+\begin{equation}
+P_{\text{success}} = \frac{\text{Number of successful trajectories}}{500}
+\end{equation}
+
+Goals are categorized as:
+\begin{itemize}
+    \item \textit{On-track} if $P_{\text{success}} \geq 0.75$
+    \item \textit{At-risk} if $0.40 \leq P_{\text{success}} < 0.75$
+    \item \textit{Unrealistic} otherwise
+\end{itemize}
+
+\subsection{Investment Allocation Agent}
+The Investment Allocation Agent recommends a broad asset-class allocation across equity, debt, cash, and other assets. The allocation is heuristic and combines age-based equity rules, time-horizon adjustments, goal pressure, user risk appetite, capacity constraints derived from risk score, and macroeconomic adjustments.
+
+The output includes a recommended allocation and may include an alternative allocation when there is a mismatch between risk capacity and stated risk appetite.
+
+\subsection{Strategy Agent}
+
+The Strategy Agent is the sole learned component, implemented as a Deep Q-Network (DQN) with two fully connected layers (64, 32 units, ReLU) and a five-unit output layer. The five discrete actions are: keep strategy, increase savings, reduce savings, shift to equity, and shift to bonds. The per-step reward is:
+\begin{equation}
+r_t = 0.01\,\Delta W - 2\,\mathbf{1}(R < 3) + 5\,\mathbf{1}(G) - 3\,\mathbf{1}(\neg G)
+\label{eq:reward}
+\end{equation}
+where $\Delta W$ is the change in portfolio balance, $R$ is runway in months, and $G$ is a binary indicator of goal feasibility. The formulation rewards wealth growth, penalizes critically low liquidity ($R < 3$ months), and reinforces goal attainment. Each step corresponds to one simulated month.
+
+\subsection{Explanation Layer}
+The explanation layer converts structured agent outputs into a human-readable report using either an external large language model or a deterministic fallback. It operates post-hoc and is not part of the RL optimization. This design aligns with explainable financial AI and robo-advisory adoption research~\cite{bendavid2021xai,guan2021explainable,bianchi2021robo,litty2024xai}.
+
+\section{Experimental Setup}
+
+Training runs for 3,000 episodes in a synthetic environment; each episode samples a fresh financial profile and runs for 60--120 simulated monthly steps, exposing the agent to heterogeneous long-horizon trajectories. Four market regimes are modeled: normal ($\mu{=}7\%$, $\sigma{=}15\%$), bull ($12\%$, $12\%$), bear ($-5\%$, $20\%$), and recession ($-15\%$, $25\%$) annual equity returns; debt returns vary from $3\%$ to $4.5\%$ by regime. Income and expense shocks occur with 5\% monthly probability.
+
+Hyperparameters: replay buffer 10{,}000; batch size 32; learning rate $10^{-3}$; discount $\gamma{=}0.99$; $\epsilon$ decaying from $1.0$ to $0.05$ ($\times0.995$ per episode); target-network update every 50 episodes. Seed 42 is fixed for both training and evaluation; multi-seed validation is left for future work.
+
+\section{Results}
+\subsection{Training Performance}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{training_metrics.png}
+\caption{Training reward trajectory with 50-episode moving average over 3,000 episodes}
+\label{fig:training}
+\end{figure}
+
+\begin{table}
+\caption{Training Performance Summary (3,000 Episodes, Seed=42)}
+\label{tab:training}
+\centering
+\begin{tabular}{l l}
+\hline
+Metric & Value \\
+\hline
+Mean cumulative reward & $10{,}935.52 \pm 9{,}016.12$ \\
+Final 100-episode mean reward & $12{,}370.65$ \\
+Mean terminal balance & \$1{,}330{,}012.86 $\pm$ \$906{,}494.85 \\
+Final 100-episode terminal balance & \$1{,}456{,}924.95 \\
+Mean goal-feasibility score & $0.732$ \\
+Final 100-episode goal-feasibility & $0.740$ \\
+Mean minimum runway & $34.09$ months \\
+Low-runway episodes ($< 3$ months) & $207 / 3000$ ($6.9\%$) \\
+Final epsilon & $0.05$ \\
+\hline
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:training} summarizes training performance. The final 100-episode mean reward ($12{,}370.65$) represents a 13.1\% improvement over the overall training mean, indicating policy convergence toward higher-quality decisions in later episodes (Fig.~\ref{fig:training}).
+
+\subsection{Baseline Comparison}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.9\textwidth]{baseline_comparison.png}
+\caption{Comparison of DQN and baseline agents across reward, terminal balance, goal achievement, and financial safety metrics. Error bars indicate standard deviation.}
+\label{fig:baseline}
+\end{figure}
+
+\begin{table}
+\caption{Baseline Comparison on 100 Evaluation Scenarios (Seed=42)}
+\label{tab:baseline}
+\centering
+\begin{tabular}{l l l l l}
+\hline
+Agent & Mean Reward & Terminal Balance & Goal On-Track Rate & Low Runway Rate \\
+\hline
+DQN & $12{,}186.91 \pm 6{,}540.02$ & \$1{,}459{,}256.51 $\pm$ \$680{,}638.06 & $87\%$ & $4\%$ \\
+Heuristic & $7{,}156.81 \pm 7{,}432.11$ & \$978{,}677.44 $\pm$ \$766{,}204.40 & $57\%$ & $5\%$ \\
+Keep & $3{,}332.25 \pm 8{,}950.35$ & \$610{,}579.49 $\pm$ \$909{,}436.93 & $31\%$ & $49\%$ \\
+Random & $6{,}723.31 \pm 8{,}529.93$ & \$931{,}879.98 $\pm$ \$891{,}652.96 & $52\%$ & $5\%$ \\
+\hline
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:baseline} and Fig.~\ref{fig:baseline} compare the DQN against three baselines on 100 fixed evaluation scenarios. The DQN exceeds the heuristic in cumulative reward by 70.3\% and in terminal balance by 49.1\%, while raising the goal on-track rate by 30 percentage points—without degrading financial safety (low-runway rate 4\% vs.\ 5\%). Gains over the static keep-strategy and random baselines are substantially larger, underscoring the value of adaptive policy selection in the synthetic setting. These results are confined to the controlled simulation environment and do not imply real-world financial performance.
+
+\subsection{Policy Behavior Analysis}
+
+Within the simulation environment, the learned policy increases savings and reduces equity exposure when runway or goal feasibility deteriorates, and shifts toward higher equity allocation under stable conditions. This behavior is consistent with standard financial planning heuristics, suggesting the policy has internalized appropriate risk-adaptive responses in the synthetic setting (Figs.~\ref{fig:heatmap} and~\ref{fig:trajectory}).
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{policy_heatmap.png}
+\caption{Policy heatmap illustrating action selection across varying financial states.}
+\label{fig:heatmap}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.8\textwidth]{trajectory_comparison.png}
+\caption{Trajectory comparison between DQN and baseline strategies over time.}
+\label{fig:trajectory}
+\end{figure}
+
+\section{Conclusion}
+
+This paper presented a hybrid multi-agent framework coupling rule-based risk assessment, simulation-based goal analysis, heuristic asset allocation, and DQN-based strategy selection. The compact five-dimensional state vector shifts focus from market returns to household liquidity, savings behavior, and goal progress. In controlled synthetic experiments (seed=42, 3,000 training episodes), the DQN improved 13.1\% over the training mean and outperformed a heuristic baseline by 70.3\% in cumulative reward and 49.1\% in terminal balance across 100 evaluation scenarios.
+
+These results constitute simulation-based architectural evidence, not validated real-world performance. Limitations include exclusive reliance on synthetic data, a single random seed, and the absence of transaction costs, taxes, or real-market dynamics. The contribution is methodological: demonstrating that rule-based financial analysis can be coupled with RL strategy selection in a reproducible, auditable prototype. The framework preserves interpretable intermediate outputs, consistent with explainable financial AI and robo-advisory research~\cite{bendavid2021xai,guan2021explainable,bianchi2021robo,litty2024xai}.
+
+\subsection{Future Work}
+
+Priority directions include multi-seed evaluation with confidence intervals; environments incorporating transaction costs, inflation, and tax effects; comparison with PPO and actor--critic methods; and external validation on privacy-preserving real-world datasets. Any practical deployment must incorporate data minimization, secure access controls, and clear regulatory positioning of outputs as decision support rather than financial advice.
+
+\section*{Acknowledgements}
+The authors thank the faculty of the Department of Data Science at Sri Venkateswara University for their guidance and support.
+
+\begin{thebibliography}{13}
+\bibitem{lee2020maps}
+Lee, J., Kim, R., Yi, S.-W., Kang, J.: MAPS: Multi-agent reinforcement learning-based portfolio management system.
+In: Proceedings of the Twenty-Ninth International Joint Conference on Artificial Intelligence (IJCAI), pp. 4520--4526 (2020)
+
+\bibitem{betancourt2021drl}
+Betancourt, C., Chen, W.-H.: Deep reinforcement learning for portfolio management of markets with a dynamic number of assets.
+Expert Systems with Applications \textbf{164}, 114002 (2021)
+
+\bibitem{alsabah2021robo}
+Alsabah, H., Capponi, A., Lacedelli, O.R., Stern, M.: Robo-advising: Learning investors' risk preferences via portfolio choices.
+Journal of Financial Econometrics \textbf{19}(2), 369--392 (2021)
+
+\bibitem{bendavid2021xai}
+Ben David, D., Resheff, Y.S., Tron, T.: Explainable AI and adoption of financial algorithmic advisors: An experimental study.
+arXiv preprint arXiv:2101.02555 (2021)
+
+\bibitem{yang2023drl}
+Yang, S.: Deep reinforcement learning for portfolio management.
+Knowledge-Based Systems \textbf{278}, 110905 (2023)
+
+\bibitem{ma2023multiagent}
+Ma, C., Zhang, J., Li, Z., Xu, S.: Multi-agent deep reinforcement learning algorithm with trend consistency regularization for portfolio management.
+Neural Computing and Applications \textbf{35}(9), 6589--6601 (2023)
+
+\bibitem{cong2021alpha}
+Cong, L.W., Tang, K., Wang, J., Zhang, Y.: AlphaPortfolio: Direct construction through deep reinforcement learning and interpretable AI.
+SSRN Working Paper 3554486 (2021)
+
+\bibitem{guan2021explainable}
+Guan, M., Liu, X.-Y.: Explainable deep reinforcement learning for portfolio management: An empirical approach.
+arXiv preprint arXiv:2111.03995 (2021)
+
+\bibitem{bianchi2021robo}
+Bianchi, M., Briere, M.: Robo-advising: Less AI and more XAI?
+SSRN Working Paper 3825110 (2021)
+
+\bibitem{litty2024xai}
+Litty, A.: Explainable AI for personalized financial advice: Building trust and transparency in robo-advisory platforms.
+EasyChair Preprint 14333 (2024)
+
+\bibitem{cheng2024multiagent}
+Cheng, L.-C., Sun, J.-S.: Multiagent-based deep reinforcement learning framework for multi-asset adaptive trading and portfolio management.
+Neurocomputing \textbf{594}, 127800 (2024)
+
+\bibitem{li2024multiagent}
+Li, Z., Tam, V., Yeung, K.L.: Developing a multi-agent and self-adaptive framework with deep reinforcement learning for dynamic portfolio risk management.
+arXiv preprint arXiv:2402.00515 (2024)
+
+\bibitem{wang2021robo}
+Wang, H., Yu, S.: Robo-advising: Enhancing investment with inverse optimization and deep reinforcement learning.
+arXiv preprint arXiv:2105.09264 (2021)
+
+\end{thebibliography}
+\end{document}
