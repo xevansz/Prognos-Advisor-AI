@@ -276,7 +276,7 @@ async def create_monthly_transactions(
         monthly_total = rand_amount(base_amount, var_pct)
         amounts = split_proportionally(monthly_total, len(templates))
 
-        for (label, desc), amount in zip(templates, amounts):
+        for (label, desc), amount in zip(templates, amounts, strict=False):
             if amount <= 0:
                 continue
 
