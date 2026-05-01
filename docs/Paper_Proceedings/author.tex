@@ -1,4 +1,5 @@
 \documentclass{svproc}
+\raggedbottom
 \usepackage{url}
 \usepackage{graphicx}
 \usepackage{amsmath}
@@ -11,13 +12,13 @@
 \titlerunning{Hybrid Multi-Agent Reinforcement Learning Framework}
 
 \author{Matthew Mineeth B\inst{1} \and Anjan Babu G.\inst{2}}
-\authorrunning{Matthew Mineeth et al.}
+\authorrunning{Matthew Mineeth B et al.}
 \tocauthor{Matthew Mineeth B, Anjan Babu G.}
 \institute{
-SVU College of CM \& CS, Sri Venkateswara University, Tirupati, India \\
+M.S Data Science, Department of Computer Science, SVU College of CM \& CS, Sri Venkateswara University, Tirupati \\
 \email{minithbmatthew@gmail.com}
 \and
-Professor, Department of Computer Science, SVU College of CM \& CS, Sri Venkateswara University, Tirupati, India \\
+Professor, Department of Computer Science, SVU College of CM \& CS, Sri Venkateswara University, Tirupati \\
 \email{gabsvu@gmail.com}
 }
 
@@ -32,7 +33,7 @@ Personal financial planning is a sequential decision problem shaped by income va
 %
 Financial planning is central to long-term household stability and to goals such as retirement, education funding, and emergency preparedness. Although digital platforms now allow users to track balances, transactions, and investments with increasing granularity, many personal finance applications remain descriptive rather than prescriptive. They summarize spending and balances, but they do not adapt strategy as financial conditions change.
 
-Traditional advisory systems rely on fixed heuristics, static risk questionnaires, or deterministic optimization rules. Such approaches are transparent but inflexible when user cash flow, market conditions, and goal feasibility evolve over time. Reinforcement learning offers a natural alternative by framing planning as sequential decision-making under uncertainty~\cite{betancourt2021drl,yang2023drl,cheng2024multiagent,li2024multiagent}. In finance, RL has been applied to portfolio allocation and risk-aware policy adaptation~\cite{lee2020maps,betancourt2021drl,yang2023drl,ma2023multiagent,cheng2024multiagent,li2024multiagent}, while interpretable variants expose the logic of learned policies~\cite{cong2021alpha,guan2021explainable}.
+Traditional advisory systems rely on fixed heuristics, static risk questionnaires, or deterministic optimization rules. Such approaches are transparent but inflexible when user cash flow, market conditions, and goal feasibility evolve over time. Reinforcement learning offers a natural alternative by framing planning as sequential decision-making under uncertainty~\cite{betancourt2021drl,yang2023drl,cheng2024multiagent,li2024multiagent}. In finance, RL has been applied to portfolio allocation and risk-aware policy adaptation~\cite{lee2020maps,betancourt2021drl,yang2023drl,ma2023multiagent,cheng2024multiagent,li2024multiagent}, while interpretable variants expose the logic of learned  policies~\cite{cong2021alpha,guan2021explainable}.
 
 Most prior work targets portfolio management rather than holistic personal financial planning. The latter requires simultaneous reasoning about liquidity, runway, savings behavior, and goal feasibility—together with interfaces that users can understand. Work on robo-advising and explainable AI confirms that adoption depends on transparent explanation and preference alignment~\cite{alsabah2021robo,bendavid2021xai,bianchi2021robo,litty2024xai}.
 
@@ -83,11 +84,11 @@ The analytical pipeline derives a five-dimensional normalized state vector from 
 \hline
 State Feature & Derived From & Purpose \\
 \hline
-Risk Score & Runway, income stability, savings rate & Encodes short-term financial fragility \\
-Goal Feasibility & Projected goal success probability & Encodes likelihood of achieving financial target \\
-Equity Ratio & Current portfolio allocation & Encodes portfolio risk exposure \\
-Savings Rate & Income and expenses & Encodes monthly surplus behavior \\
-Runway & Balance-to-expense ratio (normalized) & Encodes emergency liquidity capacity \\
+Risk Score & Runway, income stability, savings rate & Short-term financial fragility \\
+Goal Feasibility & Projected goal success probability & Likelihood of achieving financial target \\
+Equity Ratio & Current portfolio allocation & Portfolio risk exposure \\
+Savings Rate & Income and expenses & Monthly surplus behavior \\
+Runway & Balance-to-expense ratio (normalized) & Emergency liquidity capacity \\
 \hline
 \end{tabular}
 \end{table}
